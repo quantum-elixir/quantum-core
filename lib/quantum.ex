@@ -11,11 +11,6 @@ defmodule Quantum do
 
   # Public functions ------------------------------------------------------------------------------
 
-  def cron("@yearly",  fun),  do: GenServer.cast(__MODULE__, {"0 0 1 1 *", fun})
-  def cron("@monthly", fun),  do: GenServer.cast(__MODULE__, {"0 0 1 * *", fun})
-  def cron("@weekly",  fun),  do: GenServer.cast(__MODULE__, {"0 0 * * 0", fun})
-  def cron("@daily",   fun),  do: GenServer.cast(__MODULE__, {"0 0 * * *", fun})
-  def cron("@hourly",  fun),  do: GenServer.cast(__MODULE__, {"0 * * * *", fun})
   def cron(expression, fun),  do: GenServer.cast(__MODULE__, {expression,  fun})
   def reset,                  do: GenServer.cast(__MODULE__, :reset)
 
@@ -23,7 +18,7 @@ defmodule Quantum do
 
   def init(_) do
     send_after(self, :tick, 1000)
-    {:ok, %{jobs: [], d: nil, h: nil, m: nil, w: nil}}
+    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: nil, w: nil}}
   end
 
   def handle_info(:tick, state) do
@@ -48,9 +43,15 @@ defmodule Quantum do
   end
 
   def execute("* * * * *", fun, _), do: fun.()
+  def execute("@hourly",   fun, %{m: 0}), do: fun.()
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()
+  def execute("@daily",    fun, %{m: 0, h: 0}), do: fun.()
   def execute("0 0 * * *", fun, %{m: 0, h: 0}), do: fun.()
+  def execute("@weekly",   fun, %{m: 0, h: 0, w: 0}), do: fun.()
+  def execute("0 0 * * 0", fun, %{m: 0, h: 0, w: 0}), do: fun.()
+  def execute("@monthly",  fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
   def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
+  def execute("@yearly",   fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute(e, fun, state) do
     [m, h, d, n, w] = e |> Atom.to_string |> String.split(" ")

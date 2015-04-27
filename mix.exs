@@ -4,7 +4,7 @@ defmodule Quantum.Mixfile do
   def project do
     [
       app: :quantum,
-      version: "1.0.0",
+      version: "1.0.1",
       elixir: "~> 1.0",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -18,7 +18,13 @@ defmodule Quantum.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    application(Mix.env)
+  end
+  def application(:test) do
+    [applications: []]
+  end
+  def application(_) do
+    [applications: [], mod: {Quantum.Application, []}]
   end
 
   # Dependencies can be Hex packages:
