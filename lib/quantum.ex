@@ -53,7 +53,7 @@ defmodule Quantum do
   def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
   def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute(e, fun, state) do
-    [m, h, d, n, w] = e |> String.split(" ")
+    [m, h, d, n, w] = e |> Atom.to_string |> String.split(" ")
     {_, cur_mon, cur_day} = state.d
     cond do
       !match(m, state.m, 0, 59) -> false
@@ -93,7 +93,7 @@ defmodule Quantum do
     {x,_} = i |> Integer.parse
     [rem(v,i)]
   end
-  defp parse(v, y, [], min, max) do
+  defp parse(v, [y], [], min, max) do
     {t,_} = y |> Integer.parse
     if v < t do
       Enum.to_list(v..t)
