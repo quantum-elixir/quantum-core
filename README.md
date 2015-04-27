@@ -1,10 +1,10 @@
-# Quantum
+# Quantum [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 
 [Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/) applications.
 
 ## Setup
 
-To use this plug in your projects, edit your mix.exs file and add the project as a dependency:
+To use Quantum in your projects, edit your mix.exs file and add Quantum as a dependency:
 
 ```elixir
 defp deps do
@@ -14,10 +14,23 @@ defp deps do
 end
 ```
 
+Then, add Quantum to the list of applications in your `mix.exs' file:
+
+```elixir
+  def application do
+    [
+      applications: [ :quantum ]
+    ]
+  end
+```
+
 ## Usage
 
 ```elixir
+# Runs on 18, 20, 22, 0, 2, 4, 6:
 Quantum.cron("0 18-6/2 * * *", fn -> IO.puts("it's late") end)
+
+# Runs every midnight:
 Quantum.cron("@daily", &backup/0)
 ```
 
