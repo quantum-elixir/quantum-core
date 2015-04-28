@@ -9,7 +9,7 @@ defmodule Quantum.Mixfile do
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps,
-      description: "Cronjob scheduler for Elixir applications.",
+      description: "Cron-like job scheduler for Elixir applications.",
       package: package
     ]
   end
