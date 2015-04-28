@@ -39,6 +39,13 @@ config :quantum, cron: [
 ]
 ```
 
+## Contributing
+
+1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or open a fresh issue to start a discussion around a feature idea or a bug.
+2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes.
+3. Write a test which shows that the bug was fixed or that the feature works as expected.
+4. Send a pull request.
+
 ## License
 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
