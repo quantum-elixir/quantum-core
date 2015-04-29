@@ -9,13 +9,6 @@ defmodule Quantum do
     GenServer.start_link(__MODULE__, %{}, [name: __MODULE__] ++ options)
   end
 
-  # Public functions ------------------------------------------------------------------------------
-
-  def cron(expression, fun),  do: GenServer.cast(__MODULE__, {expression,  fun})
-  def reset,                  do: GenServer.cast(__MODULE__, :reset)
-
-  # Private functions -----------------------------------------------------------------------------
-
   def init(_) do
     send_after(self, :tick, 1000)
     {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: nil, w: nil}}
@@ -53,6 +46,11 @@ defmodule Quantum do
   def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
   def execute("@yearly",   fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
+  def execute("@hourly",   _, _), do: false
+  def execute("@daily",    _, _), do: false
+  def execute("@weekly",   _, _), do: false
+  def execute("@yearly",   _, _), do: false
+  def execute("@monthly",  _, _), do: false
   def execute(e, fun, state) do
     [m, h, d, n, w] = e |> Atom.to_string |> String.split(" ")
     {_, cur_mon, cur_day} = state.d
@@ -104,7 +102,7 @@ defmodule Quantum do
   end
   defp parse(v, y, i, min, max) do
     {x, _} = i |> Integer.parse
-    parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x) != 0))
+    parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x)) != 0)
   end
 
 end
