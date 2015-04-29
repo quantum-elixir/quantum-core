@@ -22,7 +22,8 @@ defmodule Quantum do
     end
     if state.m != m do
       state = %{state | d: d, h: h, m: m}
-      Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
+      Enum.each(state.jobs, fn({e, fun}) ->
+        Task.start(__MODULE__, :execute, [e |> Atom.to_string, fun, state]) end)
     end
     {:noreply, state}
   end
@@ -52,7 +53,7 @@ defmodule Quantum do
   def execute("@yearly",   _, _), do: false
   def execute("@monthly",  _, _), do: false
   def execute(e, fun, state) do
-    [m, h, d, n, w] = e |> Atom.to_string |> String.split(" ")
+    [m, h, d, n, w] = e |> String.split(" ")
     {_, cur_mon, cur_day} = state.d
     cond do
       !match(m, state.m, 0, 59) -> false
