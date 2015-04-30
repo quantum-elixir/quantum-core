@@ -14,7 +14,7 @@ defp deps do
 end
 ```
 
-Then, add Quantum to the list of applications in your `mix.exs' file:
+Then, add Quantum to the list of applications in your `mix.exs` file:
 
 ```elixir
 def application do
