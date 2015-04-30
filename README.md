@@ -4,7 +4,7 @@
 
 ## Setup
 
-To use Quantum in your projects, edit your mix.exs file and add Quantum as a dependency:
+To use Quantum in your projects, edit your `mix.exs` file and add Quantum as a dependency:
 
 ```elixir
 defp deps do
