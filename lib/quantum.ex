@@ -20,10 +20,13 @@ defmodule Quantum do
     if state.d != d do
       state = %{state | w: rem(:calendar.day_of_the_week(d), 7)}
     end
-    if state.m != m do
+    previous_m = state.m
+    if previous_m != m do
       state = %{state | d: d, h: h, m: m}
-      Enum.each(state.jobs, fn({e, fun}) ->
-        Task.start(__MODULE__, :execute, [e |> Atom.to_string, fun, state]) end)
+      if previous_m != nil do
+        Enum.each(state.jobs, fn({e, fun}) ->
+          Task.start(__MODULE__, :execute, [e |> Atom.to_string, fun, state]) end)
+      end
     end
     {:noreply, state}
   end
