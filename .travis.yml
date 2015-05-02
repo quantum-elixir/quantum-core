@@ -4,7 +4,3 @@ elixir:
 sudo: false
 otp_release:
   - 17.4
-install:
-  - mix deps.get
-script:
-  - mix test
