@@ -11,7 +11,8 @@ defmodule Quantum do
 
   def init(_) do
     send_after(self, :tick, 1000)
-    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: nil, w: nil}}
+    {_, {_, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: m, w: nil}}
   end
 
   def handle_info(:tick, state) do
@@ -20,18 +21,17 @@ defmodule Quantum do
     if state.d != d do
       state = %{state | w: rem(:calendar.day_of_the_week(d), 7)}
     end
-    previous_m = state.m
-    if previous_m != m do
+    if state.m != m do
       state = %{state | d: d, h: h, m: m}
-      if previous_m != nil do
-        Enum.each(state.jobs, fn({e, fun}) ->
-          Task.start(__MODULE__, :execute, [e |> Atom.to_string, fun, state]) end)
-      end
+      Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
     end
     {:noreply, state}
   end
   def handle_info(_, state), do: {:noreply, state}
 
+  def execute(e, fun, state) when e |> is_atom do
+    execute(e |> Atom.to_string |> String.downcase |> translate, fun, state)
+  end
   def execute("* * * * *", fun, _), do: fun.()
   def execute("@hourly",   fun, %{m: 0}), do: fun.()
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()
