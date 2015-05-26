@@ -32,13 +32,6 @@ defmodule Quantum do
   end
   def handle_info(_, state), do: {:noreply, state}
 
-  def handle_cast(:reset, state) do
-    {:noreply, %{state | jobs: []}}
-  end
-  def handle_cast({ e, fun }, state) do
-    {:noreply, %{state | jobs: ["#{e |> String.downcase |> translate}": fun] ++ state.jobs}}
-  end
-
   def execute("* * * * *", fun, _), do: fun.()
   def execute("@hourly",   fun, %{m: 0}), do: fun.()
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()
