@@ -44,13 +44,20 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
-## Contributing
+## Contribution Process
 
-1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or open a fresh issue to start a discussion around a feature idea or a bug.
-2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes.
-3. Write a test which shows that the bug was fixed or that the feature works as expected.
-4. Send a pull request.
-5. If your pull request is merged, you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
+This project uses the [C4 process](http://rfc.zeromq.org/spec:16) for all code changes.
+
+> "Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the
+terms of this contract."
+
+### tl;dr
+
+1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or open a fresh issue to start a discussion around a feature idea or a bug
+2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
+3. Write a test which shows that the bug was fixed or that the feature works as expected
+4. Send a pull request
+5. Your pull request is merged and you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
 
 ## License
 
