@@ -9,10 +9,27 @@ defmodule Quantum do
     GenServer.start_link(__MODULE__, %{}, [name: __MODULE__] ++ options)
   end
 
+  def add_job(spec, job) do
+    GenServer.call(__MODULE__, {:add_job, spec, job})
+  end
+
+  def jobs() do
+    GenServer.call(__MODULE__, :jobs)
+  end
+
   def init(_) do
     send_after(self, :tick, 1000)
     {_, {_, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
     {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: m, w: nil}}
+  end
+
+  def handle_call({:add_job, spec, job}, _from, state) do
+    existing_jobs = state.jobs
+    new_job = {spec, job}
+    {:reply, :ok, %{state | jobs: [new_job | existing_jobs]}}
+  end
+  def handle_call(:jobs, _from, state) do
+    {:reply, state.jobs, state}
   end
 
   def handle_info(:tick, state) do

@@ -14,9 +14,9 @@ defmodule Quantum.Mixfile do
     ]
   end
 
-  def application,        do: application(Mix.env)
-  def application(:test), do: [applications: []]
-  def application(_),     do: [applications: [], mod: {Quantum.Application, []}]
+  def application do
+    [applications: [], mod: {Quantum.Application, []}]
+  end
 
   defp package do
     %{

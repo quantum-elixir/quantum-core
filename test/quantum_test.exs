@@ -29,5 +29,12 @@ defmodule QuantumTest do
   test "daily" do
     Quantum.execute(:"@DAILY", fn -> IO.puts("FAIL") end, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
   end
+
+  test "adding a job at run time" do
+    spec = "1 * * * *"
+    job = fn -> :ok end
+    :ok = Quantum.add_job(spec, job)
+    assert [{spec, job}] == Quantum.jobs
+  end
   
 end
