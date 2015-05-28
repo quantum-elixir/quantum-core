@@ -53,7 +53,7 @@ terms of this contract."
 
 ### tl;dr
 
-1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or open a fresh issue to start a discussion around a feature idea or a bug
+1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or [open a new issue](https://github.com/c-rack/quantum-elixir/issues/new) to start a discussion around a feature idea or a bug
 2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
 3. Write a test which shows that the bug was fixed or that the feature works as expected
 4. Send a pull request
