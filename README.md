@@ -1,6 +1,9 @@
-# Quantum [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum) [![Build Status](https://travis-ci.org/c-rack/quantum-elixir.png?branch=master)](https://travis-ci.org/c-rack/quantum-elixir)
+# Quantum
 
-[Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/) applications.
+[Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/).
+
+[![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
+[![Build Status](https://travis-ci.org/c-rack/quantum-elixir.png?branch=master)](https://travis-ci.org/c-rack/quantum-elixir)
 
 ## Setup
 
@@ -8,7 +11,7 @@ To use Quantum in your projects, edit your `mix.exs` file and add Quantum as a d
 
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.0.4"}]
+  [{:quantum, ">= 1.1.0"}]
 end
 ```
 
@@ -35,12 +38,19 @@ config :quantum, cron: [
 ]
 ```
 
+If you want to add jobs on runtime, this is possible, too:
+
+```elixir
+Quantum.add_job("1 * * * *", fn -> :ok end)
+```
+
 ## Contributing
 
 1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or open a fresh issue to start a discussion around a feature idea or a bug.
 2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes.
 3. Write a test which shows that the bug was fixed or that the feature works as expected.
 4. Send a pull request.
+5. If your pull request is merged, you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
 
 ## License
 
