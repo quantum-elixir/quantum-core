@@ -47,7 +47,7 @@ Quantum.add_job("1 * * * *", fn -> :ok end)
 
 ## Contribution Process
 
-This project uses the [C4 process](http://rfc.zeromq.org/spec:16) for all code changes.
+This project uses the [C4.1 process](http://rfc.zeromq.org/spec:22) for all code changes.
 
 > "Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the
 terms of this contract."
