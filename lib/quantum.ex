@@ -70,7 +70,7 @@ defmodule Quantum do
     {_, cur_mon, cur_day} = state.d
     cond do
       !match(m, state.m, 0, 59) -> false
-      !match(h, state.h, 0, 59) -> false
+      !match(h, state.h, 0, 24) -> false
       !match(d, cur_day, 1, 31) -> false
       !match(n, cur_mon, 1, 12) -> false
       !match(w, state.w, 0,  6) -> false
