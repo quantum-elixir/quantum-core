@@ -18,7 +18,7 @@ defmodule Quantum do
   end
 
   def init(_) do
-    {_, {_, m, _}} = tick
+    {_, _, m} = tick
     {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: m, w: nil}}
   end
 
@@ -32,7 +32,7 @@ defmodule Quantum do
   end
 
   def handle_info(:tick, state) do
-    {d, {h, m, _}} = tick
+    {d, h, m} = tick
     if state.d != d do
       state = %{state | w: rem(:calendar.day_of_the_week(d), 7)}
     end
@@ -125,7 +125,7 @@ defmodule Quantum do
   defp tick do
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     send_after(self, :tick, (60 - s) * 1000)
-    {d, {h, m, s}}
+    {d, h, m}
   end
 
 end
