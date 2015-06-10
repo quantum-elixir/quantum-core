@@ -31,10 +31,8 @@ defmodule Quantum do
 
   def handle_info(:tick, state) do
     {d, h, m} = tick
-    if state.d != d do
-      state = %{state | w: rem(:calendar.day_of_the_week(d), 7)}
-    end
-    state = %{state | d: d, h: h, m: m}
+    if state.d != d, do: state = %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
+    state = %{state | h: h, m: m}
     Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
     {:noreply, state}
   end
