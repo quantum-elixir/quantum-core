@@ -18,8 +18,8 @@ defmodule Quantum do
   end
 
   def init(_) do
-    {_, _, m} = tick
-    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: m, w: nil}}
+    tick
+    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: nil, w: nil}}
   end
 
   def handle_call({:add_job, spec, job}, _from, state) do
@@ -34,10 +34,8 @@ defmodule Quantum do
     if state.d != d do
       state = %{state | w: rem(:calendar.day_of_the_week(d), 7)}
     end
-    if state.m != m do
-      state = %{state | d: d, h: h, m: m}
-      Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
-    end
+    state = %{state | d: d, h: h, m: m}
+    Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
     {:noreply, state}
   end
   def handle_info(_, state), do: {:noreply, state}
