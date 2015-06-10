@@ -111,7 +111,7 @@ defmodule Quantum do
       Enum.to_list(min..t) ++ Enum.to_list(v..max)
     end
   end
-  def parse(v, y, i, min, max) do
+  def parse(v, y, [i], min, max) do
     {x, _} = i |> Integer.parse
     parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x) != 0))
   end
