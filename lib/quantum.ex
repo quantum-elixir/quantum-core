@@ -23,9 +23,7 @@ defmodule Quantum do
   end
 
   def handle_call({:add_job, spec, job}, _from, state) do
-    existing_jobs = state.jobs
-    new_job = {spec, job}
-    {:reply, :ok, %{state | jobs: [new_job | existing_jobs]}}
+    {:reply, :ok, %{state | jobs: [{spec, job} | state.jobs]}}
   end
   def handle_call(:jobs, _from, state) do
     {:reply, state.jobs, state}
