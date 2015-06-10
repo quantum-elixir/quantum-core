@@ -1,16 +1,53 @@
 defmodule QuantumTest do
   use ExUnit.Case
 
+  defp ok, do: :ok
+
+  test "check minutely" do
+    assert Quantum.execute("* * * * *", &ok/0, %{}) == :ok
+  end
+
   test "check hourly" do
-    Quantum.execute("0 * * * *", fn -> IO.puts("OK") end, %{d: {2015, 12, 31 }, h: 12, m: 0, w: 1})
+    assert Quantum.execute("0 * * * *", &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 0, w: 1}) == :ok
+    assert Quantum.execute("0 * * * *", &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 1, w: 1}) == false
+    assert Quantum.execute("@hourly",   &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 0, w: 1}) == :ok
+    assert Quantum.execute("@hourly",   &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 1, w: 1}) == false
+  end
+
+  test "check daily" do
+    assert Quantum.execute("0 0 * * *", &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 0, w: 1}) == :ok
+    assert Quantum.execute("0 0 * * *", &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 1, w: 1}) == false
+    assert Quantum.execute("@daily",    &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 0, w: 1}) == :ok
+    assert Quantum.execute("@daily",    &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 1, w: 1}) == false
+  end
+
+  test "check weekly" do
+    assert Quantum.execute("0 0 * * 0", &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("0 0 * * 0", &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 1, w: 0}) == false
+    assert Quantum.execute("@weekly",   &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("@weekly",   &ok/0, %{d: {2015, 12, 31 }, h: 0, m: 1, w: 0}) == false
+  end
+
+  test "check monthly" do
+    assert Quantum.execute("0 0 1 * *", &ok/0, %{d: {2015, 12, 1 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("0 0 1 * *", &ok/0, %{d: {2015, 12, 1 }, h: 0, m: 1, w: 0}) == false
+    assert Quantum.execute("@monthly",  &ok/0, %{d: {2015, 12, 1 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("@monthly",  &ok/0, %{d: {2015, 12, 1 }, h: 0, m: 1, w: 0}) == false
+  end
+
+  test "check yearly" do
+    assert Quantum.execute("0 0 1 1 *", &ok/0, %{d: {2016, 1, 1 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("0 0 1 1 *", &ok/0, %{d: {2016, 1, 1 }, h: 0, m: 1, w: 0}) == false
+    assert Quantum.execute("@yearly",   &ok/0, %{d: {2016, 1, 1 }, h: 0, m: 0, w: 0}) == :ok
+    assert Quantum.execute("@yearly",   &ok/0, %{d: {2016, 1, 1 }, h: 0, m: 1, w: 0}) == false
   end
 
   test "parse */5" do
-    Quantum.execute("*/5 * * * *", fn -> IO.puts("OK") end, %{d: {2015, 12, 31 }, h: 12, m: 0, w: 1})
+    assert Quantum.execute("*/5 * * * *", &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 0, w: 1}) == :ok
   end
 
   test "parse 5" do
-    Quantum.execute("5 * * * *", fn -> IO.puts("OK") end, %{d: {2015, 12, 31 }, h: 12, m: 5, w: 1})
+    assert Quantum.execute("5 * * * *",  &ok/0, %{d: {2015, 12, 31 }, h: 12, m: 5, w: 1}) == :ok
   end
   
   test "counter example" do
