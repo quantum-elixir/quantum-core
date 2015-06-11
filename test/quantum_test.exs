@@ -75,4 +75,10 @@ defmodule QuantumTest do
     assert [{spec, job}] == Quantum.jobs
   end
   
+  test "handle_info" do
+    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    state = %{jobs: [], d: d, h: h, m: m, w: nil}
+    assert Quantum.handle_info(:tick, state) == {:noreply, state}
+  end
+
 end
