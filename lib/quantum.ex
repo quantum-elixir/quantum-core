@@ -112,7 +112,7 @@ defmodule Quantum do
     end
   end
   def parse(v, y, [i], min, max) do
-    {x, _} = i |> Integer.parse
+    {x,_} = i |> Integer.parse
     parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x) != 0))
   end
 
