@@ -30,9 +30,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Do not fire on first tick
 
-## [1.0.2] - 2014-08-09
+## [1.0.2] - 2015-04-29
+### Fixed
+- Special expressions are not correctly in all cases
 
-## [1.0.1] - 2014-04-27
+### Removed
+- Functions to add and reset jobs
+
+## [1.0.1] - 2015-04-27
 ### Added
 - Configure cronjobs in config
 - Add application
@@ -52,3 +57,4 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [1.0.3]: https://github.com/c-rack/quantum-elixir/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/c-rack/quantum-elixir/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/c-rack/quantum-elixir/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/c-rack/quantum-elixir/commit/9a58b5f5c02a2de6cde4c579c9f879f1fb49b305
