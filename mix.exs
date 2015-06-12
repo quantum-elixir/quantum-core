@@ -1,17 +1,30 @@
 defmodule Quantum.Mixfile do
   use Mix.Project
 
+  @version "1.2.0"
+
   def project do
     [
       app: :quantum,
-      version: "1.2.0",
-      elixir: "~> 1.0",
       build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
-      deps: [{:excoveralls, "~> 0.3", only: [:dev, :test]}],
-      test_coverage: [tool: ExCoveralls],
+      deps: [
+        {:earmark, "~> 0.1", only: [:dev, :docs]},
+        {:excoveralls, "~> 0.3", only: [:dev, :test]},
+        {:ex_doc, "~> 0.7", only:  [:dev, :docs]}
+      ],
       description: "Cron-like job scheduler for Elixir applications.",
-      package: package
+      docs: [
+        main: "README",
+        readme: "README.md",
+        source_ref: "v#{@version}",
+        source_url: "https://github.com/c-rack/quantum-elixir"
+      ],
+      elixir: "~> 1.0",
+      name: "Quantum",
+      package: package,
+      start_permanent: Mix.env == :prod,
+      test_coverage: [tool: ExCoveralls],
+      version: @version,
     ]
   end
 
