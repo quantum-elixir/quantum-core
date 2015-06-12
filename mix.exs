@@ -36,7 +36,10 @@ defmodule Quantum.Mixfile do
     %{
       contributors: ["Constantin Rack"],
       licenses: ["Apache License 2.0"],
-      links: %{"Github" => "https://github.com/c-rack/quantum-elixir"}
+      links: %{
+        "Docs" => "https://hexdocs.pm/quantum",
+        "Github" => "https://github.com/c-rack/quantum-elixir"
+      }
     }
   end
 
