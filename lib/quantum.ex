@@ -2,18 +2,28 @@ defmodule Quantum do
   use GenServer
   import Process, only: [send_after: 3]
 
+  @typedoc "A function/0 to be called when cron expression matches"
+  @type fun0 :: (() -> Type)
+  @typedoc "A job is defined by a cron expression and a function/0"
+  @type job :: {String.t | Atom, fun0}
+
   @days   ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
   @months ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]  
 
+  @doc false
   def start_link(options \\ []) do
     GenServer.start_link(__MODULE__, %{}, [name: __MODULE__] ++ options)
   end
 
+  @doc "Adds a new job"
+  @spec add_job(String.t, fun0) :: :ok
   def add_job(spec, job) do
     GenServer.call(__MODULE__, {:add_job, spec, job})
   end
 
-  def jobs() do
+  @doc "Returns the list of currently defined jobs"
+  @spec jobs :: [job]
+  def jobs do
     GenServer.call(__MODULE__, :jobs)
   end
 
@@ -25,6 +35,7 @@ defmodule Quantum do
   def handle_call({:add_job, spec, job}, _from, state) do
     {:reply, :ok, %{state | jobs: [{spec, job} | state.jobs]}}
   end
+
   def handle_call(:jobs, _from, state) do
     {:reply, state.jobs, state}
   end
@@ -38,25 +49,43 @@ defmodule Quantum do
   end
   def handle_info(_, state), do: {:noreply, state}
 
+  @doc false
   def execute(e, fun, state) when e |> is_atom do
     execute(e |> Atom.to_string |> String.downcase |> translate, fun, state)
   end
+  @doc false
   def execute("* * * * *", fun, _), do: fun.()
+  @doc false
   def execute("@hourly",   fun, %{m: 0}), do: fun.()
+  @doc false
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()
+  @doc false
   def execute("@daily",    fun, %{m: 0, h: 0}), do: fun.()
+  @doc false
   def execute("0 0 * * *", fun, %{m: 0, h: 0}), do: fun.()
+  @doc false
   def execute("@weekly",   fun, %{m: 0, h: 0, w: 0}), do: fun.()
+  @doc false
   def execute("0 0 * * 0", fun, %{m: 0, h: 0, w: 0}), do: fun.()
+  @doc false
   def execute("@monthly",  fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
+  @doc false
   def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
+  @doc false
   def execute("@yearly",   fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
+  @doc false
   def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
+  @doc false
   def execute("@hourly",   _, _), do: false
+  @doc false
   def execute("@daily",    _, _), do: false
+  @doc false
   def execute("@weekly",   _, _), do: false
+  @doc false
   def execute("@yearly",   _, _), do: false
+  @doc false
   def execute("@monthly",  _, _), do: false
+  @doc false
   def execute(e, fun, state) do
     [m, h, d, n, w] = e |> String.split(" ")
     {_, cur_mon, cur_day} = state.d
@@ -82,27 +111,34 @@ defmodule Quantum do
   defp match([e|t], v, min, max), do: Enum.any?(parse(e, min, max), &(&1 == v)) or match(t, v, min, max)
   defp match(e, v, min, max), do: match(e |> String.split(","), v, min, max)
 
+  @doc false
   def parse([], _, _), do: []
+  @doc false
   def parse(e, min, max) when e |> is_list do
     [h|t] = e
     (parse(h, min, max) ++ parse(t, min, max)) |> :lists.usort
   end
+  @doc false
   def parse("*/" <> _ = e, min, max) do
     [_,i] = e |> String.split("/")
     {x,_} = i |> Integer.parse
     Enum.reject(min..max, &(rem(&1, x) != 0))
   end
+  @doc false
   def parse(e, min, max) do
     [r|i] = e |> String.split("/")
     [x|y] = r |> String.split("-")
     {v,_} = x |> Integer.parse
     parse(v, y, i, min, max) |> Enum.reject(&((&1 < min) or (&1 > max)))
   end
+  @doc false
   def parse(v, [], [], _, _), do: [v]
+  @doc false
   def parse(v, [], [i], _, _) do
     {x,_} = i |> Integer.parse
     [rem(v,x)]
   end
+  @doc false
   def parse(v, [y], [], min, max) do
     {t,_} = y |> Integer.parse
     if v < t do
@@ -111,6 +147,7 @@ defmodule Quantum do
       Enum.to_list(min..t) ++ Enum.to_list(v..max)
     end
   end
+  @doc false
   def parse(v, y, [i], min, max) do
     {x,_} = i |> Integer.parse
     parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x) != 0))
