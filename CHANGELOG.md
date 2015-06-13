@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Quantum.Application does not call Quantum.start_link/1 anymore
 - Moved match logic to separate module Quantum.Matcher
 - Moved parsing logic to separate module Quantum.Parser
+- Moved execution logic to separate module Quantum.Executor
 - Moved translation logic to separate module Quantum.Translator
 
 ### Fixed

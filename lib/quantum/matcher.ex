@@ -1,7 +1,8 @@
 defmodule Quantum.Matcher do
-  import Quantum.Parser
 
   @moduledoc false
+
+  import Quantum.Parser
 
   def match("*", _, _, _) do
     true

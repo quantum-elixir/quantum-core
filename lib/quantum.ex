@@ -1,8 +1,6 @@
 defmodule Quantum do
   use GenServer
   import Process, only: [send_after: 3]
-  import Quantum.Matcher
-  import Quantum.Translator
 
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
@@ -38,59 +36,13 @@ defmodule Quantum do
     {d, h, m} = tick
     if state.d != d, do: state = %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
     state = %{state | h: h, m: m}
-    Enum.each(state.jobs, fn({e, fun}) -> Task.start(__MODULE__, :execute, [e, fun, state]) end)
+    Enum.each(state.jobs, fn({e, fun}) -> execute(e, fun, state) end)
     {:noreply, state}
   end
   def handle_info(_, state), do: {:noreply, state}
 
-  @doc false
-  def execute(e, fun, state) when e |> is_atom do
-    execute(e |> Atom.to_string |> String.downcase |> translate, fun, state)
-  end
-  @doc false
-  def execute("* * * * *", fun, _), do: fun.()
-  @doc false
-  def execute("@hourly",   fun, %{m: 0}), do: fun.()
-  @doc false
-  def execute("0 * * * *", fun, %{m: 0}), do: fun.()
-  @doc false
-  def execute("@daily",    fun, %{m: 0, h: 0}), do: fun.()
-  @doc false
-  def execute("0 0 * * *", fun, %{m: 0, h: 0}), do: fun.()
-  @doc false
-  def execute("@weekly",   fun, %{m: 0, h: 0, w: 0}), do: fun.()
-  @doc false
-  def execute("0 0 * * 0", fun, %{m: 0, h: 0, w: 0}), do: fun.()
-  @doc false
-  def execute("@monthly",  fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
-  @doc false
-  def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
-  @doc false
-  def execute("@yearly",   fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
-  @doc false
-  def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
-  @doc false
-  def execute("@hourly",   _, _), do: false
-  @doc false
-  def execute("@daily",    _, _), do: false
-  @doc false
-  def execute("@weekly",   _, _), do: false
-  @doc false
-  def execute("@yearly",   _, _), do: false
-  @doc false
-  def execute("@monthly",  _, _), do: false
-  @doc false
-  def execute(e, fun, state) do
-    [m, h, d, n, w] = e |> String.split(" ")
-    {_, cur_mon, cur_day} = state.d
-    cond do
-      !match(m, state.m, 0, 59) -> false
-      !match(h, state.h, 0, 24) -> false
-      !match(d, cur_day, 1, 31) -> false
-      !match(n, cur_mon, 1, 12) -> false
-      !match(w, state.w, 0,  6) -> false
-      true                      -> fun.()
-    end
+  defp execute(e, fun, state) do
+    Task.start(Quantum.Executor, :execute, [e, fun, state])
   end
 
   defp tick do
