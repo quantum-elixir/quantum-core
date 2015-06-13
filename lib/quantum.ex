@@ -1,14 +1,12 @@
 defmodule Quantum do
   use GenServer
   import Process, only: [send_after: 3]
+  import Quantum.Translator
 
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
   @typedoc "A job is defined by a cron expression and a function/0"
   @type job :: {String.t | Atom, fun0}
-
-  @days   ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
-  @months ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]  
 
   @doc "Adds a new job"
   @spec add_job(String.t, fun0) :: :ok
@@ -93,13 +91,6 @@ defmodule Quantum do
       true                      -> fun.()
     end
   end
-
-  defp translate(e) do
-    {e,_} = List.foldl(@days,   {e,0}, fn(x, acc) -> translate(acc, x) end)
-    {e,_} = List.foldl(@months, {e,1}, fn(x, acc) -> translate(acc, x) end)
-    e
-  end
-  defp translate({e, i}, term), do: {String.replace(e, term, "#{i}"), i+1}
 
   defp match("*", _, _, _), do: true
   defp match([], _, _, _), do: false

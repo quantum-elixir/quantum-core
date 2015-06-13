@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Quantum.Application does not call Quantum.start_link/1 anymore
+- Moved translation logic to separate module Quantum.Translator
 
 ### Fixed
 - Typos in changelog
