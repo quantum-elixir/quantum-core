@@ -1,7 +1,7 @@
 defmodule Quantum do
   use GenServer
   import Process, only: [send_after: 3]
-  import Quantum.Parser
+  import Quantum.Matcher
   import Quantum.Translator
 
   @typedoc "A function/0 to be called when cron expression matches"
@@ -92,11 +92,6 @@ defmodule Quantum do
       true                      -> fun.()
     end
   end
-
-  defp match("*", _, _, _), do: true
-  defp match([], _, _, _), do: false
-  defp match([e|t], v, min, max), do: Enum.any?(parse(e, min, max), &(&1 == v)) or match(t, v, min, max)
-  defp match(e, v, min, max), do: match(e |> String.split(","), v, min, max)
 
   defp tick do
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
