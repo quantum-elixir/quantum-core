@@ -10,11 +10,6 @@ defmodule Quantum do
   @days   ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
   @months ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]  
 
-  @doc false
-  def start_link(options \\ []) do
-    GenServer.start_link(__MODULE__, %{}, [name: __MODULE__] ++ options)
-  end
-
   @doc "Adds a new job"
   @spec add_job(String.t, fun0) :: :ok
   def add_job(spec, job) do

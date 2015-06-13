@@ -3,8 +3,8 @@ defmodule Quantum.Application do
 
   @moduledoc false
 
-  def start(_, _) do
-    Quantum.start_link
+  def start(_type, _args) do
+    GenServer.start_link(Quantum, %{}, [name: Quantum])
   end
 
 end
