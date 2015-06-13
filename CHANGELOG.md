@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Test for handle_info(:tick_state)
+- Dependencies to generate hexdocs
+- Badge for hexdocs
+- Link to docs in hex package info
+- Type specs and doc annotations
+
+### Changed
+- Quantum.Application does not call Quantum.start_link/1 anymore
+
+### Fixed
+- Typos in changelog
+
+### Removed
+- Quantum.start_link/1
+
 ## [1.2.0] - 2015-06-11
 ### Changed
 - Date is updated in state only if it changed
