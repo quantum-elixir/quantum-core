@@ -53,12 +53,12 @@ defmodule Quantum.ExecutorTest do
   end
   
   test "counter example" do
-    execute("5 * * * *", fn -> IO.puts("FAIL") end, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
+    execute("5 * * * *", &flunk/0, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
   end
 
 
   test "daily" do
-    execute(:"@DAILY", fn -> IO.puts("FAIL") end, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
+    execute(:"@DAILY", &flunk/0, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
   end
 
 end
