@@ -1,6 +1,6 @@
 defmodule Quantum do
+
   use GenServer
-  import Process, only: [send_after: 3]
 
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
@@ -47,7 +47,7 @@ defmodule Quantum do
 
   defp tick do
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
-    send_after(self, :tick, (60 - s) * 1000)
+    Process.send_after(self, :tick, (60 - s) * 1000)
     {d, h, m}
   end
 
