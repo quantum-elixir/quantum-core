@@ -28,10 +28,14 @@ defmodule Quantum.TranslatorTest do
     assert translate("dec") == "12"
   end
   
-  test "translates all occurrencies in a string" do
+  test "translates all occurrences in a string" do
     assert translate("jan,feb,mar,apr,may,jun") == "1,2,3,4,5,6"
     assert translate("jul,aug,sep,oct,nov,dec") == "7,8,9,10,11,12"
     assert translate("sun,mon,tue,wed,thu,fri,sat") == "0,1,2,3,4,5,6"
+  end
+
+  test "translates duplicate occurrences" do
+    assert translate("jan,jan,jan") == "1,1,1"
   end
 
 end

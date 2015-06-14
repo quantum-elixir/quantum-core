@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Changed
 - Function order in Quantum.Matcher
+- Renamed private translate function to do_translate
 
 ## [1.2.1] - 2015-06-13
 ### Added
