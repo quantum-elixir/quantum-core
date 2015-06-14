@@ -13,7 +13,7 @@ To use Quantum in your projects, edit your `mix.exs` file and add Quantum as a d
 
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.2.0"}]
+  [{:quantum, ">= 1.2.1"}]
 end
 ```
 
@@ -46,7 +46,7 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
-## Contribution Process
+## Contribution
 
 This project uses the [C4.1 process](http://rfc.zeromq.org/spec:22) for all code changes.
 
@@ -55,11 +55,13 @@ terms of this contract."
 
 ### tl;dr
 
-1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or [open a new issue](https://github.com/c-rack/quantum-elixir/issues/new) to start a discussion around a feature idea or a bug
-2. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
-3. Write a test which shows that the bug was fixed or that the feature works as expected
-4. Send a pull request
-5. Your pull request is merged and you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
+1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or [open a new issue](https://github.com/c-rack/quantum-elixir/issues/new) to start a discussion around a problem you have found.
+2. Issue names should be in the format "Problem: _description of the problem_".
+3. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
+4. If possible, write a test which shows that the problem was solved. Code coverage must remain at 100%.
+5. Send a pull request.
+6. Pull request names should be in the format "Solution: _description of your solution_"
+7. Your pull request is merged and you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
 
 ## License
 
