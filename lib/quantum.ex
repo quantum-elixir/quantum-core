@@ -21,7 +21,7 @@ defmodule Quantum do
 
   def init(_) do
     tick
-    jobs = Enum.map Application.get_env(:quantum, :cron, []), &convert/1
+    jobs = Application.get_env(:quantum, :cron, []) |> Enum.map &convert/1
     {:ok, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}}
   end
 
@@ -42,6 +42,7 @@ defmodule Quantum do
   end
   def handle_info(_, state), do: {:noreply, state}
 
+  defp convert({e, fun}), do: {convert(e), fun}
   defp convert(e) when e |> is_atom, do: convert e |> Atom.to_string
   defp convert(e), do: e |> String.downcase |> Quantum.Translator.translate
 
