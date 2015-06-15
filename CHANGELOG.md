@@ -9,6 +9,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Function order in Quantum.Matcher
 - Renamed private translate function to do_translate
+- Do not convert and translate cron expressions on every tick
+
+### Fixed
+- Adding a job using Quantum.add_job/2 does not convert to lowercase
+- Adding a job using Quantum.add_job/2 does not translate day/month names
 
 ## [1.2.1] - 2015-06-13
 ### Added

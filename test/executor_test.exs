@@ -60,9 +60,4 @@ defmodule Quantum.ExecutorTest do
     execute("5 * * * *", &flunk/0, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
   end
 
-
-  test "daily" do
-    execute(:"@DAILY", &flunk/0, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
-  end
-
 end

@@ -3,11 +3,7 @@ defmodule Quantum.Executor do
   @moduledoc false
 
   import Quantum.Matcher
-  import Quantum.Translator
 
-  def execute(e, fun, state) when e |> is_atom do
-    execute(e |> Atom.to_string |> String.downcase |> translate, fun, state)
-  end
   def execute("* * * * *", fun, _), do: fun.()
   def execute("@hourly",   fun, %{m: 0}), do: fun.()
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()

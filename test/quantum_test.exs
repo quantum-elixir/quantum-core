@@ -5,7 +5,21 @@ defmodule QuantumTest do
     spec = "1 * * * *"
     job = fn -> :ok end
     :ok = Quantum.add_job(spec, job)
-    assert [{spec, job}] == Quantum.jobs
+    assert Enum.member? Quantum.jobs, {spec, job}
+  end
+
+  test "adding a job at run time with atom expression" do
+    spec = :"@daily"
+    job = fn -> :ok end
+    :ok = Quantum.add_job(spec, job)
+    assert Enum.member? Quantum.jobs, {"@daily", job}
+  end
+
+  test "adding a job at run time with uppercase string" do
+    spec = "@HOURLY"
+    job = fn -> :ok end
+    :ok = Quantum.add_job(spec, job)
+    assert Enum.member? Quantum.jobs, {"@hourly", job}
   end
   
   test "handle_info" do

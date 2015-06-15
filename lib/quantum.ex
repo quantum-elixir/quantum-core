@@ -10,7 +10,7 @@ defmodule Quantum do
   @doc "Adds a new job"
   @spec add_job(String.t, fun0) :: :ok
   def add_job(spec, job) do
-    GenServer.call(__MODULE__, {:add_job, spec, job})
+    GenServer.call(__MODULE__, {:add_job, convert(spec), job})
   end
 
   @doc "Returns the list of currently defined jobs"
@@ -21,7 +21,8 @@ defmodule Quantum do
 
   def init(_) do
     tick
-    {:ok, %{jobs: Application.get_env(:quantum, :cron, []), d: nil, h: nil, m: nil, w: nil}}
+    jobs = Enum.map Application.get_env(:quantum, :cron, []), &convert/1
+    {:ok, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}}
   end
 
   def handle_call({:add_job, spec, job}, _from, state) do
@@ -40,6 +41,9 @@ defmodule Quantum do
     {:noreply, state}
   end
   def handle_info(_, state), do: {:noreply, state}
+
+  defp convert(e) when e |> is_atom, do: convert e |> Atom.to_string
+  defp convert(e), do: e |> String.downcase |> Quantum.Translator.translate
 
   defp execute(e, fun, state) do
     Task.start(Quantum.Executor, :execute, [e, fun, state])
