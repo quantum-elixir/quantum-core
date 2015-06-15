@@ -1,7 +1,7 @@
 defmodule Quantum.Mixfile do
   use Mix.Project
 
-  @version "1.2.2"
+  @version "1.2.3"
 
   def project do
     [
