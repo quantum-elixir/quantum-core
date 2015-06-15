@@ -21,6 +21,8 @@ defmodule Quantum.ExecutorTest do
     assert execute("0 0 * * *", &ok/0, %{d: {2015, 12, 31}, h: 0, m: 1, w: 1}) == false
     assert execute("@daily",    &ok/0, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1}) == :ok
     assert execute("@daily",    &ok/0, %{d: {2015, 12, 31}, h: 0, m: 1, w: 1}) == false
+    assert execute("@midnight", &ok/0, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1}) == :ok
+    assert execute("@midnight", &ok/0, %{d: {2015, 12, 31}, h: 0, m: 1, w: 1}) == false
   end
 
   test "check weekly" do
@@ -40,6 +42,8 @@ defmodule Quantum.ExecutorTest do
   test "check yearly" do
     assert execute("0 0 1 1 *", &ok/0, %{d: {2016, 1, 1}, h: 0, m: 0, w: 0}) == :ok
     assert execute("0 0 1 1 *", &ok/0, %{d: {2016, 1, 1}, h: 0, m: 1, w: 0}) == false
+    assert execute("@annually", &ok/0, %{d: {2016, 1, 1}, h: 0, m: 0, w: 0}) == :ok
+    assert execute("@annually", &ok/0, %{d: {2016, 1, 1}, h: 0, m: 1, w: 0}) == false
     assert execute("@yearly",   &ok/0, %{d: {2016, 1, 1}, h: 0, m: 0, w: 0}) == :ok
     assert execute("@yearly",   &ok/0, %{d: {2016, 1, 1}, h: 0, m: 1, w: 0}) == false
   end

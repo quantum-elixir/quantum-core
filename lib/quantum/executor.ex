@@ -12,16 +12,20 @@ defmodule Quantum.Executor do
   def execute("@hourly",   fun, %{m: 0}), do: fun.()
   def execute("0 * * * *", fun, %{m: 0}), do: fun.()
   def execute("@daily",    fun, %{m: 0, h: 0}), do: fun.()
+  def execute("@midnight", fun, %{m: 0, h: 0}), do: fun.()
   def execute("0 0 * * *", fun, %{m: 0, h: 0}), do: fun.()
   def execute("@weekly",   fun, %{m: 0, h: 0, w: 0}), do: fun.()
   def execute("0 0 * * 0", fun, %{m: 0, h: 0, w: 0}), do: fun.()
   def execute("@monthly",  fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
   def execute("0 0 1 * *", fun, %{m: 0, h: 0, d: {_, _, 1}}), do: fun.()
+  def execute("@annually", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute("@yearly",   fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute("0 0 1 1 *", fun, %{m: 0, h: 0, d: {_, 1, 1}}), do: fun.()
   def execute("@hourly",   _, _), do: false
   def execute("@daily",    _, _), do: false
+  def execute("@midnight", _, _), do: false
   def execute("@weekly",   _, _), do: false
+  def execute("@annually", _, _), do: false
   def execute("@yearly",   _, _), do: false
   def execute("@monthly",  _, _), do: false
   def execute(e, fun, state) do
