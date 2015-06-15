@@ -21,7 +21,9 @@ defmodule Quantum do
 
   def init(_) do
     tick
-    jobs = Application.get_env(:quantum, :cron, []) |> Enum.map &convert/1
+    jobs = Application.get_env(:quantum, :cron, [])
+      |> Enum.map(&convert/1)
+      |> Enum.filter(&reboot/1)
     {:ok, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}}
   end
 
@@ -49,6 +51,12 @@ defmodule Quantum do
   defp execute(e, fun, state) do
     Task.start(Quantum.Executor, :execute, [e, fun, state])
   end
+
+  defp reboot({"@reboot", fun}) do
+    Task.start(fun)
+    false
+  end
+  defp reboot(_), do: true
 
   defp tick do
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)

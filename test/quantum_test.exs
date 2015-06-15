@@ -40,4 +40,15 @@ defmodule QuantumTest do
     :ok = Agent.stop(pid)
   end
 
+  test "reboot" do
+    {:ok, pid} = Agent.start_link(fn -> 0 end)
+    fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
+    Application.put_env(:quantum, :cron, [{:"@reboot", fun}])
+    {:ok, state} = Quantum.init(nil)
+    assert state.jobs == []
+    :timer.sleep(500)
+    assert Agent.get(pid, fn(n) -> n end) == 1
+    :ok = Agent.stop(pid)
+  end
+
 end
