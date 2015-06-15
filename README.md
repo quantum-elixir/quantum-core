@@ -46,6 +46,33 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
+### Crontab format
+
+    field          allowed values
+    -----          --------------
+    minute         0-59
+    hour           0-23
+    day of month   1-31
+    month          1-12 (or names)
+    day of week    0-7 (0 is Sunday, or use names)
+
+Names can also be used for the `month` and `day of week` fields.
+Use the first three letters of the particular day or month (case does not matter).
+
+### Special expressions
+
+Instead of the first five fields, one of eight special strings may appear:
+
+    string      description
+    ------      -----------
+    @annually   Run once a year, same as "0 0 1 1 *" or @yearly
+    @daily      Run once a day, same as "0 0 * * *" or @midnight
+    @hourly     Run once an hour, same as "0 * * * *"
+    @midnight   Run once a day, same as "0 0 * * *" or @daily
+    @reboot     Run once, at startup
+    @weekly     Run once a week, same as "0 0 * * 0"
+    @yearly     Run once a year, same as "0 0 1 1 *" or @annually
+
 ## Contribution
 
 This project uses the [C4.1 process](http://rfc.zeromq.org/spec:22) for all code changes.
