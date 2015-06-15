@@ -54,7 +54,7 @@ Quantum.add_job("1 * * * *", fn -> :ok end)
     hour           0-23
     day of month   1-31
     month          1-12 (or names)
-    day of week    0-7 (0 is Sunday, or use names)
+    day of week    0-6 (0 is Sunday, or use names)
 
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
