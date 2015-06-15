@@ -61,7 +61,7 @@ Use the first three letters of the particular day or month (case does not matter
 
 ### Special expressions
 
-Instead of the first five fields, one of eight special strings may appear:
+Instead of the first five fields, one of these special strings may be used:
 
     string      description
     ------      -----------
@@ -69,6 +69,7 @@ Instead of the first five fields, one of eight special strings may appear:
     @daily      Run once a day, same as "0 0 * * *" or @midnight
     @hourly     Run once an hour, same as "0 * * * *"
     @midnight   Run once a day, same as "0 0 * * *" or @daily
+    @monthly    Run once a month, same as "0 0 1 * *"
     @reboot     Run once, at startup
     @weekly     Run once a week, same as "0 0 * * 0"
     @yearly     Run once a year, same as "0 0 1 1 *" or @annually
