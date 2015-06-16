@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Unnecessary guard clause
 - Unused parse/3 functions
+- Unused call to String.split on patterns starting with "*/"
 
 ## [1.2.3] - 2015-06-15
 ### Added

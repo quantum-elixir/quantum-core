@@ -2,8 +2,7 @@ defmodule Quantum.Parser do
 
   @moduledoc false
 
-  def parse("*/" <> _ = e, min, max) do
-    [_,i] = e |> String.split("/")
+  def parse("*/" <> i, min, max) do
     {x,_} = i |> Integer.parse
     Enum.reject(min..max, &(rem(&1, x) != 0))
   end
