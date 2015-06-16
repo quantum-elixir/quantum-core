@@ -3,8 +3,7 @@ defmodule Quantum.Parser do
   @moduledoc false
 
   def parse([], _, _), do: []
-  def parse(e, min, max) when e |> is_list do
-    [h|t] = e
+  def parse([h|t], min, max) do
     (parse(h, min, max) ++ parse(t, min, max)) |> :lists.usort
   end
   def parse("*/" <> _ = e, min, max) do
