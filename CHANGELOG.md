@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Renamed parse/5 functions to do_parse/5 and made them private
+
 ### Removed
 - Unnecessary guard clause
 - Unused parse/3 functions
