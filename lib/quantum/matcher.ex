@@ -2,8 +2,6 @@ defmodule Quantum.Matcher do
 
   @moduledoc false
 
-  import Quantum.Parser
-
   def match("*", _, _, _) do
     true
   end
@@ -17,7 +15,7 @@ defmodule Quantum.Matcher do
   end
 
   defp do_match([e|t], v, min, max) do
-    Enum.any?(parse(e, min, max), &(&1 == v)) or do_match(t, v, min, max)
+    Enum.any?(Quantum.Parser.parse(e, min, max), &(&1 == v)) or do_match(t, v, min, max)
   end
 
 end
