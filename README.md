@@ -88,7 +88,7 @@ terms of this contract."
 3. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
 4. If possible, write a test which shows that the problem was solved.
 5. Send a pull request.
-6. Pull request SHALL be named as "Solution: _description of your solution_"
+6. Pull requests SHALL be named as "Solution: _description of your solution_"
 7. Your pull request is merged and you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
 
 ## License
