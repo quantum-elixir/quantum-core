@@ -4,13 +4,14 @@ defmodule Quantum do
 
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
+
   @typedoc "A job is defined by a cron expression and a function/0"
   @type job :: {String.t | Atom, fun0}
 
   @doc "Adds a new job"
   @spec add_job(String.t, fun0) :: :ok
-  def add_job(spec, job) do
-    GenServer.call(__MODULE__, {:add_job, convert(spec), job})
+  def add_job(expression, fun) do
+    GenServer.call(__MODULE__, {:add_job, {convert(expression), fun}})
   end
 
   @doc "Returns the list of currently defined jobs"
@@ -27,8 +28,8 @@ defmodule Quantum do
     {:ok, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}}
   end
 
-  def handle_call({:add_job, spec, job}, _from, state) do
-    {:reply, :ok, %{state | jobs: [{spec, job} | state.jobs]}}
+  def handle_call({:add_job, job}, _from, state) do
+    {:reply, :ok, %{state | jobs: [job | state.jobs]}}
   end
 
   def handle_call(:jobs, _from, state) do

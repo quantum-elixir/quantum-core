@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
+- Always use `{expression, fun}` for jobs
 
 ### Removed
 - Unnecessary guard clause
