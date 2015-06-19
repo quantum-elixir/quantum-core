@@ -11,7 +11,7 @@ defmodule Quantum.Parser do
     [r|i] = e |> String.split("/")
     [x|y] = r |> String.split("-")
     {v,_} = x |> Integer.parse
-    do_parse(v, y, i, min, max) |> Enum.reject(&((&1 < min) or (&1 > max)))
+    do_parse(v, y, i, min, max) |> Enum.filter &(&1 in min..max)
   end
 
   defp do_parse(v, [], [], _, _), do: [v]
