@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
 - Always use `{expression, fun}` for jobs
+- Moved duplicate code to new private function `only_multiplier_of/2`
 
 ### Removed
 - Unnecessary guard clause

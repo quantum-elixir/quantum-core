@@ -3,8 +3,7 @@ defmodule Quantum.Parser do
   @moduledoc false
 
   def parse("*/" <> i, min, max) do
-    {x,_} = i |> Integer.parse
-    Enum.reject(min..max, &(rem(&1, x) != 0))
+    min..max |> only_multiplier_of i
   end
 
   def parse(e, min, max) do
@@ -31,8 +30,12 @@ defmodule Quantum.Parser do
   end
 
   defp do_parse(v, y, [i], min, max) do
-    {x,_} = i |> Integer.parse
-    do_parse(v, y, [], min, max) |> Enum.reject(&(rem(&1, x) != 0))
+    do_parse(v, y, [], min, max) |> only_multiplier_of i
+  end
+
+  defp only_multiplier_of(coll, i) do
+    x = i |> String.to_integer
+    coll |> Enum.filter &(rem(&1, x) == 0)
   end
 
 end
