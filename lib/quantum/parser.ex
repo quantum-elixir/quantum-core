@@ -9,19 +9,18 @@ defmodule Quantum.Parser do
   def parse(e, min, max) do
     [r|i] = e |> String.split("/")
     [x|y] = r |> String.split("-")
-    {v,_} = x |> Integer.parse
+    v     = x |> String.to_integer
     do_parse(v, y, i, min, max) |> Enum.filter &(&1 in min..max)
   end
 
   defp do_parse(v, [], [], _, _), do: [v]
 
   defp do_parse(v, [], [i], _, _) do
-    {x,_} = i |> Integer.parse
-    [rem(v,x)]
+    [rem(v, i |> String.to_integer)]
   end
 
   defp do_parse(v, [y], [], min, max) do
-    {t,_} = y |> Integer.parse
+    t = y |> String.to_integer
     if v < t do
       Enum.to_list(v..t)
     else
