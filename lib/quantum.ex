@@ -40,7 +40,7 @@ defmodule Quantum do
     {d, h, m} = tick
     if state.d != d, do: state = %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
     state = %{state | h: h, m: m}
-    Enum.each(state.jobs, fn({e, fun}) -> execute(e, fun, state) end)
+    Enum.each state.jobs, &(Task.start Quantum.Executor, :execute, [&1, state])
     {:noreply, state}
   end
   def handle_info(_, state), do: {:noreply, state}
@@ -48,10 +48,6 @@ defmodule Quantum do
   defp convert({e, fun}), do: {convert(e), fun}
   defp convert(e) when e |> is_atom, do: convert e |> Atom.to_string
   defp convert(e), do: e |> String.downcase |> Quantum.Translator.translate
-
-  defp execute(e, fun, state) do
-    Task.start(Quantum.Executor, :execute, [e, fun, state])
-  end
 
   defp reboot({"@reboot", fun}), do: Task.start(fun) && false
   defp reboot(_), do: true
