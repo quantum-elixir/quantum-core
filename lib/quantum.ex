@@ -53,10 +53,7 @@ defmodule Quantum do
     Task.start(Quantum.Executor, :execute, [e, fun, state])
   end
 
-  defp reboot({"@reboot", fun}) do
-    Task.start(fun)
-    false
-  end
+  defp reboot({"@reboot", fun}), do: Task.start(fun) && false
   defp reboot(_), do: true
 
   defp tick do
