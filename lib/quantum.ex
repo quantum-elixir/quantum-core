@@ -20,12 +20,9 @@ defmodule Quantum do
     GenServer.call(__MODULE__, :jobs)
   end
 
-  def init(_) do
+  def init(state) do
     tick
-    jobs = Application.get_env(:quantum, :cron, [])
-      |> Enum.map(&Quantum.Normalizer.normalize/1)
-      |> Enum.filter(&reboot/1)
-    {:ok, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}}
+    {:ok, %{state | jobs: state.jobs |> Enum.filter(&reboot/1)}}
   end
 
   def handle_call({:add_job, job}, _from, state) do

@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Always use `{expression, fun}` for jobs
 - Moved duplicate code to new private function `only_multiplier_of/2`
 - Moved code to normalize jobs to separate module
+- Correctly use passed state in Quantum.init/1 function
 
 ### Removed
 - Unnecessary guard clause
