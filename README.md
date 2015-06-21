@@ -31,12 +31,14 @@ Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
 config :quantum, cron: [
-    "* * * * *": fn -> IO.puts("every minute") end,
-    "*/2 * * * *": fn -> IO.puts("every two minutes") end,
+    # Every minute
+    "* * * * *":      &Heartbeat.send/0,
+    # Every 15 minutes
+    "*/15 * * * *":   fn -> System.cmd("rm", ["/tmp/tmp_"] end,
     # Runs on 18, 20, 22, 0, 2, 4, 6:
-    "0 18-6/2 * * *": fn -> IO.puts("it's late") end,
+    "0 18-6/2 * * *": fn -> :mnesia.backup('/var/backup/mnesia') end,
     # Runs every midnight:
-    "@daily": &backup/0
+    "@daily":         &Backup.backup/0
 ]
 ```
 
