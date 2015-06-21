@@ -2,16 +2,19 @@ defmodule Quantum do
 
   use GenServer
 
+  @typedoc "A cron expression"
+  @type expr :: String.t | Atom
+
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
 
   @typedoc "A job is defined by a cron expression and a function/0"
-  @type job :: {String.t | Atom, fun0}
+  @type job :: {expr, fun0}
 
   @doc "Adds a new job"
-  @spec add_job(String.t, fun0) :: :ok
-  def add_job(expression, fun) do
-    GenServer.call(__MODULE__, {:add_job, Quantum.Normalizer.normalize({expression, fun})})
+  @spec add_job(expr, fun0) :: :ok
+  def add_job(e, fun) do
+    GenServer.call(__MODULE__, {:add_job, Quantum.Normalizer.normalize({e, fun})})
   end
 
   @doc "Returns the list of currently defined jobs"
