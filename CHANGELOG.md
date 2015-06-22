@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Moved duplicate code to new private function `only_multiplier_of/2`
 - Moved code to normalize jobs to separate module
 - Correctly use passed state in Quantum.init/1 function
+- Moved reboot logic to executor.
 
 ### Removed
 - Unnecessary guard clause

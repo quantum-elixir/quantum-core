@@ -14,39 +14,35 @@ defmodule Quantum do
   @doc "Adds a new job"
   @spec add_job(expr, fun0) :: :ok
   def add_job(e, fun) do
-    GenServer.call(__MODULE__, {:add_job, Quantum.Normalizer.normalize({e, fun})})
+    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({e, fun})})
   end
 
   @doc "Returns the list of currently defined jobs"
   @spec jobs :: [job]
   def jobs do
-    GenServer.call(__MODULE__, :jobs)
+    GenServer.call(Quantum, :jobs)
   end
 
-  def init(state) do
+  def init(s) do
     tick
-    {:ok, %{state | jobs: state.jobs |> Enum.filter(&reboot/1)}}
+    {:ok, %{s | jobs: run(%{s | r: 1}), r: 0}}
   end
 
-  def handle_call({:add_job, job}, _from, state) do
-    {:reply, :ok, %{state | jobs: [job | state.jobs]}}
-  end
+  def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
+  def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
 
-  def handle_call(:jobs, _from, state) do
-    {:reply, state.jobs, state}
-  end
-
-  def handle_info(:tick, state) do
+  def handle_info(:tick, s) do
     {d, h, m} = tick
-    if state.d != d, do: state = %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
-    state = %{state | h: h, m: m}
-    Enum.each state.jobs, &(Task.start Quantum.Executor, :execute, [&1, state])
-    {:noreply, state}
+    if s.d != d, do: s = %{s | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
+    s = %{s | h: h, m: m}
+    {:noreply, %{s | jobs: run(s)}}
   end
-  def handle_info(_, state), do: {:noreply, state}
+  def handle_info(_, s), do: {:noreply, s}
 
-  defp reboot({"@reboot", fun}), do: Task.start(fun) && false
-  defp reboot(_), do: true
+  defp run(s) do
+    Enum.each s.jobs, &(Task.start Quantum.Executor, :execute, [&1, s])
+    s.jobs
+  end
 
   defp tick do
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)

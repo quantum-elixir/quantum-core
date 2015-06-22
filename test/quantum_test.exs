@@ -24,7 +24,7 @@ defmodule QuantumTest do
   
   test "handle_info" do
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
-    state = %{jobs: [], d: d, h: h, m: m, w: nil}
+    state = %{jobs: [], d: d, h: h, m: m, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state) == {:noreply, state}
   end
   
@@ -32,8 +32,8 @@ defmodule QuantumTest do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
-    state1 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m - 1, w: nil}
-    state2 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m, w: nil}
+    state1 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state2 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 1
@@ -43,8 +43,8 @@ defmodule QuantumTest do
   test "reboot" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
-    {:ok, state} = Quantum.init(%{jobs: [{"@reboot", fun}], d: nil, h: nil, m: nil, w: nil})
-    assert state.jobs == []
+    {:ok, state} = Quantum.init(%{jobs: [{"@reboot", fun}], d: nil, h: nil, m: nil, w: nil, r: nil})
+    assert state.jobs == [{"@reboot", fun}]
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 1
     :ok = Agent.stop(pid)

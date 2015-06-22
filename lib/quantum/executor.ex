@@ -4,6 +4,8 @@ defmodule Quantum.Executor do
 
   import Quantum.Matcher
 
+  def execute({"@reboot",   fun}, %{r: 1}), do: fun.()
+  def execute(_,                  %{r: 1}), do: false
   def execute({"* * * * *", fun}, _), do: fun.()
   def execute({"@hourly",   fun}, %{m: 0}), do: fun.()
   def execute({"0 * * * *", fun}, %{m: 0}), do: fun.()

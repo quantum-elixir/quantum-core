@@ -6,7 +6,8 @@ defmodule Quantum.Application do
 
   def start(_type, _args) do
     jobs = Application.get_env(:quantum, :cron, []) |> Enum.map(&Quantum.Normalizer.normalize/1)
-    GenServer.start_link(Quantum, %{jobs: jobs, d: nil, h: nil, m: nil, w: nil}, [name: Quantum])
+    state = %{jobs: jobs, d: nil, h: nil, m: nil, w: nil, r: nil}
+    GenServer.start_link(Quantum, state, [name: Quantum])
   end
 
 end
