@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.2.4] - 2015-06-22
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
 - Always use `{expression, fun}` for jobs
@@ -105,7 +107,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...HEAD
+[1.2.4]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/c-rack/quantum-elixir/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/c-rack/quantum-elixir/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/c-rack/quantum-elixir/compare/v1.2.0...v1.2.1
