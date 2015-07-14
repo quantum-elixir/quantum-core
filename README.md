@@ -62,6 +62,10 @@ Quantum.add_job("1 * * * *", fn -> :ok end)
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
 
+*Note:* all times are defined in _UTC_ and not in local time. Make sure you
+remember that when you run in your dev environment and wonder why your
+crons are not firing.
+
 ### Special expressions
 
 Instead of the first five fields, one of these special strings may be used:
