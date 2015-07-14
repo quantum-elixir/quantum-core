@@ -3,7 +3,7 @@ defmodule Quantum.ExecutorTest do
 
   import Quantum.Executor
 
-  defp ok, do: :ok
+  def ok, do: :ok
 
   test "check minutely" do
     assert execute({"* * * * *", &ok/0}, %{}) == :ok
@@ -55,9 +55,13 @@ defmodule Quantum.ExecutorTest do
   test "parse 5" do
     assert execute({"5 * * * *",  &ok/0}, %{d: {2015, 12, 31}, h: 12, m: 5, w: 1}) == :ok
   end
-  
+
   test "counter example" do
     execute({"5 * * * *", &flunk/0}, %{d: {2015, 12, 31}, h: 12, m: 0, w: 1})
+  end
+
+  test "function as tuple" do
+    assert execute({"* * * * *", {__MODULE__, :ok}}, %{}) == :ok
   end
 
 end
