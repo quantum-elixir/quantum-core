@@ -43,6 +43,14 @@ config :quantum, cron: [
 ]
 ```
 
+Or you can use cron-like format (useful with conform/exrm):
+```elixir
+config :quantum, cron: [
+    # Every minute
+    "* * * * * MyApp.MyModule.my_method"
+]
+```
+
 If you want to add jobs on runtime, this is possible, too:
 
 ```elixir
