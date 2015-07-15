@@ -81,7 +81,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.1.0] - 2015-05-28
 ### Added
-- Add ability to schedule jobs at runtime and ability to view jobs
+- Add ability to schedule jobs at runtime and ability to view jobs ([Dan Swain](https://github.com/dantswain))
 
 ### Changed
 - Relax Elixir version

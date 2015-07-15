@@ -36,6 +36,7 @@ defmodule Quantum.Mixfile do
     %{
       contributors: [
         "Constantin Rack",
+        "Dan Swain",
         "Lenz Gschwendtner",
         "Rodion Vshevtsov"
         ],
