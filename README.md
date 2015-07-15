@@ -33,13 +33,21 @@ Configure your cronjobs in your `config/config.exs` like this:
 ```elixir
 config :quantum, cron: [
     # Every minute
-    "* * * * *":      &Heartbeat.send/0,
+    "* * * * *":      {"Heartbeat", :send},
     # Every 15 minutes
     "*/15 * * * *":   fn -> System.cmd("rm", ["/tmp/tmp_"] end,
     # Runs on 18, 20, 22, 0, 2, 4, 6:
     "0 18-6/2 * * *": fn -> :mnesia.backup('/var/backup/mnesia') end,
     # Runs every midnight:
     "@daily":         &Backup.backup/0
+]
+```
+
+Or you can use cron-like format (useful with conform/exrm):
+```elixir
+config :quantum, cron: [
+    # Every minute
+    "* * * * * MyApp.MyModule.my_method"
 ]
 ```
 
