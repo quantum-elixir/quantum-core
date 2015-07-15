@@ -73,7 +73,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Intervals on ranges are not correctly parsed
-- Hour constraints are not correct
+- Hour constraints are not correct ([Lenz Gschwendtner](https://github.com/norbu09))
 - There is no changelog
 - Code coverage is low
 - Explicit variables are not needed
