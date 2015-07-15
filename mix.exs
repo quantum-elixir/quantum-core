@@ -34,7 +34,11 @@ defmodule Quantum.Mixfile do
 
   defp package do
     %{
-      contributors: ["Constantin Rack"],
+      contributors: [
+        "Constantin Rack",
+        "Lenz Gschwendtner",
+        "Rodion Vshevtsov"
+        ],
       licenses: ["Apache License 2.0"],
       links: %{
         "Changelog" => "https://github.com/c-rack/quantum-elixir/blob/master/CHANGELOG.md",
