@@ -4,6 +4,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2015-07-15
+
+## Added
+- Allow cron-like job formatting (* * * * * MyApp.MyModule.my_method) (@alPacino)
+- Allow defining functions as tuple ({"Module", :method}) in config (@alPacino)
+- Note about UTC (@norbu09)
+
 ## [1.2.4] - 2015-06-22
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
@@ -107,7 +114,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...v1.3.0
 [1.2.4]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/c-rack/quantum-elixir/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/c-rack/quantum-elixir/compare/v1.2.1...v1.2.2
