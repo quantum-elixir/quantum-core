@@ -7,9 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.3.0] - 2015-07-15
 
 ## Added
-- Allow cron-like job formatting (* * * * * MyApp.MyModule.my_method) (@alPacino)
-- Allow defining functions as tuple ({"Module", :method}) in config (@alPacino)
-- Note about UTC (@norbu09)
+- Allow cron-like job formatting (`"* * * * * MyApp.MyModule.my_method"`) ([Rodion Vshevtsov](https://github.com/alPacino))
+- Allow defining functions as tuple (`{"Module", :method}`) in config ([Rodion Vshevtsov](https://github.com/alPacino))
+- Note about UTC ([Lenz Gschwendtner](https://github.com/norbu09))
 
 ## [1.2.4] - 2015-06-22
 ### Changed
