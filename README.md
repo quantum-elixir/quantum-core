@@ -43,7 +43,25 @@ config :quantum, cron: [
 ]
 ```
 
-Or you can use cron-like format (useful with conform/exrm):
+or like this:
+
+```elixir
+config :quantum, cron: [
+    # Every minute
+    "* * * * *": {MyApp.MyModule, :my_method}
+]
+```
+
+or you can provide module as a string:
+
+```elixir
+config :quantum, cron: [
+    # Every minute
+    "* * * * *": {"MyApp.MyModule", :my_method}
+]
+```
+
+Or even use cron-like format (useful with conform/exrm/edeliver):
 ```elixir
 config :quantum, cron: [
     # Every minute
