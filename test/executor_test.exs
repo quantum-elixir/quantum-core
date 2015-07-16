@@ -62,6 +62,7 @@ defmodule Quantum.ExecutorTest do
 
   test "function as tuple" do
     assert execute({"* * * * *", {__MODULE__, :ok}}, %{}) == :ok
+    assert execute({"* * * * *", {"Quantum.ExecutorTest", :ok}}, %{}) == :ok
   end
 
 end
