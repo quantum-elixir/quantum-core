@@ -61,7 +61,10 @@ config :quantum, cron: [
 ]
 ```
 
-Or even use cron-like format (useful with conform/exrm/edeliver):
+Or even use cron-like format (useful with
+[conform](https://github.com/bitwalker/conform) /
+[exrm](https://github.com/bitwalker/exrm) /
+[edeliver](https://github.com/boldpoker/edeliver)):
 ```elixir
 config :quantum, cron: [
     # Every minute
