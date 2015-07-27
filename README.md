@@ -78,6 +78,20 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
+## Timezone
+
+Please note that Quantum uses **UTC timezone** and not local timezone by default.
+
+To use local timezone, add the following `timezone` option to your configuration:
+
+```elixir
+config :quantum,
+  cron: [
+    # Your cronjobs
+  ],
+  timezone: :local
+```
+
 ### Crontab format
 
 | Field        | Allowed values
@@ -90,10 +104,6 @@ Quantum.add_job("1 * * * *", fn -> :ok end)
 
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
-
-*Note:* all times are defined in _UTC_ and not in local time. Make sure you
-remember that when you run in your dev environment and wonder why your
-crons are not firing.
 
 ### Special expressions
 
