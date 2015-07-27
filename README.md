@@ -14,7 +14,7 @@ To use Quantum in your projects, edit your `mix.exs` file and add Quantum as a d
 
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.3.0"}]
+  [{:quantum, ">= 1.3.1"}]
 end
 ```
 
