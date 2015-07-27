@@ -78,7 +78,7 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
-## Timezone
+### Timezone
 
 Please note that Quantum uses **UTC timezone** and not local timezone by default.
 
