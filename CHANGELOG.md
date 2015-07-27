@@ -4,9 +4,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2015-07-27
+### Added
+- Added contributors to changelog and project description
+- Option to use local timezone instead of UTC.
+
+### Changed
+- Tables in README use markdown format
+
 ## [1.3.0] - 2015-07-15
 
-## Added
+### Added
 - Allow cron-like job formatting (`"* * * * * MyApp.MyModule.my_method"`) ([Rodion Vshevtsov](https://github.com/alPacino))
 - Allow defining functions as tuple (`{"Module", :method}`) in config ([Rodion Vshevtsov](https://github.com/alPacino))
 - Note about UTC ([Lenz Gschwendtner](https://github.com/norbu09))
@@ -114,7 +122,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...v1.3.0
 [1.2.4]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/c-rack/quantum-elixir/compare/v1.2.2...v1.2.3
