@@ -44,7 +44,7 @@ defmodule Quantum.Mixfile do
       links: %{
         "Changelog" => "https://github.com/c-rack/quantum-elixir/blob/master/CHANGELOG.md",
         "Docs" => "https://hexdocs.pm/quantum",
-        "Github" => "https://github.com/c-rack/quantum-elixir"
+        "GitHub" => "https://github.com/c-rack/quantum-elixir"
       }
     }
   end
