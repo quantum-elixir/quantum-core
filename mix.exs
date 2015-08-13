@@ -1,7 +1,7 @@
 defmodule Quantum.Mixfile do
   use Mix.Project
 
-  @version "1.2.4"
+  @version "1.3.1"
 
   def project do
     [
@@ -34,12 +34,17 @@ defmodule Quantum.Mixfile do
 
   defp package do
     %{
-      contributors: ["Constantin Rack"],
+      contributors: [
+        "Constantin Rack",
+        "Dan Swain",
+        "Lenz Gschwendtner",
+        "Rodion Vshevtsov"
+        ],
       licenses: ["Apache License 2.0"],
       links: %{
         "Changelog" => "https://github.com/c-rack/quantum-elixir/blob/master/CHANGELOG.md",
         "Docs" => "https://hexdocs.pm/quantum",
-        "Github" => "https://github.com/c-rack/quantum-elixir"
+        "GitHub" => "https://github.com/c-rack/quantum-elixir"
       }
     }
   end

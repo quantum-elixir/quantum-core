@@ -48,4 +48,5 @@ defmodule Quantum.Executor do
   end
 
   defp execute_fun(fun), do: fun.()
+
 end

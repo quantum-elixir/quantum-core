@@ -14,7 +14,7 @@ To use Quantum in your projects, edit your `mix.exs` file and add Quantum as a d
 
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.2.4"}]
+  [{:quantum, ">= 1.3.1"}]
 end
 ```
 
@@ -61,7 +61,10 @@ config :quantum, cron: [
 ]
 ```
 
-Or even use cron-like format (useful with conform/exrm/edeliver):
+Or even use cron-like format (useful with
+[conform](https://github.com/bitwalker/conform) /
+[exrm](https://github.com/bitwalker/exrm) /
+[edeliver](https://github.com/boldpoker/edeliver)):
 ```elixir
 config :quantum, cron: [
     # Every minute
@@ -75,15 +78,29 @@ If you want to add jobs on runtime, this is possible, too:
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
 
+### Timezone
+
+Please note that Quantum uses **UTC timezone** and not local timezone by default.
+
+To use local timezone, add the following `timezone` option to your configuration:
+
+```elixir
+config :quantum,
+  cron: [
+    # Your cronjobs
+  ],
+  timezone: :local
+```
+
 ### Crontab format
 
-    field          allowed values
-    -----          --------------
-    minute         0-59
-    hour           0-23
-    day of month   1-31
-    month          1-12 (or names)
-    day of week    0-6 (0 is Sunday, or use names)
+| Field        | Allowed values
+| ------------ | --------------
+| minute       | 0-59
+| hour         | 0-23
+| day of month | 1-31
+| month        | 1-12 (or names)
+| day of week  | 0-6 (0 is Sunday, or use names)
 
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
@@ -92,16 +109,16 @@ Use the first three letters of the particular day or month (case does not matter
 
 Instead of the first five fields, one of these special strings may be used:
 
-    string      description
-    ------      -----------
-    @annually   Run once a year, same as "0 0 1 1 *" or @yearly
-    @daily      Run once a day, same as "0 0 * * *" or @midnight
-    @hourly     Run once an hour, same as "0 * * * *"
-    @midnight   Run once a day, same as "0 0 * * *" or @daily
-    @monthly    Run once a month, same as "0 0 1 * *"
-    @reboot     Run once, at startup
-    @weekly     Run once a week, same as "0 0 * * 0"
-    @yearly     Run once a year, same as "0 0 1 1 *" or @annually
+| String      | Description
+| ----------- | -----------
+| `@annually` | Run once a year, same as `"0 0 1 1 *"` or `@yearly`
+| `@daily`    | Run once a day, same as `"0 0 * * *"` or `@midnight`
+| `@hourly`   | Run once an hour, same as `"0 * * * *"`
+| `@midnight` | Run once a day, same as `"0 0 * * *"` or `@daily`
+| `@monthly`  | Run once a month, same as `"0 0 1 * *"`
+| `@reboot`   | Run once, at startup
+| `@weekly`   | Run once a week, same as `"0 0 * * 0"`
+| `@yearly`   | Run once a year, same as `"0 0 1 1 *"` or `@annually`
 
 ## Contribution
 

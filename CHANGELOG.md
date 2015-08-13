@@ -4,6 +4,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2015-07-27
+### Added
+- Added contributors to changelog and project description
+- Option to use local timezone instead of UTC.
+
+### Changed
+- Tables in README use markdown format
+
+## [1.3.0] - 2015-07-15
+
+### Added
+- Allow cron-like job formatting (`"* * * * * MyApp.MyModule.my_method"`) ([Rodion Vshevtsov](https://github.com/alPacino))
+- Allow defining functions as tuple (`{"Module", :method}`) in config ([Rodion Vshevtsov](https://github.com/alPacino))
+- Note about UTC ([Lenz Gschwendtner](https://github.com/norbu09))
+
 ## [1.2.4] - 2015-06-22
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
@@ -66,7 +81,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Intervals on ranges are not correctly parsed
-- Hour constraints are not correct
+- Hour constraints are not correct ([Lenz Gschwendtner](https://github.com/norbu09))
 - There is no changelog
 - Code coverage is low
 - Explicit variables are not needed
@@ -74,7 +89,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.1.0] - 2015-05-28
 ### Added
-- Add ability to schedule jobs at runtime and ability to view jobs
+- Add ability to schedule jobs at runtime and ability to view jobs ([Dan Swain](https://github.com/dantswain))
 
 ### Changed
 - Relax Elixir version
@@ -107,7 +122,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...v1.3.0
 [1.2.4]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/c-rack/quantum-elixir/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/c-rack/quantum-elixir/compare/v1.2.1...v1.2.2
