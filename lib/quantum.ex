@@ -23,6 +23,11 @@ defmodule Quantum do
     GenServer.call(Quantum, :jobs)
   end
 
+  @doc "Starts Quantum process"
+  def start_link(state) do
+    GenServer.start_link(__MODULE__, state, [name: Quantum])
+  end
+
   def init(s) do
     Quantum.Timer.tick
     {:ok, %{s | jobs: run(%{s | r: 1}), r: 0}}
@@ -30,6 +35,10 @@ defmodule Quantum do
 
   def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
   def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
+  def handle_call(:which_children, _, s) do
+    children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
+    {:reply, children, s}
+  end
 
   def handle_info(:tick, s) do
     {d, h, m} = Quantum.Timer.tick
@@ -40,7 +49,9 @@ defmodule Quantum do
   def handle_info(_, s), do: {:noreply, s}
 
   defp run(s) do
-    Enum.each s.jobs, &(Task.start Quantum.Executor, :execute, [&1, s])
+    Enum.each s.jobs, fn(j) ->
+      Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute, [j, s])
+    end
     s.jobs
   end
 

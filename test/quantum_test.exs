@@ -21,13 +21,19 @@ defmodule QuantumTest do
     :ok = Quantum.add_job(spec, job)
     assert Enum.member? Quantum.jobs, {"@hourly", job}
   end
-  
+
   test "handle_info" do
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
     state = %{jobs: [], d: d, h: h, m: m, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state) == {:noreply, state}
   end
-  
+
+  test "handle_call for :which_children" do
+    state = %{jobs: [], d: nil, h: nil, m: nil, w: nil, r: 0}
+    children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
+    assert Quantum.handle_call(:which_children, :test, state) == {:reply, children, state}
+  end
+
   test "execute" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
