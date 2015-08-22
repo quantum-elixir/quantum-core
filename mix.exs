@@ -9,7 +9,7 @@ defmodule Quantum.Mixfile do
       build_embedded: Mix.env == :prod,
       deps: [
         {:earmark,     "~> 0.1", only: [:dev, :docs]},
-        {:ex_doc,      "~> 0.7", only: [:dev, :docs]},
+        {:ex_doc,      "~> 0.8", only: [:dev, :docs]},
         {:excoveralls, "~> 0.3", only: [:dev, :test]}
       ],
       description: "Cron-like job scheduler for Elixir applications.",
