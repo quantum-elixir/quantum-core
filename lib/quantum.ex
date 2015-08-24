@@ -9,12 +9,43 @@ defmodule Quantum do
   @type fun0 :: (() -> Type)
 
   @typedoc "A job is defined by a cron expression and a function/0"
-  @type job :: {expr, fun0}
+  @type job :: {atom, Quantum.Job.t}
 
   @doc "Adds a new job"
+  @spec add_job(job) :: :ok
+  def add_job(job) do
+    GenServer.call(Quantum, {:add, {nil, job}})
+  end
+
+  @spec add_job(expr, job) :: :ok
+  def add_job(name, %Quantum.Job{} = job) do
+    job = %{job | name: name}
+    GenServer.call(Quantum, {:add, {name, job}})
+  end
+
   @spec add_job(expr, fun0) :: :ok
   def add_job(e, fun) do
     GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({e, fun})})
+  end
+
+  @spec suspend_job(atom) :: :ok
+  def suspend_job(n) do
+    GenServer.call(Quantum, {:change_state, n, :suspended})
+  end
+
+  @spec activate_job(atom) :: :ok
+  def activate_job(n) do
+    GenServer.call(Quantum, {:change_state, n, :active})
+  end
+
+  @spec find_job(atom) :: job
+  def find_job(name) do
+    Keyword.get(jobs, name)
+  end
+
+  @spec delete_job(atom) :: job
+  def delete_job(name) do
+    GenServer.call(Quantum, {:delete, name})
   end
 
   @doc "Returns the list of currently defined jobs"
@@ -34,6 +65,27 @@ defmodule Quantum do
   end
 
   def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
+
+  def handle_call({:change_state, n, js}, _, s) do
+    jobs = Enum.map(s.jobs, fn({jn, j}) ->
+      case jn do
+        ^n -> {jn, %{j | state: js}}
+        _ -> {jn, j}
+      end
+    end)
+    {:reply, :ok, %{s | jobs: jobs}}
+  end
+
+  def handle_call({:delete, n}, _, s) do
+    job = case Keyword.get(s.jobs, n) do
+      nil -> nil
+      job ->
+        s = %{s | jobs: Keyword.delete(s.jobs, n)}
+        job
+    end
+    {:reply, job, s}
+  end
+
   def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
   def handle_call(:which_children, _, s) do
     children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
@@ -49,8 +101,11 @@ defmodule Quantum do
   def handle_info(_, s), do: {:noreply, s}
 
   defp run(s) do
-    Enum.each s.jobs, fn(j) ->
-      Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute, [j, s])
+    Enum.each s.jobs, fn({_name, j}) ->
+      if j.state == :active do
+        Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute,
+                                                  [{j.schedule, j.task, j.args}, s])
+      end
     end
     s.jobs
   end

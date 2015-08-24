@@ -3,23 +3,89 @@ defmodule QuantumTest do
 
   test "adding a job at run time" do
     spec = "1 * * * *"
-    job = fn -> :ok end
-    :ok = Quantum.add_job(spec, job)
-    assert Enum.member? Quantum.jobs, {spec, job}
+    fun = fn -> :ok end
+    :ok = Quantum.add_job(spec, fun)
+    job = %Quantum.Job{schedule: spec, task: fun}
+    assert Enum.member? Quantum.jobs, {nil, job}
+  end
+
+  test "adding a named job at run time" do
+    name = "test_job"
+    spec = "1 * * * *"
+    fun = fn -> :ok end
+    job = %Quantum.Job{schedule: spec, task: fun}
+    :ok = Quantum.add_job(name, job)
+    assert Enum.member? Quantum.jobs, {name, %{job | name: name}}
+  end
+
+  test "adding a unnamed job at run time" do
+    spec = "1 * * * *"
+    fun = fn -> :ok end
+    job = %Quantum.Job{schedule: spec, task: fun}
+    :ok = Quantum.add_job(job)
+    assert Enum.member? Quantum.jobs, {nil, job}
   end
 
   test "adding a job at run time with atom expression" do
     spec = :"@daily"
-    job = fn -> :ok end
-    :ok = Quantum.add_job(spec, job)
-    assert Enum.member? Quantum.jobs, {"@daily", job}
+    fun = fn -> :ok end
+    :ok = Quantum.add_job(spec, fun)
+    job = %Quantum.Job{schedule: Atom.to_string(spec), task: fun}
+    assert Enum.member? Quantum.jobs, {nil, job}
   end
 
   test "adding a job at run time with uppercase string" do
     spec = "@HOURLY"
-    job = fn -> :ok end
-    :ok = Quantum.add_job(spec, job)
-    assert Enum.member? Quantum.jobs, {"@hourly", job}
+    fun = fn -> :ok end
+    :ok = Quantum.add_job(spec, fun)
+    job = %Quantum.Job{schedule: String.downcase(spec), task: fun}
+    assert Enum.member? Quantum.jobs, {nil, job}
+  end
+
+  test "finding a named job" do
+    name = :newsletter
+    spec = "* * * * *"
+    fun = fn -> :ok end
+    job = %Quantum.Job{schedule: spec, task: fun}
+    :ok = Quantum.add_job(name, job)
+    fjob = Quantum.find_job(name)
+    assert fjob.name == name
+    assert fjob.schedule == spec
+  end
+
+  test "suspending a named job" do
+    name = :newsletter
+    spec = "* * * * *"
+    fun = fn -> :ok end
+    job = %Quantum.Job{name: name, schedule: spec, task: fun}
+    :ok = Quantum.add_job(name, job)
+    :ok = Quantum.suspend_job(name)
+    sjob = Quantum.find_job(name)
+    assert sjob == %{job | state: :suspended}
+  end
+
+  test "activating a named job" do
+    name = :newsletter
+    spec = "* * * * *"
+    fun = fn -> :ok end
+    job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :suspended}
+
+    :ok = Quantum.add_job(name, job)
+    :ok = Quantum.activate_job(name)
+    ajob = Quantum.find_job(name)
+    assert ajob == %{job | state: :active}
+  end
+
+  test "deleting a named job at run time" do
+    spec = "* * * * *"
+    name = :newsletter
+    fun = fn -> :ok end
+    job = %Quantum.Job{name: name, schedule: spec, task: fun}
+    :ok = Quantum.add_job(name, job)
+    djob = Quantum.delete_job(name)
+    assert djob.name == name
+    assert djob.schedule == spec
+    assert !Enum.member? Quantum.jobs, {name, job}
   end
 
   test "handle_info" do
@@ -38,8 +104,9 @@ defmodule QuantumTest do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
-    state1 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m - 1, w: nil, r: 0}
-    state2 = %{jobs: [{"* * * * *", fun}], d: d, h: h, m: m, w: nil, r: 0}
+    job = %Quantum.Job{schedule: "* * * * *", task: fun}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 1
@@ -49,8 +116,9 @@ defmodule QuantumTest do
   test "reboot" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
-    {:ok, state} = Quantum.init(%{jobs: [{"@reboot", fun}], d: nil, h: nil, m: nil, w: nil, r: nil})
-    assert state.jobs == [{"@reboot", fun}]
+    job = %Quantum.Job{schedule: "@reboot", task: fun}
+    {:ok, state} = Quantum.init(%{jobs: [{nil, job}], d: nil, h: nil, m: nil, w: nil, r: nil})
+    assert state.jobs == [{nil, job}]
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 1
     :ok = Agent.stop(pid)
