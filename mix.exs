@@ -10,7 +10,8 @@ defmodule Quantum.Mixfile do
       deps: [
         {:earmark,     "~> 0.1", only: [:dev, :docs]},
         {:ex_doc,      "~> 0.8", only: [:dev, :docs]},
-        {:excoveralls, "~> 0.3", only: [:dev, :test]}
+        {:excoveralls, "~> 0.3", only: [:dev, :test]},
+        {:inch_ex,     "~> 0.4", only: [:dev, :docs]}
       ],
       description: "Cron-like job scheduler for Elixir applications.",
       docs: [
