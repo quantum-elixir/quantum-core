@@ -4,6 +4,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.2] - 2015-08-22
+### Added
+- Timezone option to README.
+
+### Fixed
+- Using `@reboot` lead to crash.
+
 ## [1.3.1] - 2015-07-27
 ### Added
 - Added contributors to changelog and project description
@@ -122,7 +129,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...v1.3.0
 [1.2.4]: https://github.com/c-rack/quantum-elixir/compare/v1.2.3...v1.2.4

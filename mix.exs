@@ -1,7 +1,7 @@
 defmodule Quantum.Mixfile do
   use Mix.Project
 
-  @version "1.3.1"
+  @version "1.3.2"
 
   def project do
     [
@@ -9,7 +9,7 @@ defmodule Quantum.Mixfile do
       build_embedded: Mix.env == :prod,
       deps: [
         {:earmark,     "~> 0.1", only: [:dev, :docs]},
-        {:ex_doc,      "~> 0.7", only: [:dev, :docs]},
+        {:ex_doc,      "~> 0.8", only: [:dev, :docs]},
         {:excoveralls, "~> 0.3", only: [:dev, :test]}
       ],
       description: "Cron-like job scheduler for Elixir applications.",
@@ -38,7 +38,8 @@ defmodule Quantum.Mixfile do
         "Constantin Rack",
         "Dan Swain",
         "Lenz Gschwendtner",
-        "Rodion Vshevtsov"
+        "Rodion Vshevtsov",
+        "Stanislav Krasnoyarov"
         ],
       licenses: ["Apache License 2.0"],
       links: %{

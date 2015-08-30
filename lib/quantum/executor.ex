@@ -6,6 +6,7 @@ defmodule Quantum.Executor do
 
   def execute({"@reboot",   fun, args}, %{r: 1}), do: execute_fun(fun, args)
   def execute(_,                  %{r: 1}), do: false
+  def execute({"@reboot",   _},   %{r: 0}), do: false
   def execute({"* * * * *", fun, args}, _), do: execute_fun(fun, args)
   def execute({"@hourly",   fun, args}, %{m: 0}), do: execute_fun(fun, args)
   def execute({"0 * * * *", fun, args}, %{m: 0}), do: execute_fun(fun, args)
