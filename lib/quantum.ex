@@ -11,38 +11,44 @@ defmodule Quantum do
   @typedoc "A job is defined by a cron expression and a function/0"
   @type job :: {atom, Quantum.Job.t}
 
-  @doc "Adds a new job"
+  @doc "Adds a new unnamed job"
   @spec add_job(job) :: :ok
   def add_job(job) do
     GenServer.call(Quantum, {:add, {nil, job}})
   end
 
+  @doc "Adds a new named job"
   @spec add_job(expr, job) :: :ok
   def add_job(name, %Quantum.Job{} = job) do
     job = %{job | name: name}
     GenServer.call(Quantum, {:add, {name, job}})
   end
 
+  @doc "Adds a new job"
   @spec add_job(expr, fun0) :: :ok
   def add_job(e, fun) do
     GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({e, fun})})
   end
 
+  @doc "Suspends a job by name"
   @spec suspend_job(atom) :: :ok
   def suspend_job(n) do
     GenServer.call(Quantum, {:change_state, n, :suspended})
   end
 
+  @doc "Activates a job by name"
   @spec activate_job(atom) :: :ok
   def activate_job(n) do
     GenServer.call(Quantum, {:change_state, n, :active})
   end
 
+  @doc "Resolves a job by name"
   @spec find_job(atom) :: job
   def find_job(name) do
     Keyword.get(jobs, name)
   end
 
+  @doc "Deletes a job by name"
   @spec delete_job(atom) :: job
   def delete_job(name) do
     GenServer.call(Quantum, {:delete, name})
