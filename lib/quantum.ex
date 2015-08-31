@@ -30,10 +30,10 @@ defmodule Quantum do
     GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({e, fun})})
   end
 
-  @doc "Suspends a job by name"
-  @spec suspend_job(atom) :: :ok
-  def suspend_job(n) do
-    GenServer.call(Quantum, {:change_state, n, :suspended})
+  @doc "Deactivates a job by name"
+  @spec deactivate_job(atom) :: :ok
+  def deactivate_job(n) do
+    GenServer.call(Quantum, {:change_state, n, :inactive})
   end
 
   @doc "Activates a job by name"

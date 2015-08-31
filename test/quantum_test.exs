@@ -53,22 +53,22 @@ defmodule QuantumTest do
     assert fjob.schedule == spec
   end
 
-  test "suspending a named job" do
+  test "deactivating a named job" do
     name = :newsletter
     spec = "* * * * *"
     fun = fn -> :ok end
     job = %Quantum.Job{name: name, schedule: spec, task: fun}
     :ok = Quantum.add_job(name, job)
-    :ok = Quantum.suspend_job(name)
+    :ok = Quantum.deactivate_job(name)
     sjob = Quantum.find_job(name)
-    assert sjob == %{job | state: :suspended}
+    assert sjob == %{job | state: :inactive}
   end
 
   test "activating a named job" do
     name = :newsletter
     spec = "* * * * *"
     fun = fn -> :ok end
-    job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :suspended}
+    job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive}
 
     :ok = Quantum.add_job(name, job)
     :ok = Quantum.activate_job(name)

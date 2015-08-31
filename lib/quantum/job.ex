@@ -5,7 +5,7 @@ defmodule Quantum.Job do
     schedule: nil,
     task: nil, # {module, function}
     args: [],
-    state: :active # active/suspended
+    state: :active # active/inactive
   ]
 
   @type t :: %Quantum.Job{}
