@@ -4,6 +4,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2015-09-02
+### Added
+- Named jobs and the ability to (de)activate them ([Rodion Vshevtsov](https://github.com/alPacino))
+- Doc annotations for functions
+- Inch-CI integration
+
+### Changed
+- Updated `ex_doc` dependency
+
 ## [1.3.2] - 2015-08-22
 ### Added
 - Timezone option to README.
@@ -129,7 +138,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/c-rack/quantum-elixir/compare/v1.2.4...v1.3.0
