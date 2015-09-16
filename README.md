@@ -73,11 +73,98 @@ config :quantum, cron: [
 ]
 ```
 
-If you want to add jobs on runtime, this is possible, too:
+If you want to add jobs on runtime, this is possible too:
 
 ```elixir
 Quantum.add_job("1 * * * *", fn -> :ok end)
 ```
+
+### Named jobs
+
+Job struct:
+```elixir
+%Quantum.Job{
+  name: :job_name, # is set automatically on adding a job
+  schedule: "1 * * * *", # required
+  task: {MyApp.MyModule, :my_method}, # required
+  args: [:a, :b] # optional, default: []
+  state: :active, # is used for internal purposes
+  nodes: [:node@host] # default: [node()]
+}
+```
+
+You can define named jobs in your config like this:
+
+```elixir
+config :quantum, cron: [
+  news_letter: [
+    schedule: "@weekly",
+    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+    args: [:whatever]
+  ]
+]
+```
+
+Possible options:
+- `schedule` cron schedule, ex: "@weekly" or "1 \* \* \* \*"
+- `task` function to be performed, ex: "MyApp.MyModule.my_method" or {MyApp.MyModule, :my_method}
+- `args` arguments list to be pssed to `task`
+- `nodes` nodes list the task should be run on, default: [node()]
+
+So now you can control your jobs behavior on runtime.
+
+Add named jobs on runtime:
+
+```elixir
+job_spec = [
+  schedule: "1 * * * *",
+  task: fn -> :ok end
+]
+Quantum.add_job(:ok_job, fn -> :ok end)
+```
+
+Deactivate job (will not be performed until activation):
+```elixir
+Quantum.deactivate_job(:ok_job)
+Quantum.deactivate_job(:news_letter)
+```
+
+Activate inactive job:
+```elixir
+Quantum.activate_job(:ok_job)
+Quantum.activate_job(:news_letter)
+```
+
+Find job:
+```elixir
+Quantum.delete_job(:ok_job)
+# {:ok_job, %Quantum.Job{...}}
+Quantum.delete_job(:news_letter)
+# {:news_letter, %Quantum.Job{...}}
+```
+
+Delete job:
+```elixir
+Quantum.delete_job(:ok_job)
+# {:ok_job, %Quantum.Job{...}}
+Quantum.delete_job(:news_letter)
+# {:news_letter, %Quantum.Job{...}}
+```
+
+### Nodes
+
+If you need to run a job on a certain node you can define:
+
+```elixir
+config :quantum, cron: [
+  news_letter: [
+    # your job config
+    nodes: [:app1@myhost, "app2@myhost"]
+  ]
+]
+```
+
+**NOTE** If `nodes` is not defined current node is used and a job is performed on all nodes.
 
 ### Timezone
 
