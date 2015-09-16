@@ -15,14 +15,16 @@ defmodule Quantum.NormalizerTest do
     job = {:newsletter, [
       schedule: "@weekly",
       task: "MyModule.my_method",
-      args: [1, 2, 3]
+      args: [1, 2, 3],
+      nodes: [:atom@node, "string@node"]
     ]}
 
     assert normalize(job) == {:newsletter, %Quantum.Job{
       name: :newsletter,
       schedule: "@weekly",
       task: {"MyModule", "my_method"},
-      args: [1, 2, 3]
+      args: [1, 2, 3],
+      nodes: [:atom@node, :string@node]
     }}
   end
 

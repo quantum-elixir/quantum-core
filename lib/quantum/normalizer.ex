@@ -23,13 +23,13 @@ defmodule Quantum.Normalizer do
   #   task: {"MyModule", "my_method"},
   #   args: [1, 2, 3]
   # }
-  defp normalize_job({job_name, opts}) when opts |> is_list do
-    %Quantum.Job{
-      name: job_name,
-      schedule: extract(:schedule, opts),
-      task: extract(:task, opts),
-      args: extract(:args, opts, [])
-    }
+  defp normalize_job({job_name, %Quantum.Job{} = job}) do
+    # Sets defauts for job if necessary
+    job_opts(job_name, []) |> Map.merge(%{job | name: job_name })
+  end
+
+  defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do
+    %Quantum.Job{} |> Map.merge(job_opts(job_name, opts))
   end
 
   # Creates unnamed Quantum.Job
@@ -48,11 +48,11 @@ defmodule Quantum.Normalizer do
   # }
   defp normalize_job(j) do
     {schedule, task} = normalize_unnamed_job(j)
-    %Quantum.Job{
-      # name: :__unnamed__,
+    opts = %{
       schedule: schedule,
       task: task
     }
+    normalize_job({nil, opts})
   end
 
   # Converts a job {expr, fun} into its canonical format.
@@ -85,8 +85,23 @@ defmodule Quantum.Normalizer do
 
   # Extracts given option from options list of named task
   defp extract(name, opts, d \\ nil)
-  defp extract(:schedule, opts, d), do: Keyword.get(opts, :schedule, d) |> normalize_schedule
-  defp extract(:task, opts, d), do: Keyword.get(opts, :task, d) |> normalize_task
-  defp extract(name, opts, d), do: Keyword.get(opts, name, d)
+  defp extract(name, opts, d) when opts |> is_list, do: extract(name, opts |> Enum.into(%{}), d)
+  defp extract(:schedule, opts, d), do: Map.get(opts, :schedule, d) |> normalize_schedule
+  defp extract(:task, opts, d), do: Map.get(opts, :task, d) |> normalize_task
+  defp extract(name, opts, d), do: Map.get(opts, name, d)
+
+  defp atomize(list) when is_list(list), do: Enum.map(list, &atomize/1)
+  defp atomize(string) when is_binary(string), do: String.to_atom(string)
+  defp atomize(atom) when is_atom(atom), do: atom
+
+  defp job_opts(job_name, opts) do
+    %{
+      name: job_name,
+      schedule: extract(:schedule, opts),
+      task: extract(:task, opts),
+      args: extract(:args, opts, []),
+      nodes: extract(:nodes, opts, [node()]) |> atomize
+    }
+  end
 
 end

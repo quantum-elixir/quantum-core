@@ -5,17 +5,29 @@ defmodule QuantumTest do
     spec = "1 * * * *"
     fun = fn -> :ok end
     :ok = Quantum.add_job(spec, fun)
-    job = %Quantum.Job{schedule: spec, task: fun}
+    job = %Quantum.Job{schedule: spec, task: fun, nodes: [node()]}
     assert Enum.member? Quantum.jobs, {nil, job}
   end
 
-  test "adding a named job at run time" do
+  test "adding a named job as options at run time" do
+    name = "test_job"
+    spec = "1 * * * *"
+    fun = fn -> :ok end
+    job_otps = %{schedule: spec, task: fun}
+    job = %Quantum.Job{} |> Map.merge(job_otps)
+    :ok = Quantum.add_job(name, job_otps)
+    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                     nodes: [node()]}}
+  end
+
+  test "adding a named job struct at run time" do
     name = "test_job"
     spec = "1 * * * *"
     fun = fn -> :ok end
     job = %Quantum.Job{schedule: spec, task: fun}
     :ok = Quantum.add_job(name, job)
-    assert Enum.member? Quantum.jobs, {name, %{job | name: name}}
+    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                     nodes: [node()]}}
   end
 
   test "adding a unnamed job at run time" do
@@ -23,7 +35,7 @@ defmodule QuantumTest do
     fun = fn -> :ok end
     job = %Quantum.Job{schedule: spec, task: fun}
     :ok = Quantum.add_job(job)
-    assert Enum.member? Quantum.jobs, {nil, job}
+    assert Enum.member? Quantum.jobs, {nil, %{job | nodes: [node()]}}
   end
 
   test "adding a job at run time with atom expression" do
@@ -31,7 +43,7 @@ defmodule QuantumTest do
     fun = fn -> :ok end
     :ok = Quantum.add_job(spec, fun)
     job = %Quantum.Job{schedule: Atom.to_string(spec), task: fun}
-    assert Enum.member? Quantum.jobs, {nil, job}
+    assert Enum.member? Quantum.jobs, {nil, %{job | nodes: [node()]}}
   end
 
   test "adding a job at run time with uppercase string" do
@@ -39,7 +51,7 @@ defmodule QuantumTest do
     fun = fn -> :ok end
     :ok = Quantum.add_job(spec, fun)
     job = %Quantum.Job{schedule: String.downcase(spec), task: fun}
-    assert Enum.member? Quantum.jobs, {nil, job}
+    assert Enum.member? Quantum.jobs, {nil, %{job | nodes: [node()]}}
   end
 
   test "finding a named job" do
@@ -51,6 +63,7 @@ defmodule QuantumTest do
     fjob = Quantum.find_job(name)
     assert fjob.name == name
     assert fjob.schedule == spec
+    assert fjob.nodes == [node()]
   end
 
   test "deactivating a named job" do
@@ -100,7 +113,7 @@ defmodule QuantumTest do
     assert Quantum.handle_call(:which_children, :test, state) == {:reply, children, state}
   end
 
-  test "execute" do
+  test "execute for current node" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
@@ -110,6 +123,19 @@ defmodule QuantumTest do
     assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 1
+    :ok = Agent.stop(pid)
+  end
+
+  test "skip for current node" do
+    {:ok, pid} = Agent.start_link(fn -> 0 end)
+    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, nodes: [:remote@node]}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
+    :timer.sleep(500)
+    assert Agent.get(pid, fn(n) -> n end) == 0
     :ok = Agent.stop(pid)
   end
 

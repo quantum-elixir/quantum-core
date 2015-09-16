@@ -8,48 +8,44 @@ defmodule Quantum do
   @typedoc "A function/0 to be called when cron expression matches"
   @type fun0 :: (() -> Type)
 
-  @typedoc "A job is defined by a cron expression and a function/0"
+  @typedoc "A job is defined by a cron expression and a task"
   @type job :: {atom, Quantum.Job.t}
+
+  @typedoc "A job options can be defined as list or map"
+  @type opts :: list | map | fun0
 
   @doc "Adds a new unnamed job"
   @spec add_job(job) :: :ok
   def add_job(job) do
-    GenServer.call(Quantum, {:add, {nil, job}})
+    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({nil, job})})
   end
 
   @doc "Adds a new named job"
   @spec add_job(expr, job) :: :ok
-  def add_job(name, %Quantum.Job{} = job) do
-    job = %{job | name: name}
-    GenServer.call(Quantum, {:add, {name, job}})
-  end
-
-  @doc "Adds a new job"
-  @spec add_job(expr, fun0) :: :ok
-  def add_job(e, fun) do
-    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({e, fun})})
+  def add_job(expr, job) do
+    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({expr, job})})
   end
 
   @doc "Deactivates a job by name"
-  @spec deactivate_job(atom) :: :ok
+  @spec deactivate_job(expr) :: :ok
   def deactivate_job(n) do
     GenServer.call(Quantum, {:change_state, n, :inactive})
   end
 
   @doc "Activates a job by name"
-  @spec activate_job(atom) :: :ok
+  @spec activate_job(expr) :: :ok
   def activate_job(n) do
     GenServer.call(Quantum, {:change_state, n, :active})
   end
 
   @doc "Resolves a job by name"
-  @spec find_job(atom) :: job
+  @spec find_job(expr) :: job
   def find_job(name) do
     Keyword.get(jobs, name)
   end
 
   @doc "Deletes a job by name"
-  @spec delete_job(atom) :: job
+  @spec delete_job(expr) :: job
   def delete_job(name) do
     GenServer.call(Quantum, {:delete, name})
   end
@@ -108,7 +104,7 @@ defmodule Quantum do
 
   defp run(s) do
     Enum.each s.jobs, fn({_name, j}) ->
-      if j.state == :active do
+      if j.state == :active && node() in j.nodes do
         Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute,
                                                   [{j.schedule, j.task, j.args}, s])
       end
