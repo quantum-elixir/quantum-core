@@ -108,8 +108,8 @@ config :quantum, cron: [
 Possible options:
 - `schedule` cron schedule, ex: "@weekly" or "1 \* \* \* \*"
 - `task` function to be performed, ex: "MyApp.MyModule.my_method" or {MyApp.MyModule, :my_method}
-- `args` arguments to be apssed to `task` function
-- `nodes` nodes list th task should be run on, default: [node()]
+- `args` arguments list to be pssed to `task`
+- `nodes` nodes list the task should be run on, default: [node()]
 
 So now you can control your jobs behavior on runtime.
 
@@ -164,7 +164,7 @@ config :quantum, cron: [
 ]
 ```
 
-**NOTE** If `nodes` is not defined current node is used and job is performed on all nodes.
+**NOTE** If `nodes` is not defined current node is used and a job is performed on all nodes.
 
 ### Timezone
 
