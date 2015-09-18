@@ -106,10 +106,10 @@ config :quantum, cron: [
 ```
 
 Possible options:
-- `schedule` cron schedule, ex: "@weekly" or "1 \* \* \* \*"
-- `task` function to be performed, ex: "MyApp.MyModule.my_method" or {MyApp.MyModule, :my_method}
-- `args` arguments list to be pssed to `task`
-- `nodes` nodes list the task should be run on, default: [node()]
+- `schedule` cron schedule, ex: `"@weekly"` or `"1 * * * *"`
+- `task` function to be performed, ex: `"MyApp.MyModule.my_method"` or `{MyApp.MyModule, :my_method}`
+- `args` arguments list to be passed to `task`
+- `nodes` nodes list the task should be run on, default: `[node()]`
 
 So now you can control your jobs behavior on runtime.
 
@@ -219,7 +219,7 @@ terms of this contract."
 
 1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or [open a new issue](https://github.com/c-rack/quantum-elixir/issues/new) to start a discussion around [a problem](https://www.youtube.com/watch?v=_QF9sFJGJuc).
 2. Issues SHALL be named as "Problem: _description of the problem_".
-3. Fork the [quantum-elixir repository on Github](https://github.com/c-rack/quantum-elixir) to start making your changes
+3. Fork the [quantum-elixir repository on GitHub](https://github.com/c-rack/quantum-elixir) to start making your changes
 4. If possible, write a test which shows that the problem was solved.
 5. Send a pull request.
 6. Pull requests SHALL be named as "Solution: _description of your solution_"
