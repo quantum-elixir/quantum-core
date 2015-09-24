@@ -2,6 +2,8 @@ language: elixir
 sudo: false
 otp_release:
   - 17.4
+  - 17.5
+  - 18.0
 after_success:
   - "mix compile && mix coveralls.travis"
 after_script:
