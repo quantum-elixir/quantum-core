@@ -4,6 +4,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2015-09-24
+### Added
+- Ability to run jobs on exact node ([Rodion Vshevtsov](https://github.com/alPacino))
+- Documentation of named jobs
+- OTP 17.5 and 18.0 to Travis tests
+
+### Changed
+- `ex_doc` dependency version
+
+### Fixed
+- Typos in README
+
 ## [1.4.0] - 2015-09-02
 ### Added
 - Named jobs and the ability to (de)activate them ([Rodion Vshevtsov](https://github.com/alPacino))
@@ -138,7 +150,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/c-rack/quantum-elixir/compare/v1.3.0...v1.3.1
