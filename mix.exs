@@ -9,7 +9,7 @@ defmodule Quantum.Mixfile do
       build_embedded: Mix.env == :prod,
       deps: [
         {:earmark,     "~> 0.1", only: [:dev, :docs]},
-        {:ex_doc,      "~> 0.8", only: [:dev, :docs]},
+        {:ex_doc,      "~> 0.9", only: [:dev, :docs]},
         {:excoveralls, "~> 0.3", only: [:dev, :test]},
         {:inch_ex,     "~> 0.4", only: [:dev, :docs]}
       ],
