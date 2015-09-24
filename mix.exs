@@ -15,8 +15,7 @@ defmodule Quantum.Mixfile do
       ],
       description: "Cron-like job scheduler for Elixir applications.",
       docs: [
-        main: "README",
-        readme: "README.md",
+        main: "Quantum",
         source_ref: "v#{@version}",
         source_url: "https://github.com/c-rack/quantum-elixir"
       ],
