@@ -34,7 +34,7 @@ defmodule Quantum.Mixfile do
 
   defp package do
     %{
-      contributors: [
+      maintainers: [
         "Constantin Rack",
         "Dan Swain",
         "Lenz Gschwendtner",
