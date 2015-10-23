@@ -138,18 +138,18 @@ Quantum.activate_job(:news_letter)
 
 Find job:
 ```elixir
-Quantum.delete_job(:ok_job)
-# {:ok_job, %Quantum.Job{...}}
-Quantum.delete_job(:news_letter)
-# {:news_letter, %Quantum.Job{...}}
+Quantum.find_job(:ok_job)
+# %Quantum.Job{...}
+Quantum.find_job(:news_letter)
+# %Quantum.Job{...}
 ```
 
 Delete job:
 ```elixir
 Quantum.delete_job(:ok_job)
-# {:ok_job, %Quantum.Job{...}}
+# %Quantum.Job{...}
 Quantum.delete_job(:news_letter)
-# {:news_letter, %Quantum.Job{...}}
+# %Quantum.Job{...}
 ```
 
 ### Nodes
