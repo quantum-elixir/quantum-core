@@ -6,7 +6,8 @@ defmodule Quantum.Job do
     task: nil, # {module, function}
     args: [],
     state: :active, # active/inactive
-    nodes: [node()]
+    nodes: [node()],
+    pid: nil
   ]
 
   @type t :: %Quantum.Job{}

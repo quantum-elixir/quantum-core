@@ -103,13 +103,15 @@ defmodule Quantum do
   def handle_info(_, s), do: {:noreply, s}
 
   defp run(s) do
-    Enum.each s.jobs, fn({_name, j}) ->
+    Enum.map s.jobs, fn({name, j}) ->
       if j.state == :active && node() in j.nodes do
-        Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute,
+        t = Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute,
                                                   [{j.schedule, j.task, j.args}, s])
+        {name, %{j | pid: t.pid}}
+      else
+        {name, j}
       end
     end
-    s.jobs
   end
 
 end
