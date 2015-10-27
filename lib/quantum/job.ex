@@ -7,6 +7,7 @@ defmodule Quantum.Job do
     args: [],
     state: :active, # active/inactive
     nodes: [node()],
+    overlap: true,
     pid: nil
   ]
 

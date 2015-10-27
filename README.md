@@ -91,6 +91,7 @@ Job struct:
   args: [:a, :b] # optional, default: []
   state: :active, # is used for internal purposes
   nodes: [:node@host], # default: [node()]
+  overlap: false, # run even if previous job is still running?, default: true
   pid: nil # PID of last executed task
 }
 ```
