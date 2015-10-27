@@ -90,7 +90,8 @@ Job struct:
   task: {MyApp.MyModule, :my_method}, # required
   args: [:a, :b] # optional, default: []
   state: :active, # is used for internal purposes
-  nodes: [:node@host] # default: [node()]
+  nodes: [:node@host], # default: [node()]
+  pid: nil # PID of last executed task
 }
 ```
 
