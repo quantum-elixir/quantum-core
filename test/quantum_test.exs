@@ -165,4 +165,46 @@ defmodule QuantumTest do
     :ok = Agent.stop(pid1)
   end
 
+  test "overlap, first start" do
+    {:ok, pid1} = Agent.start_link(fn -> nil end)
+    {:ok, pid2} = Agent.start_link(fn -> 0 end)
+    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    fun = fn ->
+      fun_pid = self()
+      Agent.update(pid1, fn(_) -> fun_pid end)
+      Agent.update(pid2, fn(n) -> n + 1 end)
+    end
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state3 = Quantum.handle_info(:tick, state1)
+    :timer.sleep(500)
+    assert Agent.get(pid2, fn(n) -> n end) == 1
+    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    assert state3 == {:noreply, state2}
+    :ok = Agent.stop(pid2)
+    :ok = Agent.stop(pid1)
+  end
+
+  test "overlap, second start" do
+    {:ok, pid1} = Agent.start_link(fn -> nil end)
+    {:ok, pid2} = Agent.start_link(fn -> 0 end)
+    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    fun = fn ->
+      fun_pid = self()
+      Agent.update(pid1, fn(_) -> fun_pid end)
+      Agent.update(pid2, fn(n) -> n + 1 end)
+    end
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false, pid: pid1}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state3 = Quantum.handle_info(:tick, state1)
+    :timer.sleep(500)
+    assert Agent.get(pid2, fn(n) -> n end) == 0
+    job = %{job | pid: pid1}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    assert state3 == {:noreply, state2}
+    :ok = Agent.stop(pid2)
+    :ok = Agent.stop(pid1)
+  end
+
 end
