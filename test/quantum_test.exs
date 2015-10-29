@@ -114,16 +114,24 @@ defmodule QuantumTest do
   end
 
   test "execute for current node" do
-    {:ok, pid} = Agent.start_link(fn -> 0 end)
+    {:ok, pid1} = Agent.start_link(fn -> nil end)
+    {:ok, pid2} = Agent.start_link(fn -> 0 end)
     {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
-    fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
+    fun = fn ->
+      fun_pid = self()
+      Agent.update(pid1, fn(_) -> fun_pid end)
+      Agent.update(pid2, fn(n) -> n + 1 end)
+    end
     job = %Quantum.Job{schedule: "* * * * *", task: fun}
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
-    assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
+    state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
-    assert Agent.get(pid, fn(n) -> n end) == 1
-    :ok = Agent.stop(pid)
+    assert Agent.get(pid2, fn(n) -> n end) == 1
+    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    assert state3 == {:noreply, state2}
+    :ok = Agent.stop(pid2)
+    :ok = Agent.stop(pid1)
   end
 
   test "skip for current node" do
@@ -140,14 +148,21 @@ defmodule QuantumTest do
   end
 
   test "reboot" do
-    {:ok, pid} = Agent.start_link(fn -> 0 end)
-    fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
+    {:ok, pid1} = Agent.start_link(fn -> nil end)
+    {:ok, pid2} = Agent.start_link(fn -> 0 end)
+    fun = fn ->
+      fun_pid = self()
+      Agent.update(pid1, fn(_) -> fun_pid end)
+      Agent.update(pid2, fn(n) -> n + 1 end)
+    end
     job = %Quantum.Job{schedule: "@reboot", task: fun}
     {:ok, state} = Quantum.init(%{jobs: [{nil, job}], d: nil, h: nil, m: nil, w: nil, r: nil})
-    assert state.jobs == [{nil, job}]
     :timer.sleep(500)
-    assert Agent.get(pid, fn(n) -> n end) == 1
-    :ok = Agent.stop(pid)
+    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    assert state.jobs == [{nil, job}]
+    assert Agent.get(pid2, fn(n) -> n end) == 1
+    :ok = Agent.stop(pid2)
+    :ok = Agent.stop(pid1)
   end
 
 end
