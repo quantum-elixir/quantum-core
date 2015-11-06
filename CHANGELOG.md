@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - PID of last executed task to job struct
 
+### Fixed
+- Typo in README ([Lucas Charles](https://github.com/theoretick))
+
 ## [1.5.0] - 2015-09-24
 ### Added
 - Ability to run jobs on exact node ([Rodion Vshevtsov](https://github.com/alPacino))
