@@ -38,6 +38,7 @@ defmodule Quantum.Mixfile do
         "Constantin Rack",
         "Dan Swain",
         "Lenz Gschwendtner",
+        "Lucas Charles",
         "Rodion Vshevtsov",
         "Stanislav Krasnoyarov"
         ],
