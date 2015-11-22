@@ -28,7 +28,18 @@ defmodule Quantum.NormalizerTest do
     }}
   end
 
-  test "unnamed job" do
+  test "unnamed job as string" do
+    job = "* * * * * MyModule.my_method"
+
+    assert normalize(job) == {nil, %Quantum.Job{
+      name: nil,
+      schedule: "* * * * *",
+      task: {"MyModule", "my_method"},
+      args: []
+    }}
+  end
+
+  test "unnamed job as tuple" do
     job = {"* * * * *", "MyModule.my_method"}
 
     assert normalize(job) == {nil, %Quantum.Job{
@@ -36,6 +47,17 @@ defmodule Quantum.NormalizerTest do
       schedule: "* * * * *",
       task: {"MyModule", "my_method"},
       args: []
+    }}
+  end
+
+  test "unnamed job as tuple with arguments" do
+    job = {"* * * * *", {"MyModule", "my_method", [1, 2, 3]}}
+
+    assert normalize(job) == {nil, %Quantum.Job{
+      name: nil,
+      schedule: "* * * * *",
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3]
     }}
   end
 

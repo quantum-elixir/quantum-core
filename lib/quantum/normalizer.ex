@@ -47,18 +47,23 @@ defmodule Quantum.Normalizer do
   #   args: []
   # }
   defp normalize_job(j) do
-    {schedule, task} = normalize_unnamed_job(j)
-    opts = %{
-      schedule: schedule,
-      task: task
-    }
+    opts = case normalize_unnamed_job(j) do
+      {schedule, task, args} -> %{schedule: schedule, task: task, args: args}
+      {schedule, task} -> %{schedule: schedule, task: task}
+    end
     normalize_job({nil, opts})
   end
 
   # Converts a job {expr, fun} into its canonical format.
   # Cron expression is converted to lowercase string and
   # day and month names are translated to their indexes.
-  defp normalize_unnamed_job({e, fun}), do: {normalize_schedule(e), normalize_task(fun)}
+  defp normalize_unnamed_job({e, fun}) do
+    schedule = normalize_schedule(e)
+    case normalize_task(fun) do
+      {mod, fun, args} -> {schedule, {mod, fun}, args}
+      fun -> {schedule, fun}
+    end
+  end
 
   # Converts a string representation of schedule+job into
   # its canonical format.
@@ -77,6 +82,7 @@ defmodule Quantum.Normalizer do
     [[_, mod, fun]] = Regex.scan(~r/^(.*)\.(\w+)$/, t)
     {mod, fun}
   end
+  defp normalize_task({mod, fun, args}), do: {mod, fun, args}
   defp normalize_task({mod, fun}), do: {mod, fun}
   defp normalize_task(fun), do: fun
 
