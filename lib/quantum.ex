@@ -41,7 +41,7 @@ defmodule Quantum do
   @doc "Resolves a job by name"
   @spec find_job(expr) :: job
   def find_job(name) do
-    Keyword.get(jobs, name)
+    find_by_name(jobs, name)
   end
 
   @doc "Deletes a job by name"
@@ -79,10 +79,10 @@ defmodule Quantum do
   end
 
   def handle_call({:delete, n}, _, s) do
-    job = case Keyword.get(s.jobs, n) do
+    job = case find_by_name(s.jobs, n) do
       nil -> nil
       job ->
-        s = %{s | jobs: Keyword.delete(s.jobs, n)}
+        s = %{s | jobs: List.keydelete(s.jobs, n, 0)}
         job
     end
     {:reply, job, s}
@@ -120,6 +120,13 @@ defmodule Quantum do
       job.pid == nil          -> true  # Job has not been started before
       Process.alive?(job.pid) -> false # Previous job is still running
       true                    -> true  # Previous job has finished
+    end
+  end
+
+  defp find_by_name(jobs, job_name) do
+    case List.keyfind(jobs, job_name, 0) do
+      nil          -> nil
+      {_name, job} -> job
     end
   end
 
