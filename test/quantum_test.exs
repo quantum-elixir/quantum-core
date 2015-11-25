@@ -1,6 +1,8 @@
 defmodule QuantumTest do
   use ExUnit.Case
 
+  defp job_names, do: ["test_job", :test_job, 'test_job']
+
   test "adding a job at run time" do
     spec = "1 * * * *"
     fun = fn -> :ok end
@@ -10,24 +12,26 @@ defmodule QuantumTest do
   end
 
   test "adding a named job as options at run time" do
-    name = "test_job"
-    spec = "1 * * * *"
-    fun = fn -> :ok end
-    job_otps = %{schedule: spec, task: fun}
-    job = %Quantum.Job{} |> Map.merge(job_otps)
-    :ok = Quantum.add_job(name, job_otps)
-    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
-                                                     nodes: [node()]}}
+    for name <- job_names do
+      spec = "1 * * * *"
+      fun = fn -> :ok end
+      job_otps = %{schedule: spec, task: fun}
+      job = %Quantum.Job{} |> Map.merge(job_otps)
+      :ok = Quantum.add_job(name, job_otps)
+      assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                       nodes: [node()]}}
+    end
   end
 
   test "adding a named job struct at run time" do
-    name = "test_job"
-    spec = "1 * * * *"
-    fun = fn -> :ok end
-    job = %Quantum.Job{schedule: spec, task: fun}
-    :ok = Quantum.add_job(name, job)
-    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
-                                                     nodes: [node()]}}
+    for name <- job_names do
+      spec = "1 * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{schedule: spec, task: fun}
+      :ok = Quantum.add_job(name, job)
+      assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                       nodes: [node()]}}
+    end
   end
 
   test "adding a unnamed job at run time" do
@@ -55,50 +59,54 @@ defmodule QuantumTest do
   end
 
   test "finding a named job" do
-    name = :newsletter
-    spec = "* * * * *"
-    fun = fn -> :ok end
-    job = %Quantum.Job{schedule: spec, task: fun}
-    :ok = Quantum.add_job(name, job)
-    fjob = Quantum.find_job(name)
-    assert fjob.name == name
-    assert fjob.schedule == spec
-    assert fjob.nodes == [node()]
+    for name <- job_names do
+      spec = "* * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{schedule: spec, task: fun}
+      :ok = Quantum.add_job(name, job)
+      fjob = Quantum.find_job(name)
+      assert fjob.name == name
+      assert fjob.schedule == spec
+      assert fjob.nodes == [node()]
+    end
   end
 
   test "deactivating a named job" do
-    name = :newsletter
-    spec = "* * * * *"
-    fun = fn -> :ok end
-    job = %Quantum.Job{name: name, schedule: spec, task: fun}
-    :ok = Quantum.add_job(name, job)
-    :ok = Quantum.deactivate_job(name)
-    sjob = Quantum.find_job(name)
-    assert sjob == %{job | state: :inactive}
+    for name <- job_names do
+      spec = "* * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{name: name, schedule: spec, task: fun}
+      :ok = Quantum.add_job(name, job)
+      :ok = Quantum.deactivate_job(name)
+      sjob = Quantum.find_job(name)
+      assert sjob == %{job | state: :inactive}
+    end
   end
 
   test "activating a named job" do
-    name = :newsletter
-    spec = "* * * * *"
-    fun = fn -> :ok end
-    job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive}
+    for name <- job_names do
+      spec = "* * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive}
 
-    :ok = Quantum.add_job(name, job)
-    :ok = Quantum.activate_job(name)
-    ajob = Quantum.find_job(name)
-    assert ajob == %{job | state: :active}
+      :ok = Quantum.add_job(name, job)
+      :ok = Quantum.activate_job(name)
+      ajob = Quantum.find_job(name)
+      assert ajob == %{job | state: :active}
+    end
   end
 
   test "deleting a named job at run time" do
-    spec = "* * * * *"
-    name = :newsletter
-    fun = fn -> :ok end
-    job = %Quantum.Job{name: name, schedule: spec, task: fun}
-    :ok = Quantum.add_job(name, job)
-    djob = Quantum.delete_job(name)
-    assert djob.name == name
-    assert djob.schedule == spec
-    assert !Enum.member? Quantum.jobs, {name, job}
+    for name <- job_names do
+      spec = "* * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{name: name, schedule: spec, task: fun}
+      :ok = Quantum.add_job(name, job)
+      djob = Quantum.delete_job(name)
+      assert djob.name == name
+      assert djob.schedule == spec
+      assert !Enum.member? Quantum.jobs, {name, job}
+    end
   end
 
   test "handle_info" do
