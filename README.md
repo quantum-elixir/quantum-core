@@ -116,6 +116,9 @@ Possible options:
 
 So now you can control your jobs behavior on runtime.
 
+For runtime configuration, job names are not restricted to be atoms.
+Strings, atoms and charlists are allowed as job names.
+
 Add named jobs on runtime:
 
 ```elixir
