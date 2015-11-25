@@ -3,11 +3,21 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.6.0] - 2015-11-25
 ### Added
 - PID of last executed task to job struct
+- Credo code linter (only for dev and test)
+- Total downloads badge to README
+- Elixir 1.1.0 and Erlang 18.1 to Travis-CI config
 
 ### Fixed
+- Max hour is 23, not 24
+- Long-running jobs could overlap
 - Typo in README ([Lucas Charles](https://github.com/theoretick))
+- Incorrect function and response types in readme ([Bart van Zon](https://github.com/bartj3))
+- Unnamed job tuples cannot take args ([Lucas Charles](https://github.com/theoretick))
+- Job names can only be atoms and can't be GC ([Luis Hurtado](https://github.com/luishurtado))
 
 ## [1.5.0] - 2015-09-24
 ### Added
@@ -155,7 +165,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/c-rack/quantum-elixir/compare/v1.3.1...v1.3.2

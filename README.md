@@ -17,7 +17,7 @@ To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
 **1. the list of dependencies:**
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.5.0"}]
+  [{:quantum, ">= 1.6.0"}]
 end
 ```
 
@@ -115,6 +115,9 @@ Possible options:
 - `nodes` nodes list the task should be run on, default: `[node()]`
 
 So now you can control your jobs behavior on runtime.
+
+For runtime configuration, job names are not restricted to be atoms.
+Strings, atoms and charlists are allowed as job names.
 
 Add named jobs on runtime:
 
