@@ -2,11 +2,11 @@ defmodule Quantum.Timer do
 
   @moduledoc false
 
-  case Application.get_env(:quantum, :timezone, :utc) do
+  now = case Application.get_env(:quantum, :timezone, :utc) do
     :utc ->
-      now = &:calendar.now_to_universal_time/1
+      &:calendar.now_to_universal_time/1
     :local ->
-      now = &:calendar.now_to_local_time/1
+      &:calendar.now_to_local_time/1
     timezone ->
       raise "Unsupported timezone: #{timezone}"
   end
