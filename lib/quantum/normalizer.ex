@@ -2,6 +2,8 @@ defmodule Quantum.Normalizer do
 
   @moduledoc false
 
+  alias Quantum.Translator
+
   def normalize(j) do
     nj = normalize_job(j)
     {nj.name, nj}
@@ -87,7 +89,7 @@ defmodule Quantum.Normalizer do
   defp normalize_task(fun), do: fun
 
   defp normalize_schedule(e) when e |> is_atom, do: normalize_schedule e |> Atom.to_string
-  defp normalize_schedule(e), do: e |> String.downcase |> Quantum.Translator.translate
+  defp normalize_schedule(e), do: e |> String.downcase |> Translator.translate
 
   # Extracts given option from options list of named task
   defp extract(name, opts, d \\ nil)
