@@ -69,13 +69,13 @@ defmodule Quantum do
   def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
 
   def handle_call({:change_state, n, js}, _, s) do
-    jobs = Enum.map(s.jobs, fn({jn, j}) ->
+    new_jobs = Enum.map(s.jobs, fn({jn, j}) ->
       case jn do
         ^n -> {jn, %{j | state: js}}
         _ -> {jn, j}
       end
     end)
-    {:reply, :ok, %{s | jobs: jobs}}
+    {:reply, :ok, %{s | jobs: new_jobs}}
   end
 
   def handle_call({:delete, n}, _, s) do
@@ -123,8 +123,8 @@ defmodule Quantum do
     end
   end
 
-  defp find_by_name(jobs, job_name) do
-    case List.keyfind(jobs, job_name, 0) do
+  defp find_by_name(job_list, job_name) do
+    case List.keyfind(job_list, job_name, 0) do
       nil          -> nil
       {_name, job} -> job
     end
