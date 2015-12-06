@@ -3,7 +3,7 @@ defmodule Quantum.Translator do
   @moduledoc false
 
   @days   ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
-  @months ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]  
+  @months ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
 
   # Replaces all occurrences of abbreviated day and month names by their index
   def translate(s) do

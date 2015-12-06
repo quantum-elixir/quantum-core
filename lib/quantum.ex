@@ -1,5 +1,9 @@
 defmodule Quantum do
 
+  alias Quantum.Job
+  alias Quantum.Normalizer
+  alias Quantum.Timer
+
   use GenServer
 
   @typedoc "A cron expression"
@@ -9,7 +13,7 @@ defmodule Quantum do
   @type fun0 :: (() -> Type)
 
   @typedoc "A job is defined by a cron expression and a task"
-  @type job :: {atom, Quantum.Job.t}
+  @type job :: {atom, Job.t}
 
   @typedoc "A job options can be defined as list or map"
   @type opts :: list | map | fun0
@@ -17,13 +21,13 @@ defmodule Quantum do
   @doc "Adds a new unnamed job"
   @spec add_job(job) :: :ok
   def add_job(job) do
-    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({nil, job})})
+    GenServer.call(Quantum, {:add, Normalizer.normalize({nil, job})})
   end
 
   @doc "Adds a new named job"
   @spec add_job(expr, job) :: :ok
   def add_job(expr, job) do
-    GenServer.call(Quantum, {:add, Quantum.Normalizer.normalize({expr, job})})
+    GenServer.call(Quantum, {:add, Normalizer.normalize({expr, job})})
   end
 
   @doc "Deactivates a job by name"
@@ -62,20 +66,20 @@ defmodule Quantum do
   end
 
   def init(s) do
-    Quantum.Timer.tick
+    Timer.tick
     {:ok, %{s | jobs: run(%{s | r: 1}), r: 0}}
   end
 
   def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
 
   def handle_call({:change_state, n, js}, _, s) do
-    jobs = Enum.map(s.jobs, fn({jn, j}) ->
+    new_jobs = Enum.map(s.jobs, fn({jn, j}) ->
       case jn do
         ^n -> {jn, %{j | state: js}}
         _ -> {jn, j}
       end
     end)
-    {:reply, :ok, %{s | jobs: jobs}}
+    {:reply, :ok, %{s | jobs: new_jobs}}
   end
 
   def handle_call({:delete, n}, _, s) do
@@ -95,7 +99,7 @@ defmodule Quantum do
   end
 
   def handle_info(:tick, s) do
-    {d, h, m} = Quantum.Timer.tick
+    {d, h, m} = Timer.tick
     if s.d != d, do: s = %{s | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
     s = %{s | h: h, m: m}
     {:noreply, %{s | jobs: run(s)}}
@@ -123,8 +127,8 @@ defmodule Quantum do
     end
   end
 
-  defp find_by_name(jobs, job_name) do
-    case List.keyfind(jobs, job_name, 0) do
+  defp find_by_name(job_list, job_name) do
+    case List.keyfind(job_list, job_name, 0) do
       nil          -> nil
       {_name, job} -> job
     end
