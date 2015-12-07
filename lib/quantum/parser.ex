@@ -9,8 +9,10 @@ defmodule Quantum.Parser do
   def parse(e, a, b) do
     [r|i] = e |> String.split("/")
     [x|y] = r |> String.split("-")
-    v     = x |> String.to_integer
-    do_parse(v, y, i, a, b) |> Enum.filter(&(&1 in a..b))
+    x
+    |> String.to_integer
+    |> do_parse(y, i, a, b)
+    |> Enum.filter(&(&1 in a..b))
   end
 
   defp do_parse(v, [], [], _, _), do: [v]
@@ -29,7 +31,7 @@ defmodule Quantum.Parser do
   end
 
   defp do_parse(v, y, [i], a, b) do
-    do_parse(v, y, [], a, b) |> only_multiplier_of(i)
+    v |> do_parse(y, [], a, b) |> only_multiplier_of(i)
   end
 
   defp only_multiplier_of(coll, i) do

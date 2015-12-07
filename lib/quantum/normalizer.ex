@@ -27,7 +27,7 @@ defmodule Quantum.Normalizer do
   # }
   defp normalize_job({job_name, %Quantum.Job{} = job}) do
     # Sets defauts for job if necessary
-    job_opts(job_name, []) |> Map.merge(%{job | name: job_name })
+    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name })
   end
 
   defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do
@@ -94,9 +94,9 @@ defmodule Quantum.Normalizer do
   # Extracts given option from options list of named task
   defp extract(name, opts, d \\ nil)
   defp extract(name, opts, d) when opts |> is_list, do: extract(name, opts |> Enum.into(%{}), d)
-  defp extract(:schedule, opts, d), do: Map.get(opts, :schedule, d) |> normalize_schedule
-  defp extract(:task, opts, d), do: Map.get(opts, :task, d) |> normalize_task
-  defp extract(name, opts, d), do: Map.get(opts, name, d)
+  defp extract(:schedule, opts, d), do: opts |> Map.get(:schedule, d) |> normalize_schedule
+  defp extract(:task, opts, d), do: opts |> Map.get(:task, d) |> normalize_task
+  defp extract(name, opts, d), do: opts |> Map.get(name, d)
 
   defp atomize(list) when is_list(list), do: Enum.map(list, &atomize/1)
   defp atomize(string) when is_binary(string), do: String.to_atom(string)
@@ -108,7 +108,7 @@ defmodule Quantum.Normalizer do
       schedule: extract(:schedule, opts),
       task: extract(:task, opts),
       args: extract(:args, opts, []),
-      nodes: extract(:nodes, opts, [node()]) |> atomize
+      nodes: :nodes |> extract(opts, [node()]) |> atomize
     }
   end
 

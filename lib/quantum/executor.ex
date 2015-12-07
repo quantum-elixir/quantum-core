@@ -41,14 +41,8 @@ defmodule Quantum.Executor do
   end
 
   defp execute_fun({mod, fun}, args) do
-    mod = cond do
-      is_binary(mod) -> String.to_atom("Elixir.#{mod}")
-      true -> mod
-    end
-    fun = cond do
-      is_binary(fun) -> String.to_atom(fun)
-      true -> fun
-    end
+    mod = if is_binary(mod), do: String.to_atom("Elixir.#{mod}"), else: mod
+    fun = if is_binary(fun), do: String.to_atom(fun), else: fun
     :erlang.apply(mod, fun, args)
   end
 
