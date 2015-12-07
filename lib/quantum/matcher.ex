@@ -4,20 +4,20 @@ defmodule Quantum.Matcher do
 
   alias Quantum.Parser
 
-  def match("*", _, _, _) do
+  def match("*", _, _) do
     true
   end
 
-  def match(e, v, a, b) do
-    do_match(e |> String.split(","), v, a, b)
+  def match(e, v, range) do
+    e |> String.split(",") |> do_match(v, range)
   end
 
-  defp do_match([], _, _, _) do
+  defp do_match([], _, _) do
     false
   end
 
-  defp do_match([e|t], v, a, b) do
-    Enum.any?(Parser.parse(e, a, b), &(&1 == v)) or do_match(t, v, a, b)
+  defp do_match([e|t], v, range) do
+    Enum.any?(Parser.parse(e, range), &(&1 == v)) or do_match(t, v, range)
   end
 
 end

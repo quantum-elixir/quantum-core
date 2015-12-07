@@ -31,24 +31,18 @@ defmodule Quantum.Executor do
     [m, h, d, n, w] = e |> String.split(" ")
     {_, cur_mon, cur_day} = state.d
     cond do
-      !match(m, state.m, 0, 59) -> false
-      !match(h, state.h, 0, 23) -> false
-      !match(d, cur_day, 1, 31) -> false
-      !match(n, cur_mon, 1, 12) -> false
-      !match(w, state.w, 0,  6) -> false
+      !match(m, state.m, 0..59) -> false
+      !match(h, state.h, 0..23) -> false
+      !match(d, cur_day, 1..31) -> false
+      !match(n, cur_mon, 1..12) -> false
+      !match(w, state.w, 0..6)  -> false
       true                      -> execute_fun(fun, args)
     end
   end
 
   defp execute_fun({mod, fun}, args) do
-    mod = cond do
-      is_binary(mod) -> String.to_atom("Elixir.#{mod}")
-      true -> mod
-    end
-    fun = cond do
-      is_binary(fun) -> String.to_atom(fun)
-      true -> fun
-    end
+    mod = if is_binary(mod), do: String.to_atom("Elixir.#{mod}"), else: mod
+    fun = if is_binary(fun), do: String.to_atom(fun), else: fun
     :erlang.apply(mod, fun, args)
   end
 

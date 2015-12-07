@@ -7,7 +7,7 @@ defmodule Quantum.Application do
   use Application
 
   def start(_type, _args) do
-    jobs = Application.get_env(:quantum, :cron, []) |> Enum.map(&Normalizer.normalize/1)
+    jobs = :quantum |> Application.get_env(:cron, []) |> Enum.map(&Normalizer.normalize/1)
     state = %{jobs: jobs, d: nil, h: nil, m: nil, w: nil, r: nil}
     Quantum.Supervisor.start_link(state)
   end
