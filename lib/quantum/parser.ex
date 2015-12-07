@@ -2,26 +2,26 @@ defmodule Quantum.Parser do
 
   @moduledoc false
 
-  def parse("*/" <> i, a, b) do
-    a..b |> only_multiplier_of(i)
+  def parse("*/" <> i, range) do
+    range |> only_multiplier_of(i)
   end
 
-  def parse(e, a, b) do
+  def parse(e, range) do
     [r|i] = e |> String.split("/")
     [x|y] = r |> String.split("-")
     x
     |> String.to_integer
-    |> do_parse(y, i, a, b)
-    |> Enum.filter(&(&1 in a..b))
+    |> do_parse(y, i, range)
+    |> Enum.filter(&(&1 in range))
   end
 
-  defp do_parse(v, [], [], _, _), do: [v]
+  defp do_parse(v, [], [], _), do: [v]
 
-  defp do_parse(v, [], [i], _, _) do
+  defp do_parse(v, [], [i], _) do
     [rem(v, i |> String.to_integer)]
   end
 
-  defp do_parse(v, [y], [], a, b) do
+  defp do_parse(v, [y], [], a..b) do
     t = y |> String.to_integer
     if v < t do
       Enum.to_list(v..t)
@@ -30,8 +30,8 @@ defmodule Quantum.Parser do
     end
   end
 
-  defp do_parse(v, y, [i], a, b) do
-    v |> do_parse(y, [], a, b) |> only_multiplier_of(i)
+  defp do_parse(v, y, [i], range) do
+    v |> do_parse(y, [], range) |> only_multiplier_of(i)
   end
 
   defp only_multiplier_of(coll, i) do
