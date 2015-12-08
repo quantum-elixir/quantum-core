@@ -74,4 +74,9 @@ defmodule Quantum.ExecutorTest do
     assert execute({"* * * * *", &ret/1, [:passed]}, %{}) == :passed
   end
 
+  test "reboot" do
+    assert execute({"@reboot", &ok/0, []}, %{r: 1}) == :ok
+    assert execute({"@reboot", &ok/0, []}, %{r: 0}) == false
+  end
+
 end
