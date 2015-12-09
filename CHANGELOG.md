@@ -4,6 +4,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.1] - 2015-12-09
+### Fixed
+- `@reboot` entries are throwing errors
+- Credo warnings and software design suggestions
+- Elixir 1.2 warnings
+
+### Changed
+- Dependency 'credo' updated
+- Refactored range variables
+- `.gitignore` updated
+
 ## [1.6.0] - 2015-11-25
 ### Added
 - PID of last executed task to job struct
@@ -165,7 +176,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/c-rack/quantum-elixir/compare/v1.3.2...v1.4.0
