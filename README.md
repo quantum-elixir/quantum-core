@@ -10,6 +10,20 @@
 [![License](https://img.shields.io/badge/license-Apache-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 
+------
+
+* <a href="#setup">Setup</a>
+* <a href="#usage">Usage</a>
+  * <a href="#named-jobs">Named jobs</a>
+  * <a href="#nodes">Nodes</a>
+  * <a href="#timezone">Timezone</a>
+  * <a href="#crontab-format">Crontab format</a>
+  * <a href="#special-expressions">Special expressions</a>
+* <a href="#contribution">Contribution</a>
+* <a href="#license">License</a>
+
+------
+
 ## Setup
 
 To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
