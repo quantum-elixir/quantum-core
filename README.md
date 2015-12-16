@@ -12,15 +12,15 @@
 
 ------
 
-* <a href="#setup">Setup</a>
-* <a href="#usage">Usage</a>
-  * <a href="#named-jobs">Named jobs</a>
-  * <a href="#nodes">Nodes</a>
-  * <a href="#timezone">Timezone</a>
-  * <a href="#crontab-format">Crontab format</a>
-  * <a href="#special-expressions">Special expressions</a>
-* <a href="#contribution">Contribution</a>
-* <a href="#license">License</a>
+* [Setup](#setup)
+* [Usage](#usage)
+  * [Named jobs](#named-jobs)
+  * [Nodes](#nodes)
+  * [Timezone](#timezone)
+  * [Crontab format](#crontab-format)
+  * [Special expressions](#special-expressions)
+* [Contribution](#contribution)
+* [License](#license)
 
 ------
 
