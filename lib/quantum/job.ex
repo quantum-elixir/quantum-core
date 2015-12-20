@@ -1,5 +1,7 @@
 defmodule Quantum.Job do
 
+  @moduledoc false
+
   defstruct [
     name: nil,
     schedule: nil,

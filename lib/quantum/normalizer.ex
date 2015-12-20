@@ -72,8 +72,10 @@ defmodule Quantum.Normalizer do
   # Input: "* * * * * MyApp.MyModule.my_method"
   # Output: {"* * * * *", {"MyApp.MyModule", "my_method"}}
   defp normalize_unnamed_job(e) do
-  	[[_, schedule, task]] = Regex.scan(~r/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+|@\w+)\s+(.*\.\w+)$/, e)
-  	{normalize_schedule(schedule), normalize_task(task)}
+    [[_, schedule, task]] =
+      ~r/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+|@\w+)\s+(.*\.\w+)$/
+      |> Regex.scan(e)
+    {normalize_schedule(schedule), normalize_task(task)}
   end
 
   # Converts string representation of task into its
