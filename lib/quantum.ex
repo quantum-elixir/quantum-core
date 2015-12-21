@@ -1,5 +1,7 @@
 defmodule Quantum do
 
+  @moduledoc "A cron-like job scheduler"
+
   alias Quantum.Job
   alias Quantum.Normalizer
   alias Quantum.Timer
@@ -94,7 +96,12 @@ defmodule Quantum do
 
   def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
   def handle_call(:which_children, _, s) do
-    children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
+    children = [{
+      Task.Supervisor,
+      :quantum_tasks_sup,
+      :supervisor,
+      [Task.Supervisor]
+    }]
     {:reply, children, s}
   end
 
@@ -109,8 +116,8 @@ defmodule Quantum do
   defp run(s) do
     Enum.map s.jobs, fn({name, j}) ->
       if j.state == :active && node() in j.nodes && check_overlap(j) do
-        t = Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor, :execute,
-                                                  [{j.schedule, j.task, j.args}, s])
+        t = Task.Supervisor.async(:quantum_tasks_sup, Quantum.Executor,
+                                  :execute, [{j.schedule, j.task, j.args}, s])
         {name, %{j | pid: t.pid}}
       else
         {name, j}
