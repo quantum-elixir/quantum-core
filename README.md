@@ -127,6 +127,7 @@ Possible options:
 - `task` function to be performed, ex: `"MyApp.MyModule.my_method"` or `{MyApp.MyModule, :my_method}`
 - `args` arguments list to be passed to `task`
 - `nodes` nodes list the task should be run on, default: `[node()]`
+- `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
 
 So now you can control your jobs behavior on runtime.
 
