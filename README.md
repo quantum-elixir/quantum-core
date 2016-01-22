@@ -19,6 +19,7 @@
   * [Timezone](#timezone)
   * [Crontab format](#crontab-format)
   * [Special expressions](#special-expressions)
+  * [Override default settings](#override-default-settings)
 * [Contribution](#contribution)
 * [License](#license)
 
@@ -228,6 +229,23 @@ Instead of the first five fields, one of these special strings may be used:
 | `@reboot`   | Run once, at startup
 | `@weekly`   | Run once a week, same as `"0 0 * * 0"`
 | `@yearly`   | Run once a year, same as `"0 0 1 1 *"` or `@annually`
+
+### Override default settings
+
+The default job settings can be configured as shown in the example below.
+So if you have a lot of jobs and do not want to override the
+default setting in every job, you can set them globally.
+
+```elixir
+config :quantum,
+  cron: [
+    # Your cronjobs
+  ],
+  default_schedule: "* * * * *",
+  default_args: ["my api key"],
+  default_nodes: [:app1@myhost],
+  default_overlap: false
+```
 
 ## Contribution
 
