@@ -16,6 +16,7 @@ defmodule Quantum.NormalizerTest do
       schedule: "@weekly",
       task: "MyModule.my_method",
       args: [1, 2, 3],
+      overlap: false,
       nodes: [:atom@node, "string@node"]
     ]}
 
@@ -24,6 +25,7 @@ defmodule Quantum.NormalizerTest do
       schedule: "@weekly",
       task: {"MyModule", "my_method"},
       args: [1, 2, 3],
+      overlap: false,
       nodes: [:atom@node, :string@node]
     }}
   end
