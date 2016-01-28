@@ -110,6 +110,7 @@ defmodule Quantum.Normalizer do
       schedule: extract(:schedule, opts),
       task: extract(:task, opts),
       args: extract(:args, opts, []),
+      overlap: extract(:overlap, opts, Application.get_env(:quantum, :default_overlap, true)),
       nodes: :nodes |> extract(opts, [node()]) |> atomize
     }
   end
