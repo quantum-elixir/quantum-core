@@ -138,11 +138,8 @@ Strings, atoms and charlists are allowed as job names.
 Add named jobs on runtime:
 
 ```elixir
-job_spec = [
-  schedule: "1 * * * *",
-  task: fn -> :ok end
-]
-Quantum.add_job(:ok_job, fn -> :ok end)
+job = %Quantum.Job{schedule: "* * * * *", task: fn -> IO.puts "tick" end}
+Quantum.add_job("ticker", job)
 ```
 
 Deactivate job (will not be performed until activation):
