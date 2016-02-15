@@ -3,6 +3,10 @@ defmodule QuantumTest do
 
   defp job_names, do: ["test_job", :test_job, 'test_job']
 
+  setup do
+    Quantum.delete_all_jobs
+  end
+
   test "adding a job at run time" do
     spec = "1 * * * *"
     fun = fn -> :ok end
@@ -107,6 +111,25 @@ defmodule QuantumTest do
       assert djob.schedule == spec
       assert !Enum.member? Quantum.jobs, {name, job}
     end
+  end
+
+  test "deleting all jobs" do
+    for name <- job_names do
+      spec = "* * * * *"
+      fun = fn -> :ok end
+      job = %Quantum.Job{name: name, schedule: spec, task: fun}
+      :ok = Quantum.add_job(name, job)
+    end
+    assert Enum.count(Quantum.jobs) == 3
+    Quantum.delete_all_jobs
+    assert Quantum.jobs == []
+  end
+
+  test "prevent duplicate job names" do
+    # note that "test_job", :test_job and 'test_job' are regarded as different names
+    job = %Quantum.Job{schedule: "* * * * *", task: fn -> :ok end}
+    assert Quantum.add_job(:test_job, job) == :ok
+    assert Quantum.add_job(:test_job, job) == :error
   end
 
   test "handle_info" do

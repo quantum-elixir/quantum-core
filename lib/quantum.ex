@@ -27,9 +27,13 @@ defmodule Quantum do
   end
 
   @doc "Adds a new named job"
-  @spec add_job(expr, job) :: :ok
+  @spec add_job(expr, job) :: :ok | :error
   def add_job(expr, job) do
-    GenServer.call(Quantum, {:add, Normalizer.normalize({expr, job})})
+    {name, job} = Normalizer.normalize({expr, job})
+    cond do
+      name && find_job(name) -> :error
+      true -> GenServer.call(Quantum, {:add, {name, job}})
+    end
   end
 
   @doc "Deactivates a job by name"
@@ -54,6 +58,12 @@ defmodule Quantum do
   @spec delete_job(expr) :: job
   def delete_job(name) do
     GenServer.call(Quantum, {:delete, name})
+  end
+
+  @doc "Deletes all jobs"
+  @spec delete_all_jobs :: :ok
+  def delete_all_jobs do
+    GenServer.call(Quantum, {:delete_all})
   end
 
   @doc "Returns the list of currently defined jobs"
@@ -92,6 +102,10 @@ defmodule Quantum do
         job
     end
     {:reply, job, s}
+  end
+
+  def handle_call({:delete_all}, _, s) do
+    {:reply, :ok, %{s | jobs: []}}
   end
 
   def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
