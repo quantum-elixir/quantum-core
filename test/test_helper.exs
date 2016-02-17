@@ -1,1 +1,1 @@
-ExUnit.start(exclude: [:startup])
+ExUnit.start()
