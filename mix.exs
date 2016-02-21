@@ -8,11 +8,11 @@ defmodule Quantum.Mixfile do
       app: :quantum,
       build_embedded: Mix.env == :prod,
       deps: [
-        {:credo,       "~> 0.2",  only: [:dev, :test]},
+        {:credo,       "~> 0.3",  only: [:dev, :test]},
         {:earmark,     "~> 0.2",  only: [:dev, :docs]},
-        {:ex_doc,      "~> 0.10", only: [:dev, :docs]},
-        {:excoveralls, "~> 0.4",  only: [:dev, :test]},
-        {:inch_ex,     "~> 0.4",  only: [:dev, :docs]}
+        {:ex_doc,      "~> 0.11", only: [:dev, :docs]},
+        {:excoveralls, "~> 0.5",  only: [:dev, :test]},
+        {:inch_ex,     "~> 0.5",  only: [:dev, :docs]}
       ],
       description: "Cron-like job scheduler for Elixir.",
       docs: [
