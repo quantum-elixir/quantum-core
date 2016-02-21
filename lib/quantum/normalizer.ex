@@ -27,7 +27,7 @@ defmodule Quantum.Normalizer do
   # }
   defp normalize_job({job_name, %Quantum.Job{} = job}) do
     # Sets defauts for job if necessary
-    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name })
+    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name})
   end
 
   defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do

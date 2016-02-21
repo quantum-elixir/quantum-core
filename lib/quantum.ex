@@ -30,9 +30,10 @@ defmodule Quantum do
   @spec add_job(expr, job) :: :ok | :error
   def add_job(expr, job) do
     {name, job} = Normalizer.normalize({expr, job})
-    cond do
-      name && find_job(name) -> :error
-      true -> GenServer.call(Quantum, {:add, {name, job}})
+    if name && find_job(name) do
+      :error
+    else
+      GenServer.call(Quantum, {:add, {name, job}})
     end
   end
 
