@@ -238,4 +238,99 @@ defmodule QuantumTest do
     :ok = Agent.stop(pid1)
   end
 
+  test "do not crash sibling jobs when a job crashes" do
+    fun = fn ->
+      receive do
+        :ping -> :pong
+      end
+    end
+
+    job_sibling = %Quantum.Job{schedule: "* * * * *", task: fun}
+    assert Quantum.add_job("sibling_job", job_sibling) == :ok
+
+    job_to_crash = %Quantum.Job{schedule: "* * * * *", task: fun}
+    assert Quantum.add_job("job_to_crash", job_to_crash) == :ok
+
+    assert Enum.count(Quantum.jobs) == 2
+
+    send(Quantum, :tick)
+
+    %Quantum.Job{pid: pid_sibling} = Quantum.find_job("sibling_job")
+    %Quantum.Job{pid: pid_to_crash} = Quantum.find_job("job_to_crash")
+
+    # both processes are alive
+    :ok = ensure_alive(pid_sibling)
+    :ok = ensure_alive(pid_to_crash)
+
+    # Stop the job with non-normal reason
+    Process.exit(pid_to_crash, :shutdown)
+
+    ref_sibling = Process.monitor(pid_sibling)
+    ref_to_crash = Process.monitor(pid_to_crash)
+
+    # Wait until the job to crash is dead
+    assert_receive {:DOWN, ^ref_to_crash, _, _, _}
+
+    # sibling job shouldn't crash
+    refute_receive {:DOWN, ^ref_sibling, _, _, _}
+  end
+
+  test "preserve state if one of the jobs crashes" do
+    job1 = %Quantum.Job{schedule: "* * * * *", task: fn -> :ok end}
+    assert Quantum.add_job("job1", job1) == :ok
+
+    fun = fn ->
+      receive do
+        :ping -> :pong
+      end
+    end
+    job_to_crash = %Quantum.Job{schedule: "* * * * *", task: fun}
+    assert Quantum.add_job("job_to_crash", job_to_crash) == :ok
+
+    assert Enum.count(Quantum.jobs) == 2
+
+    send(Quantum, :tick)
+
+    assert Enum.count(Quantum.jobs) == 2
+
+    %Quantum.Job{pid: pid_to_crash} = Quantum.find_job("job_to_crash")
+
+    # ensure process to crash is alive
+    :ok = ensure_alive(pid_to_crash)
+
+    # Stop the job with non-normal reason
+    Process.exit(pid_to_crash, :shutdown)
+
+    # Wait until the job is dead
+    ref = Process.monitor(pid_to_crash)
+    assert_receive {:DOWN, ^ref, _, _, _}
+
+    # ensure there is a new process registered for Quantum
+    # in case Quantum process gets restarted because of
+    # the crashed job
+    :ok = ensure_registered(Quantum)
+
+    # after process crashed we should still have 2 jobs scheduled
+    assert Enum.count(Quantum.jobs) == 2
+  end
+
+  # loop until given process is alive
+  defp ensure_alive(pid) do
+    case Process.alive?(pid) do
+      false ->
+        :timer.sleep(10)
+        ensure_alive(pid)
+      true -> :ok
+    end
+  end
+
+  # loop until given process is registered
+  defp ensure_registered(registered_process) do
+    case Process.whereis(registered_process) do
+      nil ->
+        :timer.sleep(10)
+        ensure_registered(registered_process)
+      _ -> :ok
+    end
+  end
 end
