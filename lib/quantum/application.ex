@@ -18,7 +18,7 @@ defmodule Quantum.Application do
   def remove_jobs_with_duplicate_names(job_list) do
     Enum.reduce(job_list, [], fn({name, job}, acc) ->
       if name && Enum.member?(Keyword.keys(acc), name) do
-        Logger.warn("A Quantum-job with the name \"#{name}\" has not been started because this job-name already exists.")
+        Logger.warn("Job '#{name}' not started due to duplicate job name")
         acc
       else
         [{name, job} | acc]

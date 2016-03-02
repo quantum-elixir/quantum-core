@@ -105,12 +105,13 @@ defmodule Quantum.Normalizer do
   defp atomize(atom) when is_atom(atom), do: atom
 
   defp job_opts(job_name, opts) do
+    overlap = Application.get_env(:quantum, :default_overlap, true)
     %{
       name: job_name,
       schedule: extract(:schedule, opts),
       task: extract(:task, opts),
       args: extract(:args, opts, []),
-      overlap: extract(:overlap, opts, Application.get_env(:quantum, :default_overlap, true)),
+      overlap: extract(:overlap, opts, overlap),
       nodes: :nodes |> extract(opts, [node()]) |> atomize
     }
   end
