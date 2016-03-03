@@ -1,18 +1,16 @@
 language: elixir
 sudo: false
 elixir:
-  - 1.0.4
-  - 1.0.5
-  - 1.1.0
   - 1.2.0
+  - 1.2.1
+  - 1.2.2
+  - 1.2.3
 otp_release:
-  - 17.4
-  - 17.5
   - 18.0
   - 18.1
+  - 18.2
 after_success:
   - "mix compile && mix coveralls.travis"
 after_script:
   - MIX_ENV=docs mix deps.get
   - MIX_ENV=docs mix inch.report
-
