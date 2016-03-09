@@ -4,6 +4,27 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.0] - 2016-03-09
+### Added
+- ToC to README
+- Documentation for `overlap` option
+- Elixir 1.2 to Travis-CI config
+- Prevent duplicate job-names at runtime ([Kai Faber](https://github.com/kaiatgithub))
+
+
+### Changed
+- ToC markdown
+- Default values are now configurable
+- Updated all dependencies
+- Required Elixir version is now `>= 1.2`
+
+### Fixed
+- Overlap option was not set to jobs
+- Incorrect example in README
+- Timezone is not configurable at runtime
+- Credo warnings
+- GenServer restarts when one of the jobs crashes (#82)
+
 ## [1.6.1] - 2015-12-09
 ### Fixed
 - `@reboot` entries are throwing errors
@@ -176,7 +197,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.6.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/c-rack/quantum-elixir/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/c-rack/quantum-elixir/compare/v1.4.0...v1.5.0

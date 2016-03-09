@@ -1,7 +1,7 @@
 defmodule Quantum.Mixfile do
   use Mix.Project
 
-  @version "1.6.1"
+  @version "1.7.0"
 
   def project do
     [
@@ -41,7 +41,8 @@ defmodule Quantum.Mixfile do
         "Lenz Gschwendtner",
         "Lucas Charles",
         "Rodion Vshevtsov",
-        "Stanislav Krasnoyarov"
+        "Stanislav Krasnoyarov",
+        "Kai Faber"
         ],
       licenses: ["Apache License 2.0"],
       links: %{
