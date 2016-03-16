@@ -6,6 +6,7 @@ defmodule Quantum.Job do
   @default_args     Application.get_env(:quantum, :default_args, [])
   @default_nodes    Application.get_env(:quantum, :default_nodes, [node()])
   @default_overlap  Application.get_env(:quantum, :default_overlap, true)
+  @default_timezone Application.get_env(:quantum, :timezone, :utc)
 
   defstruct [
     name: nil,
@@ -15,7 +16,8 @@ defmodule Quantum.Job do
     state: :active, # active/inactive
     nodes: @default_nodes,
     overlap: @default_overlap,
-    pid: nil
+    pid: nil,
+    timezone: @default_timezone
   ]
 
   @type t :: %Quantum.Job{}

@@ -107,7 +107,8 @@ Job struct:
   state: :active, # is used for internal purposes
   nodes: [:node@host], # default: [node()]
   overlap: false, # run even if previous job is still running?, default: true
-  pid: nil # PID of last executed task
+  pid: nil, # PID of last executed task
+  timezone: :local # Timezone to run task in, defaults to Quantum default (either :utc or :local)
 }
 ```
 
