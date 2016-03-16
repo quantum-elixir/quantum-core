@@ -132,7 +132,7 @@ defmodule Quantum do
     Enum.map s.jobs, fn({name, j}) ->
       if j.state == :active && node() in j.nodes && check_overlap(j) do
         t = Task.Supervisor.async_nolink(:quantum_tasks_sup, Quantum.Executor,
-                                  :execute, [{j.schedule, j.task, j.args}, s])
+                                  :execute, [{j.schedule, j.task, j.args, j.timezone}, s])
         {name, %{j | pid: t.pid}}
       else
         {name, j}

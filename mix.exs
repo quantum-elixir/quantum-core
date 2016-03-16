@@ -8,6 +8,7 @@ defmodule Quantum.Mixfile do
       app: :quantum,
       build_embedded: Mix.env == :prod,
       deps: [
+        {:timex,       "~> 2.1.1"},
         {:credo,       "~> 0.3",  only: [:dev, :test]},
         {:earmark,     "~> 0.2",  only: [:dev, :docs]},
         {:ex_doc,      "~> 0.11", only: [:dev, :docs]},
@@ -30,7 +31,7 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    [applications: [], mod: {Quantum.Application, []}]
+    [applications: [:timex], mod: {Quantum.Application, []}]
   end
 
   defp package do
