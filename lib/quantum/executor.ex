@@ -15,8 +15,8 @@ defmodule Quantum.Executor do
     end
 
     case Application.get_env(:quantum, :timezone, :utc) do
-      :utc   -> DateTime.from(t) |> Timezone.convert(tz_final)
-      :local -> DateTime.from(t, :local) |> Timezone.convert(tz_final)
+      :utc   -> t |> DateTime.from |> Timezone.convert(tz_final)
+      :local -> t |> DateTime.from(:local) |> Timezone.convert(tz_final)
       tz     -> raise "Unsupported timezone: #{tz}"
     end
   end
@@ -44,22 +44,38 @@ defmodule Quantum.Executor do
   def execute({"@weekly", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
     c_weekday = rem(Timex.weekday(c), 7)
-    if c.minute == 0 and c.hour == 0 and c_weekday == 0, do: execute_fun(fun, args), else: false
+    if c.minute == 0 and c.hour == 0 and c_weekday == 0 do
+      execute_fun(fun, args)
+    else
+      false
+    end
   end
 
   def execute({"@monthly", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1, do: execute_fun(fun, args), else: false
+    if c.minute == 0 and c.hour == 0 and c.day == 1 do
+      execute_fun(fun, args)
+    else
+      false
+    end
   end
 
   def execute({"@annually", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1, do: execute_fun(fun, args), else: false
+    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1 do
+      execute_fun(fun, args)
+    else
+      false
+    end
   end
 
   def execute({"@yearly", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1, do: execute_fun(fun, args), else: false
+    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1 do
+      execute_fun(fun, args)
+    else
+      false
+    end
   end
 
   def execute({e, fun, args, tz}, state) do
