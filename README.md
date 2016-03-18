@@ -200,6 +200,15 @@ config :quantum,
   timezone: :local
 ```
 
+Timezones can also be configured on a per-job basis (and overrides the default Quantum timezone). To set the timezone on a job, use the `timezone` key when creating the `Quantum.Job` structure. Timezones can be `Timex.TimezoneInfo` objects or timezone name such as "America/Chicago". A full list of timezone names can be downloaded from https://www.iana.org/time-zones, or at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
+
+```elixir
+%Quantum.Job{
+  # ...
+  timezone: "America/Chicago"
+}
+```
+
 ### Crontab format
 
 | Field        | Allowed values
