@@ -38,6 +38,17 @@ defmodule QuantumTest do
     end
   end
 
+  test "adding a named {m, f, a} jpb at run time" do
+    name = "ticker"
+    spec = "1 * * * *"
+    task = {IO, :puts}
+    args = ["Tick"]
+    job = %Quantum.Job{schedule: spec, task: task, args: args}
+    :ok = Quantum.add_job(name, job)
+    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                     nodes: [node()]}}
+  end
+
   test "adding a unnamed job at run time" do
     spec = "1 * * * *"
     fun = fn -> :ok end
@@ -79,7 +90,7 @@ defmodule QuantumTest do
     for name <- job_names do
       spec = "* * * * *"
       fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun}
+      job = %Quantum.Job{name: name, schedule: spec, task: fun, nodes: Quantum.Normalizer.default_nodes}
       :ok = Quantum.add_job(name, job)
       :ok = Quantum.deactivate_job(name)
       sjob = Quantum.find_job(name)
@@ -91,7 +102,7 @@ defmodule QuantumTest do
     for name <- job_names do
       spec = "* * * * *"
       fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive}
+      job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive, nodes: Quantum.Normalizer.default_nodes}
 
       :ok = Quantum.add_job(name, job)
       :ok = Quantum.activate_job(name)
@@ -153,7 +164,7 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: "* * * * *", task: fun}
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, nodes: Quantum.Normalizer.default_nodes}
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
@@ -186,7 +197,7 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: "@reboot", task: fun}
+    job = %Quantum.Job{schedule: "@reboot", task: fun, nodes: Quantum.Normalizer.default_nodes}
     {:ok, state} = Quantum.init(%{jobs: [{nil, job}], d: nil, h: nil, m: nil, w: nil, r: nil})
     :timer.sleep(500)
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
@@ -205,7 +216,7 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false}
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false, nodes: Quantum.Normalizer.default_nodes}
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
@@ -226,7 +237,7 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false, pid: pid1}
+    job = %Quantum.Job{schedule: "* * * * *", task: fun, overlap: false, pid: pid1, nodes: Quantum.Normalizer.default_nodes}
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
