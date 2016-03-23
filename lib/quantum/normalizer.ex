@@ -9,6 +9,10 @@ defmodule Quantum.Normalizer do
     {nj.name, nj}
   end
 
+  def default_nodes do
+    Application.get_env(:quantum, :default_nodes, [node()])
+  end
+
   # Creates named Quantum.Job
   # Input:
   # [
@@ -27,7 +31,13 @@ defmodule Quantum.Normalizer do
   # }
   defp normalize_job({job_name, %Quantum.Job{} = job}) do
     # Sets defauts for job if necessary
-    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name, nodes: Application.get_env(:quantum, :default_nodes, [node()])})
+    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name})
+    |> Map.put(
+        :nodes,
+        case job.nodes do
+          nil -> default_nodes
+          ns -> ns
+        end)
   end
 
   defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do

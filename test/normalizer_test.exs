@@ -37,7 +37,8 @@ defmodule Quantum.NormalizerTest do
       name: nil,
       schedule: "* * * * *",
       task: {"MyModule", "my_method"},
-      args: []
+      args: [],
+      nodes: default_nodes
     }}
   end
 
@@ -48,7 +49,8 @@ defmodule Quantum.NormalizerTest do
       name: nil,
       schedule: "* * * * *",
       task: {"MyModule", "my_method"},
-      args: []
+      args: [],
+      nodes: default_nodes
     }}
   end
 
@@ -59,7 +61,8 @@ defmodule Quantum.NormalizerTest do
       name: nil,
       schedule: "* * * * *",
       task: {"MyModule", "my_method"},
-      args: [1, 2, 3]
+      args: [1, 2, 3],
+      nodes: default_nodes
     }}
   end
 
@@ -70,7 +73,8 @@ defmodule Quantum.NormalizerTest do
       name: nil,
       schedule: "@weekly",
       task: {"MyModule", "my_method"},
-      args: []
+      args: [],
+      nodes: default_nodes
     }}
   end
 
