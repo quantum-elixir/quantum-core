@@ -38,6 +38,17 @@ defmodule QuantumTest do
     end
   end
 
+  test "adding a named {m, f, a} jpb at run time" do
+    name = "ticker"
+    spec = "1 * * * *"
+    task = {IO, :puts}
+    args = ["Tick"]
+    job = %Quantum.Job{schedule: spec, task: task, args: args}
+    :ok = Quantum.add_job(name, job)
+    assert Enum.member? Quantum.jobs, {name, %{job | name: name,
+                                                     nodes: [node()]}}
+  end
+
   test "adding a unnamed job at run time" do
     spec = "1 * * * *"
     fun = fn -> :ok end
