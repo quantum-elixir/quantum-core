@@ -14,7 +14,7 @@ defmodule Quantum.Job do
     task: nil, # {module, function}
     args: @default_args,
     state: :active, # active/inactive
-    nodes: Application.get_env(:quantum, :default_nodes, [node()]),
+    nodes: nil,
     # @default_nodes,
     overlap: @default_overlap,
     pid: nil,
