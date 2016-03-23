@@ -14,7 +14,6 @@ defmodule Quantum.Job do
     args: @default_args,
     state: :active, # active/inactive
     nodes: nil,
-    # @default_nodes,
     overlap: @default_overlap,
     pid: nil,
     timezone: @default_timezone
