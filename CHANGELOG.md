@@ -4,6 +4,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.1] - 2016-03-24
+### Added
+- Optional per-job timezone support
+
+### Fixed
+- Nodes defaulting in `%Quantum.Job` struct
+- `job.nodes` defaulting in the normalizer
+- Test suite after changing defaulting of nodes property for the `%Quantum.Jobs{}` struct
+
 ## [1.7.0] - 2016-03-09
 ### Added
 - ToC to README
@@ -197,7 +206,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.7.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/c-rack/quantum-elixir/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/c-rack/quantum-elixir/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/c-rack/quantum-elixir/compare/v1.5.0...v1.6.0
