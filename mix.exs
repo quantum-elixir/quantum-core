@@ -48,7 +48,6 @@ defmodule Quantum.Mixfile do
       licenses: ["Apache License 2.0"],
       links: %{
         "Changelog" => "https://github.com/c-rack/quantum-elixir/blob/master/CHANGELOG.md",
-        "Docs" => "https://hexdocs.pm/quantum",
         "GitHub" => "https://github.com/c-rack/quantum-elixir"
       }
     }
