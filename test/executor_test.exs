@@ -8,6 +8,25 @@ defmodule Quantum.ExecutorTest do
   def ok,     do: :ok
   def ret(v), do: v
 
+  setup context do
+    if timezone = context[:timezone] do
+      on_exit(context, fn ->
+        Application.delete_env(:quantum, :timezone)
+        Application.delete_env(:timex, :local_timezone)
+      end)
+
+      case timezone do
+        "local" ->
+          Application.put_env(:quantum, :timezone, :local)
+          Application.put_env(:timex, :local_timezone, "Etc/GMT+1")
+        "CET" ->
+          Application.put_env(:quantum, :timezone, "Etc/GMT+1")
+      end
+    end
+
+    :ok
+  end
+
   test "check minutely" do
     assert execute({"* * * * *", &ok/0, [], @default_timezone}, %{}) == :ok
   end
@@ -81,4 +100,15 @@ defmodule Quantum.ExecutorTest do
     assert execute({"@reboot", &ok/0, [], @default_timezone}, %{r: 0}) == false
   end
 
+  @tag timezone: "local"
+  test "accepts local timezone" do
+    assert execute({"@daily", &ok/0, [], :local}, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1}) == :ok
+  end
+
+  @tag timezone: "CET"
+  test "rejects arbitrary timezone" do
+    assert_raise RuntimeError, ~r/Unsupported timezone/, fn ->
+      execute({"@daily", &ok/0, [], "Etc/GMT+1"}, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1})
+    end
+  end
 end
