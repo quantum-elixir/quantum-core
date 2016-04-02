@@ -21,10 +21,10 @@ defmodule Quantum.Executor do
     end
   end
 
-  def execute({"@reboot",   fun, args, tz}, %{r: 1}), do: execute_fun(fun, args)
-  def execute(_,                        %{r: 1}), do: false
-  def execute({"@reboot",   _, _, _},   %{r: 0}), do: false
-  def execute({"* * * * *", fun, args, tz}, _), do: execute_fun(fun, args)
+  def execute({"@reboot",   fun, args, _}, %{r: 1}), do: execute_fun(fun, args)
+  def execute(_,                           %{r: 1}), do: false
+  def execute({"@reboot",   _, _, _},      %{r: 0}), do: false
+  def execute({"* * * * *", fun, args, _}, _), do: execute_fun(fun, args)
 
   def execute({"@hourly", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
