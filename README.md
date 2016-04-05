@@ -131,43 +131,36 @@ Possible options:
 - `nodes` nodes list the task should be run on, default: `[node()]`
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
 
-So now you can control your jobs behavior on runtime.
-
+It is possible to control the behavior of jobs at runtime.
 For runtime configuration, job names are not restricted to be atoms.
 Strings, atoms and charlists are allowed as job names.
 
-Add named jobs on runtime:
+Add a named job at runtime:
 
 ```elixir
 job = %Quantum.Job{schedule: "* * * * *", task: fn -> IO.puts "tick" end}
-Quantum.add_job("ticker", job)
+Quantum.add_job(:ticker, job)
 ```
 
-Deactivate job (will not be performed until activation):
+Deactivate a job, i.e. it will not be performed until job is activated again:
 ```elixir
-Quantum.deactivate_job(:ok_job)
-Quantum.deactivate_job(:news_letter)
+Quantum.deactivate_job(:ticker)
 ```
 
-Activate inactive job:
+Activate an inactive job:
 ```elixir
-Quantum.activate_job(:ok_job)
-Quantum.activate_job(:news_letter)
+Quantum.activate_job(:ticker)
 ```
 
-Find job:
+Find a job:
 ```elixir
-Quantum.find_job(:ok_job)
-# %Quantum.Job{...}
-Quantum.find_job(:news_letter)
+Quantum.find_job(:ticker)
 # %Quantum.Job{...}
 ```
 
-Delete job:
+Delete a job:
 ```elixir
-Quantum.delete_job(:ok_job)
-# %Quantum.Job{...}
-Quantum.delete_job(:news_letter)
+Quantum.delete_job(:ticker)
 # %Quantum.Job{...}
 ```
 
