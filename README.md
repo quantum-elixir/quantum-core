@@ -247,6 +247,24 @@ config :quantum,
   default_overlap: false
 ```
 
+### Run Quantum as a global process
+
+When you have a cluster of nodes, you may not want same jobs to be
+genrated on every single node, e.g. jobs involving db changes.
+
+In this case, you may choose to run Quantum as a global process, thus
+preventing same job being run multiple times because of it being generated
+on multiple nodes. With the following configuration, Quantum will be run
+as a globally unique process across the cluster.
+
+```elixir
+config :quantum,
+  cron: [
+    # Your cronjobs
+  ],
+  global?: true
+```
+
 ## Contribution
 
 This project uses the [C4.1 process](http://rfc.zeromq.org/spec:22) for all code changes.
