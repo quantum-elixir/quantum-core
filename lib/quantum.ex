@@ -96,11 +96,9 @@ defmodule Quantum do
   end
 
   def handle_call({:delete, n}, _, s) do
-    job = case find_by_name(s.jobs, n) do
-      nil -> nil
-      job ->
-        s = %{s | jobs: List.keydelete(s.jobs, n, 0)}
-        job
+    {job, s} = case find_by_name(s.jobs, n) do
+      nil -> {nil, s}
+      job -> {job, %{s | jobs: List.keydelete(s.jobs, n, 0)}}
     end
     {:reply, job, s}
   end
@@ -122,7 +120,7 @@ defmodule Quantum do
 
   def handle_info(:tick, s) do
     {d, h, m} = Timer.tick
-    if s.d != d, do: s = %{s | d: d, w: rem(:calendar.day_of_the_week(d), 7)}
+    s = if s.d != d, do: %{s | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: s
     s = %{s | h: h, m: m}
     {:noreply, %{s | jobs: run(s)}}
   end
