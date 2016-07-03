@@ -20,10 +20,14 @@ defmodule Quantum do
   @typedoc "A job options can be defined as list or map"
   @type opts :: list | map | fun0
 
+  @quantum if Application.get_env(:quantum, :global?, false),
+              do: {:global, Quantum},
+              else: Quantum
+
   @doc "Adds a new unnamed job"
   @spec add_job(job) :: :ok
   def add_job(job) do
-    GenServer.call(quantum, {:add, Normalizer.normalize({nil, job})})
+    GenServer.call(@quantum, {:add, Normalizer.normalize({nil, job})})
   end
 
   @doc "Adds a new named job"
@@ -33,20 +37,20 @@ defmodule Quantum do
     if name && find_job(name) do
       :error
     else
-      GenServer.call(quantum, {:add, {name, job}})
+      GenServer.call(@quantum, {:add, {name, job}})
     end
   end
 
   @doc "Deactivates a job by name"
   @spec deactivate_job(expr) :: :ok
   def deactivate_job(n) do
-    GenServer.call(quantum, {:change_state, n, :inactive})
+    GenServer.call(@quantum, {:change_state, n, :inactive})
   end
 
   @doc "Activates a job by name"
   @spec activate_job(expr) :: :ok
   def activate_job(n) do
-    GenServer.call(quantum, {:change_state, n, :active})
+    GenServer.call(@quantum, {:change_state, n, :active})
   end
 
   @doc "Resolves a job by name"
@@ -58,24 +62,24 @@ defmodule Quantum do
   @doc "Deletes a job by name"
   @spec delete_job(expr) :: job
   def delete_job(name) do
-    GenServer.call(quantum, {:delete, name})
+    GenServer.call(@quantum, {:delete, name})
   end
 
   @doc "Deletes all jobs"
   @spec delete_all_jobs :: :ok
   def delete_all_jobs do
-    GenServer.call(quantum, {:delete_all})
+    GenServer.call(@quantum, {:delete_all})
   end
 
   @doc "Returns the list of currently defined jobs"
   @spec jobs :: [job]
   def jobs do
-    GenServer.call(quantum, :jobs)
+    GenServer.call(@quantum, :jobs)
   end
 
   @doc "Starts Quantum process"
   def start_link(state) do
-    GenServer.start_link(__MODULE__, state, [name: quantum])
+    GenServer.start_link(__MODULE__, state, [name: @quantum])
   end
 
   def init(s) do
@@ -151,14 +155,6 @@ defmodule Quantum do
     case List.keyfind(job_list, job_name, 0) do
       nil          -> nil
       {_name, job} -> job
-    end
-  end
-
-  defp quantum do
-    if Application.get_env(:quantum, :global?, false) do
-      {:global, Quantum}
-    else
-      Quantum
     end
   end
 
