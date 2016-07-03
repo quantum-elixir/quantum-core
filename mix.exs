@@ -44,7 +44,7 @@ defmodule Quantum.Mixfile do
         "Rodion Vshevtsov",
         "Stanislav Krasnoyarov",
         "Kai Faber"
-        ],
+      ],
       licenses: ["Apache License 2.0"],
       links: %{
         "Changelog" => "https://github.com/c-rack/quantum-elixir/blob/master/CHANGELOG.md",
