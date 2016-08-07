@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+
+- Requires Elixir >= 1.3
 
 ## [1.7.1] - 2016-03-24
 ### Added
@@ -19,7 +22,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation for `overlap` option
 - Elixir 1.2 to Travis-CI config
 - Prevent duplicate job-names at runtime ([Kai Faber](https://github.com/kaiatgithub))
-
 
 ### Changed
 - ToC markdown

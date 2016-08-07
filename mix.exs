@@ -21,7 +21,7 @@ defmodule Quantum.Mixfile do
         source_ref: "v#{@version}",
         source_url: "https://github.com/c-rack/quantum-elixir"
       ],
-      elixir: ">= 1.2.0",
+      elixir: ">= 1.3.0",
       name: "Quantum",
       package: package,
       start_permanent: Mix.env == :prod,
