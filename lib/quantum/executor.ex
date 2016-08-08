@@ -3,7 +3,6 @@ defmodule Quantum.Executor do
   @moduledoc false
 
   alias Timex.Timezone
-  alias Timex.DateTime
   import Quantum.Matcher
 
   def convert_to_timezone(s, tz) do
