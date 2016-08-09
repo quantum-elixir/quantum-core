@@ -250,7 +250,7 @@ config :quantum,
 ### Run Quantum as a global process
 
 When you have a cluster of nodes, you may not want same jobs to be
-genrated on every single node, e.g. jobs involving db changes.
+generated on every single node, e.g. jobs involving db changes.
 
 In this case, you may choose to run Quantum as a global process, thus
 preventing same job being run multiple times because of it being generated
