@@ -130,24 +130,15 @@ defmodule Quantum do
   end
   def handle_info(_, s), do: {:noreply, s}
 
-  defp run(s) do
-    Enum.map s.jobs, fn({name, j}) ->
-      if j.state == :active && node() in j.nodes && check_overlap(j) do
-        t = Task.Supervisor.async_nolink(:quantum_tasks_sup, Quantum.Executor,
-            :execute, [{j.schedule, j.task, j.args, j.timezone}, s])
-        {name, %{j | pid: t.pid}}
+  defp run(state) do
+    Enum.map state.jobs, fn({name, job}) ->
+      if Job.executable?(job) do
+        task = Task.Supervisor.async_nolink(:quantum_tasks_sup, Quantum.Executor,
+            :execute, [{job.schedule, job.task, job.args, job.timezone}, state])
+        {name, %{job | pid: task.pid}}
       else
-        {name, j}
+        {name, job}
       end
-    end
-  end
-
-  defp check_overlap(job) do
-    cond do
-      job.overlap == true     -> true  # Overlapping is always ok
-      job.pid == nil          -> true  # Job has not been started before
-      Process.alive?(job.pid) -> false # Previous job is still running
-      true                    -> true  # Previous job has finished
     end
   end
 

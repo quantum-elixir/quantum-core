@@ -21,4 +21,15 @@ defmodule Quantum.Job do
 
   @type t :: %Quantum.Job{}
 
+  def executable?(job) do
+    cond do
+      job.state != :active    -> false # Do not execute inactive jobs
+      not node() in job.nodes -> false # Job shall not run on this node
+      job.overlap == true     -> true  # Job may overlap
+      job.pid == nil          -> true  # Job has not been started
+      Process.alive?(job.pid) -> false # Previous job is still running
+      true                    -> true  # Previous job has finished
+    end
+  end
+
 end
