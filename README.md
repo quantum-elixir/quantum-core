@@ -267,7 +267,7 @@ config :quantum,
 
 ## Contribution
 
-This project uses the [C4.1 process](http://rfc.zeromq.org/spec:22) for all code changes.
+This project uses the [Collective Code Construction Contract (C4)](http://rfc.zeromq.org/spec:42/C4/) for all code changes.
 
 > "Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the
 terms of this contract."
