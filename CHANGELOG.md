@@ -3,9 +3,21 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Changed
 
+## [1.8.0] - 2016-09-19
+### Changed
 - Requires Elixir >= 1.3
+- Updated C4 contribution process to RFC42
+- Updated timex dependency to 3.0 ([Svilen Gospodinov](https://github.com/svileng))
+
+### Fixed
+- Same task could be generated multiple times in a cluster ([Po Chen](https://github.com/princemaple))
+- Elixir 1.3.0 introduced unsafe var warnings ([Jamie J Quinn](https://github.com/JamieJQuinn))
+- Typo in README ([Uģis Ozols](https://github.com/ugisozols))
+- Code coverage below 100% ([Lucas Charles](https://github.com/theoretick))
+
+### Removed
+- Unused alias ([Philip Giuliani](https://github.com/philipgiuliani))
 
 ## [1.7.1] - 2016-03-24
 ### Added
