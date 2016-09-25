@@ -12,20 +12,10 @@ defmodule Quantum.TimerTest do
     {d_local, {h_local, m_local, _}} = :calendar.now_to_local_time(:os.timestamp)
     assert Quantum.Timer.tick == {d_local, h_local, m_local}
 
+    Application.put_env(:quantum, :timezone, "America/Chicago")
+    {d_local, {h_local, m_local, _}} = Quantum.Timer.custom("America/Chicago", :os.timestamp)
+    assert Quantum.Timer.tick == {d_local, h_local, m_local}
+
     Application.put_env(:quantum, :timezone, current_time_zone)
   end
-
-  test "timezone_function function raises error when timezone is set incorrectly" do
-    current_time_zone = Application.get_env(:quantum, :timezone, :utc)
-
-    try do
-      Application.put_env(:quantum, :timezone, "test-time-zone")
-      assert_raise RuntimeError, "Unsupported timezone: test-time-zone", fn ->
-        Quantum.Timer.timezone_function
-      end
-    after
-      Application.put_env(:quantum, :timezone, current_time_zone)
-    end
-  end
-
 end

@@ -1,5 +1,5 @@
 defmodule Quantum.Timer do
-
+  alias Timex.Timezone
   @moduledoc false
 
   def timezone_function do
@@ -9,7 +9,7 @@ defmodule Quantum.Timer do
       :local ->
         &:calendar.now_to_local_time/1
       timezone ->
-        raise "Unsupported timezone: #{timezone}"
+        &custom(timezone, &1)
     end
   end
 
@@ -19,4 +19,7 @@ defmodule Quantum.Timer do
     {d, h, m}
   end
 
+  def custom(timezone, time) do
+    Timex.now(timezone) |> Timex.to_erl
+  end
 end

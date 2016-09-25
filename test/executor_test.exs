@@ -21,6 +21,8 @@ defmodule Quantum.ExecutorTest do
           Application.put_env(:timex, :local_timezone, "Etc/GMT+1")
         "CET" ->
           Application.put_env(:quantum, :timezone, "Etc/GMT+1")
+        "America/Chicago" ->
+          Application.put_env(:quantum, :timezone, "America/Chicago")
       end
     end
 
@@ -106,9 +108,12 @@ defmodule Quantum.ExecutorTest do
   end
 
   @tag timezone: "CET"
-  test "rejects arbitrary timezone" do
-    assert_raise RuntimeError, ~r/Unsupported timezone/, fn ->
-      execute({"@daily", &ok/0, [], "Etc/GMT+1"}, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1})
-    end
+  test "accepts custom timezones" do
+    assert execute({"@daily", &ok/0, [], "Etc/GMT+1"}, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1}) == :ok
+  end
+
+  @tag timezone: "America/Chicago"
+  test "accepts custom timezones(America/Chicago)" do
+    assert execute({"@daily", &ok/0, [], "America/Chicago"}, %{d: {2015, 12, 31}, h: 0, m: 0, w: 1}) == :ok
   end
 end
