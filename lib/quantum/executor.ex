@@ -16,7 +16,8 @@ defmodule Quantum.Executor do
     case Application.get_env(:quantum, :timezone, :utc) do
       :utc   -> t |> Timex.to_datetime |> Timezone.convert(tz_final)
       :local -> t |> Timex.to_datetime(:local) |> Timezone.convert(tz_final)
-      tz     -> raise "Unsupported timezone: #{tz}"
+      tz     ->
+        t |> Timex.to_datetime(tz_final)
     end
   end
 
