@@ -1,5 +1,4 @@
 defmodule Quantum.Timer do
-  alias Timex.Timezone
   @moduledoc false
 
   def timezone_function do
@@ -19,7 +18,7 @@ defmodule Quantum.Timer do
     {d, h, m}
   end
 
-  def custom(timezone, time) do
-    Timex.now(timezone) |> Timex.to_erl
+  def custom(timezone, _) do
+    Calendar.DateTime.now!(timezone) |> Calendar.DateTime.to_erl
   end
 end
