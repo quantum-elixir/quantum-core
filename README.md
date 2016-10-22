@@ -209,7 +209,7 @@ Timezones can also be configured on a per-job basis (and overrides the default Q
 | hour         | 0-23
 | day of month | 1-31
 | month        | 1-12 (or names)
-| day of week  | 0-6 (0 is Sunday, or use names)
+| day of week  | 0-6 (0 is Sunday, or use abbreviated names)
 
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
