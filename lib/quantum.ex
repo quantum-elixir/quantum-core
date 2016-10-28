@@ -79,7 +79,13 @@ defmodule Quantum do
 
   @doc "Starts Quantum process"
   def start_link(state) do
-    GenServer.start_link(__MODULE__, state, [name: @quantum])
+    case GenServer.start_link(__MODULE__, state, [name: @quantum]) do
+      {:ok, pid} ->
+        {:ok, pid}
+      {:error, {:already_started, pid}} ->
+        Process.link(pid)
+        {:ok, pid}
+    end
   end
 
   def init(s) do
