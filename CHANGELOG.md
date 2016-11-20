@@ -4,6 +4,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.8.1] - 2016-11-20
+### Changed
+- Clarity on the table to not use full name of day ([Coburn Berry](https://github.com/crododile))
+- Travis testing against erlang 19.1 and elixir 1.3.3 ([Julius Beckmann](https://github.com/h4cc))
+- Don't allow "local" timezone. Replace Timex w. Calendar ([Lau Taarnskov](https://github.com/lau))
+
+### Fixed
+- Global cannot be used directly ([Po Chen](https://github.com/princemaple))
+- Support for timezones other than utc or local not in readme ([Coburn Berry](https://github.com/crododile))
+- Timezone as string not working in config ([Daniel Roux](https://github.com/xrx))
+
+### Removed
+- Timex references in readme ([Coburn Berry](https://github.com/crododile))
+- License badge in README
+
 ## [1.8.0] - 2016-09-19
 ### Changed
 - Requires Elixir >= 1.3
@@ -220,7 +235,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.7.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...HEAD
+[1.8.1]: https://github.com/c-rack/quantum-elixir/compare/v1.8.0...v1.8.1
+[1.8.0]: https://github.com/c-rack/quantum-elixir/compare/v1.7.1...v1.8.0
 [1.7.1]: https://github.com/c-rack/quantum-elixir/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/c-rack/quantum-elixir/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/c-rack/quantum-elixir/compare/v1.6.0...v1.6.1
