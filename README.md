@@ -19,6 +19,7 @@
   * [Crontab format](#crontab-format)
   * [Special expressions](#special-expressions)
   * [Override default settings](#override-default-settings)
+  * [GenServer timeout](#genserver-timeout)
 * [Contribution](#contribution)
 * [License](#license)
 
@@ -244,6 +245,24 @@ config :quantum,
   default_args: ["my api key"],
   default_nodes: [:app1@myhost],
   default_overlap: false
+```
+
+### GenServer timeout
+
+Sometimes, you may come across GenServer timeout errors esp. when you have
+too many jobs or high load. The default `GenServer.call` timeout is 5000.
+You can override this default by specifying `timeout` setting in configuration.
+
+```elixir
+config :quantum,
+  timeout: 30_000
+```
+
+Or if you wish to wait indefinitely:
+
+```elixir
+config :quantum,
+  timeout: :infinity
 ```
 
 ### Run Quantum as a global process
