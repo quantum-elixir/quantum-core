@@ -325,6 +325,14 @@ defmodule QuantumTest do
     assert Enum.count(Quantum.jobs) == 2
   end
 
+  test "timeout can be configured for genserver correctly" do
+    Application.put_env(:quantum, :timeout, 0)
+    job = %Quantum.Job{schedule: "* */5 * * *", task: fn -> :ok end}
+    assert catch_exit(Quantum.add_job(:tmpjob, job)) == {:timeout, {GenServer, :call, [Quantum, :jobs, 0]}}
+  after
+    Application.delete_env(:quantum, :timeout)
+  end
+
   # loop until given process is alive
   defp ensure_alive(pid) do
     case Process.alive?(pid) do
