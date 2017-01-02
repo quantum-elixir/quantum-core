@@ -108,7 +108,7 @@ Job struct:
   nodes: [:node@host], # default: [node()]
   overlap: false, # run even if previous job is still running?, default: true
   pid: nil, # PID of last executed task
-  timezone: :local # Timezone to run task in, defaults to Quantum default (either :utc or :local)
+  timezone: :utc # Timezone to run task in, defaults to Quantum default which is UTC
 }
 ```
 
@@ -183,22 +183,24 @@ config :quantum, cron: [
 
 Please note that Quantum uses **UTC timezone** and not local timezone by default.
 
-To use local timezone, add the following `timezone` option to your configuration:
+To specify another timezone, add the following `timezone` option to your configuration:
 
 ```elixir
 config :quantum,
   cron: [
     # Your cronjobs
   ],
-  timezone: :local
+  timezone: "America/Chicago"
 ```
 
-Timezones can also be configured on a per-job basis to either :utc or :local (and overrides the default Quantum timezone). To set the timezone on a job, use the `timezone` key when creating the `Quantum.Job` structure. Timezones can be :utc, :local or a timezone name such as "America/Chicago". A full list of timezone names can be downloaded from https://www.iana.org/time-zones, or at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
+Valid options are `:utc` or a timezone name such as `"America/Chicago"`. A full list of timezone names can be downloaded from https://www.iana.org/time-zones, or at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
+
+Timezones can also be configured on a per-job basis. This overrides the default Quantum timezone for a particular job. To set the timezone on a job, use the `timezone` key when creating the `Quantum.Job` structure. 
 
 ```elixir
 %Quantum.Job{
   # ...
-  timezone: "America/Chicago"
+  timezone: "America/New_York"
 }
 ```
 
