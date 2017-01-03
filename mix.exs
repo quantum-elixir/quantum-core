@@ -9,6 +9,7 @@ defmodule Quantum.Mixfile do
       build_embedded: Mix.env == :prod,
       deps: [
         {:calendar,    "~> 0.16"},
+        {:crontab,     "~> 1.0.0-beta.3"},
         {:credo,       "~> 0.4",  only: [:dev, :test]},
         {:earmark,     "~> 1.0",  only: [:dev, :docs]},
         {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
