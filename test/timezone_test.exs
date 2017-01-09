@@ -1,8 +1,6 @@
 defmodule Quantum.TimezoneTest do
   use ExUnit.Case
 
-  @default_timezone Application.get_env(:quantum, :timezone, :utc)
-
   import Quantum.Executor
 
   def ok,     do: :ok

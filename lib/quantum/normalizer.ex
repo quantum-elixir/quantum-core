@@ -35,7 +35,7 @@ defmodule Quantum.Normalizer do
     |> Map.put(
         :nodes,
         case job.nodes do
-          nil -> default_nodes
+          nil -> default_nodes()
           ns -> ns
         end)
   end

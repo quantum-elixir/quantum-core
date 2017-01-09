@@ -23,7 +23,7 @@ defmodule Quantum.Mixfile do
       ],
       elixir: ">= 1.3.0",
       name: "Quantum",
-      package: package,
+      package: package(),
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
       version: @version,
