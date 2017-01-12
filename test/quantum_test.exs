@@ -16,7 +16,7 @@ defmodule QuantumTest do
   end
 
   test "adding a named job as options at run time" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "1 * * * *"
       fun = fn -> :ok end
       job_otps = %{schedule: spec, task: fun}
@@ -28,7 +28,7 @@ defmodule QuantumTest do
   end
 
   test "adding a named job struct at run time" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "1 * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{schedule: spec, task: fun}
@@ -74,7 +74,7 @@ defmodule QuantumTest do
   end
 
   test "finding a named job" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "* * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{schedule: spec, task: fun}
@@ -87,7 +87,7 @@ defmodule QuantumTest do
   end
 
   test "deactivating a named job" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "* * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{name: name, schedule: spec, task: fun, nodes: Quantum.Normalizer.default_nodes}
@@ -99,7 +99,7 @@ defmodule QuantumTest do
   end
 
   test "activating a named job" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "* * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive, nodes: Quantum.Normalizer.default_nodes}
@@ -112,7 +112,7 @@ defmodule QuantumTest do
   end
 
   test "deleting a named job at run time" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "* * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{name: name, schedule: spec, task: fun}
@@ -125,7 +125,7 @@ defmodule QuantumTest do
   end
 
   test "deleting all jobs" do
-    for name <- job_names do
+    for name <- job_names() do
       spec = "* * * * *"
       fun = fn -> :ok end
       job = %Quantum.Job{name: name, schedule: spec, task: fun}
