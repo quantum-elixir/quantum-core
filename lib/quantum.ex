@@ -128,11 +128,11 @@ defmodule Quantum do
     {:reply, children, s}
   end
 
-  def handle_info(:tick, s) do
-    {d, h, m} = Timer.tick
-    s = if s.d != d, do: %{s | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: s
-    s = %{s | h: h, m: m}
-    {:noreply, %{s | jobs: run(s)}}
+  def handle_info(:tick, state) do
+    {d, h, m, s} = Timer.tick
+    state = if state.d != d, do: %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: state
+    state = %{state | h: h, m: m, s: s}
+    {:noreply, %{state | jobs: run(state)}}
   end
   def handle_info(_, s), do: {:noreply, s}
 

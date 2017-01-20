@@ -13,9 +13,10 @@ defmodule Quantum.Timer do
   end
 
   def tick do
+    miliseconds = 1000 - (:os.system_time(:millisecond) - :os.system_time(:seconds) * 1000)
+    Process.send_after(self(), :tick, miliseconds)
     {d, {h, m, s}} = timezone_function().(:os.timestamp)
-    Process.send_after(self(), :tick, (60 - s) * 1000)
-    {d, h, m}
+    {d, h, m, s}
   end
 
   def custom(timezone, _) do
