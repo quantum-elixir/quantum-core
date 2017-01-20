@@ -2,6 +2,7 @@ defmodule Quantum.NormalizerTest do
   use ExUnit.Case
 
   import Quantum.Normalizer
+  import Crontab.CronExpression
 
   # test "normalize" do
   #   assert normalize({"0", nil}) == {"0", nil}
@@ -13,7 +14,7 @@ defmodule Quantum.NormalizerTest do
 
   test "named job" do
     job = {:newsletter, [
-      schedule: "@weekly",
+      schedule: ~e[@weekly],
       task: "MyModule.my_method",
       args: [1, 2, 3],
       overlap: false,
@@ -22,7 +23,7 @@ defmodule Quantum.NormalizerTest do
 
     assert normalize(job) == {:newsletter, %Quantum.Job{
       name: :newsletter,
-      schedule: "@weekly",
+      schedule: ~e[@weekly],
       task: {"MyModule", "my_method"},
       args: [1, 2, 3],
       overlap: false,
@@ -35,7 +36,7 @@ defmodule Quantum.NormalizerTest do
 
     assert normalize(job) == {nil, %Quantum.Job{
       name: nil,
-      schedule: "* * * * *",
+      schedule: ~e[* * * * *],
       task: {"MyModule", "my_method"},
       args: [],
       nodes: default_nodes()
@@ -43,11 +44,11 @@ defmodule Quantum.NormalizerTest do
   end
 
   test "unnamed job as tuple" do
-    job = {"* * * * *", "MyModule.my_method"}
+    job = {~e[* * * * *], "MyModule.my_method"}
 
     assert normalize(job) == {nil, %Quantum.Job{
       name: nil,
-      schedule: "* * * * *",
+      schedule: ~e[* * * * *],
       task: {"MyModule", "my_method"},
       args: [],
       nodes: default_nodes()
@@ -59,7 +60,7 @@ defmodule Quantum.NormalizerTest do
 
     assert normalize(job) == {nil, %Quantum.Job{
       name: nil,
-      schedule: "* * * * *",
+      schedule: ~e[* * * * *],
       task: {"MyModule", "my_method"},
       args: [1, 2, 3],
       nodes: default_nodes()
@@ -71,7 +72,7 @@ defmodule Quantum.NormalizerTest do
 
     assert normalize(job) == {nil, %Quantum.Job{
       name: nil,
-      schedule: "@weekly",
+      schedule: ~e[@weekly],
       task: {"MyModule", "my_method"},
       args: [],
       nodes: default_nodes()

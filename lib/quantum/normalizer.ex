@@ -2,8 +2,6 @@ defmodule Quantum.Normalizer do
 
   @moduledoc false
 
-  alias Quantum.Translator
-
   def normalize(j) do
     nj = normalize_job(j)
     {nj.name, nj}
@@ -100,8 +98,10 @@ defmodule Quantum.Normalizer do
   defp normalize_task({mod, fun}), do: {mod, fun}
   defp normalize_task(fun), do: fun
 
-  defp normalize_schedule(e) when e |> is_atom, do: normalize_schedule e |> Atom.to_string
-  defp normalize_schedule(e), do: e |> String.downcase |> Translator.translate
+  defp normalize_schedule(e = %Crontab.CronExpression{}), do: e
+  defp normalize_schedule(e) when e |> is_atom, do: e |> Atom.to_string |> normalize_schedule
+  defp normalize_schedule("nil"), do: nil
+  defp normalize_schedule(e) when e |> is_binary, do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
 
   # Extracts given option from options list of named task
   defp extract(name, opts, d \\ nil)

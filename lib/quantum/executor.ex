@@ -2,8 +2,6 @@ defmodule Quantum.Executor do
 
   @moduledoc false
 
-  import Quantum.Matcher
-
   def convert_to_timezone(s, tz) do
     dt = {s.d, {s.h, s.m, 0}}  # erlang datetime
 
@@ -20,76 +18,18 @@ defmodule Quantum.Executor do
     end
   end
 
-  def execute({"@reboot",   fun, args, _}, %{r: 1}), do: execute_fun(fun, args)
-  def execute(_,                           %{r: 1}), do: false
-  def execute({"@reboot",   _, _, _},      %{r: 0}), do: false
-  def execute({"* * * * *", fun, args, _}, _), do: execute_fun(fun, args)
-
-  def execute({"@hourly", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0, do: execute_fun(fun, args), else: false
-  end
-
-  def execute({"@daily", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0, do: execute_fun(fun, args), else: false
-  end
-
-  def execute({"@midnight", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0, do: execute_fun(fun, args), else: false
-  end
-
-  def execute({"@weekly", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    c_weekday = Calendar.Date.day_of_week_zb(c)
-    if c.minute == 0 and c.hour == 0 and c_weekday == 0 do
-      execute_fun(fun, args)
-    else
-      false
-    end
-  end
-
-  def execute({"@monthly", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1 do
-      execute_fun(fun, args)
-    else
-      false
-    end
-  end
-
-  def execute({"@annually", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1 do
-      execute_fun(fun, args)
-    else
-      false
-    end
-  end
-
-  def execute({"@yearly", fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
-    if c.minute == 0 and c.hour == 0 and c.day == 1 and c.month == 1 do
-      execute_fun(fun, args)
-    else
-      false
-    end
-  end
+  def execute({%Crontab.CronExpression{reboot: true}, fun, args, _}, %{r: 1}), do: execute_fun(fun, args)
+  def execute(_, %{r: 1}), do: false
+  def execute({%Crontab.CronExpression{reboot: true}, _, _, _}, %{r: 0}), do: false
 
   def execute({e, fun, args, tz}, state) do
-    [m, h, d, n, w] = e |> String.split(" ")
-
     c = convert_to_timezone(state, tz)
-    c_weekday = Calendar.Date.day_of_week_zb(c)
+      |> DateTime.to_naive
 
-    cond do
-      !match(m, c.minute,  0..59) -> false
-      !match(h, c.hour,    0..23) -> false
-      !match(d, c.day,     1..31) -> false
-      !match(n, c.month,   1..12) -> false
-      !match(w, c_weekday, 0..6)  -> false
-      true                        -> execute_fun(fun, args)
+    if Crontab.DateChecker.matches_date?(e, c) do
+      execute_fun(fun, args)
+    else
+      false
     end
   end
 
