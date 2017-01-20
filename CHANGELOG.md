@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Cron Expressions can now be provided via the `%Crontab.CronExpression{}` struct or via the `~e[CRON EXPRESSION]` sigil.
+- Cron Expressions can now be extended. This way second granularity of the expressions can be provided.
 
 ## [1.8.1] - 2016-11-20
 ### Changed
