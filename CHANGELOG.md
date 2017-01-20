@@ -4,6 +4,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [X.X.X]
+### Removed
+- Three modules were removed and replaced by [crontab](https://hex.pm/packages/crontab).
+  * `Quantum.Matcher`
+  * `Quantum.Parser`
+  * `Quantum.Translator`
+
+### Fixed
+- The whole cron expression syntax is now supported.
+
+### Changed
+- Cron Expressions can now be provided via the `%Crontab.CronExpression{}` struct or via the `~e[CRON EXPRESSION]` sigil.
+
 ## [1.8.1] - 2016-11-20
 ### Changed
 - Clarity on the table to not use full name of day ([Coburn Berry](https://github.com/crododile))

@@ -125,7 +125,7 @@ config :quantum, cron: [
 ```
 
 Possible options:
-- `schedule` cron schedule, ex: `"@weekly"` or `"1 * * * *"`
+- `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `~e[1 * * * *]` or `%Crontab.CronExpression{minute: [1]}`
 - `task` function to be performed, ex: `"MyApp.MyModule.my_method"` or `{MyApp.MyModule, :my_method}`
 - `args` arguments list to be passed to `task`
 - `nodes` nodes list the task should be run on, default: `[node()]`
@@ -195,7 +195,7 @@ config :quantum,
 
 Valid options are `:utc` or a timezone name such as `"America/Chicago"`. A full list of timezone names can be downloaded from https://www.iana.org/time-zones, or at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
 
-Timezones can also be configured on a per-job basis. This overrides the default Quantum timezone for a particular job. To set the timezone on a job, use the `timezone` key when creating the `Quantum.Job` structure. 
+Timezones can also be configured on a per-job basis. This overrides the default Quantum timezone for a particular job. To set the timezone on a job, use the `timezone` key when creating the `Quantum.Job` structure.
 
 ```elixir
 %Quantum.Job{
