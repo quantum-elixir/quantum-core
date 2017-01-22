@@ -3,7 +3,7 @@ defmodule Quantum.Executor do
   @moduledoc false
 
   def convert_to_timezone(s, tz) do
-    dt = {s.d, {s.h, s.m, 0}}  # erlang datetime
+    dt = {s.d, {s.h, s.m, s.s}}  # erlang datetime
 
     tz_final = case tz do
       :utc   -> "Etc/UTC"
@@ -22,11 +22,19 @@ defmodule Quantum.Executor do
   def execute(_, %{r: 1}), do: false
   def execute({%Crontab.CronExpression{reboot: true}, _, _, _}, %{r: 0}), do: false
 
-  def execute({e, fun, args, tz}, state) do
-    c = convert_to_timezone(state, tz)
+  def execute(job = {%Crontab.CronExpression{extended: false}, _, _, _}, state = %{s: 0}) do
+      _execute(job, state)
+  end
+  def execute(job = {%Crontab.CronExpression{extended: true}, _, _, _}, state) do
+    _execute(job, state)
+  end
+  def execute(_, _), do: false
+
+  defp _execute({cron_expression, fun, args, tz}, state) do
+    date_naive = convert_to_timezone(state, tz)
       |> DateTime.to_naive
 
-    if Crontab.DateChecker.matches_date?(e, c) do
+    if Crontab.DateChecker.matches_date?(cron_expression, date_naive) do
       execute_fun(fun, args)
     else
       false

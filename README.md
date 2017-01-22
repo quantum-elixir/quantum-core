@@ -164,6 +164,38 @@ Quantum.delete_job(:ticker)
 # %Quantum.Job{...}
 ```
 
+### Jobs with Second granularity
+
+It is possible to specify jobs with second granularity.
+To do this the `schedule` parameter has to be provided with either a `%Crontab.CronExpression{extended: true, ...}` or
+with a set `e` flag on the `e` sigil. (The sigil must be imported from `Crontab.CronExpression`)
+
+With Sigil:
+```elixir
+import Crontab.CronExpression
+
+config :quantum, cron: [
+  news_letter: [
+    schedule: ~[*/2]e, # Runs every two seconds
+    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+    args: [:whatever]
+  ]
+]
+```
+
+With Struct:
+```elixir
+config :quantum, cron: [
+  news_letter: [
+    schedule: %Crontab.CronExpression{extended: true, second: [5]}, # Runs every minute at second 5
+    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+    args: [:whatever]
+  ]
+]
+```
+
+The struct & sigil are documented here: https://hexdocs.pm/crontab/Crontab.CronExpression.html
+
 ### Nodes
 
 If you need to run a job on a certain node you can define:

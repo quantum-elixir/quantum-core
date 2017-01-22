@@ -146,8 +146,8 @@ defmodule QuantumTest do
   end
 
   test "handle_info" do
-    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
-    state = %{jobs: [], d: d, h: h, m: m, w: nil, r: 0}
+    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
+    state = %{jobs: [], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state) == {:noreply, state}
   end
 
@@ -160,19 +160,19 @@ defmodule QuantumTest do
   test "execute for current node" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, nodes: Quantum.Normalizer.default_nodes}
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    job = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun, nodes: Quantum.Normalizer.default_nodes}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
@@ -180,11 +180,11 @@ defmodule QuantumTest do
 
   test "skip for current node" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
     job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, nodes: [:remote@node]}
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert Quantum.handle_info(:tick, state1) == {:noreply, state2}
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 0
@@ -212,19 +212,19 @@ defmodule QuantumTest do
   test "overlap, first start" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, overlap: false, nodes: Quantum.Normalizer.default_nodes}
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    job = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun, overlap: false, nodes: Quantum.Normalizer.default_nodes}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
@@ -233,19 +233,19 @@ defmodule QuantumTest do
   test "overlap, second start" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, _}} = :calendar.now_to_universal_time(:os.timestamp)
+    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
     job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, overlap: false, pid: pid1, nodes: Quantum.Normalizer.default_nodes}
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m - 1, w: nil, r: 0}
+    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 0
     job = %{job | pid: pid1}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
@@ -258,10 +258,10 @@ defmodule QuantumTest do
       end
     end
 
-    job_sibling = %Quantum.Job{schedule: ~e[* * * * *], task: fun}
+    job_sibling = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
     assert Quantum.add_job("sibling_job", job_sibling) == :ok
 
-    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *], task: fun}
+    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
     assert Quantum.add_job("job_to_crash", job_to_crash) == :ok
 
     assert Enum.count(Quantum.jobs) == 2
@@ -297,7 +297,7 @@ defmodule QuantumTest do
         :ping -> :pong
       end
     end
-    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *], task: fun}
+    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
     assert Quantum.add_job("job_to_crash", job_to_crash) == :ok
 
     assert Enum.count(Quantum.jobs) == 2
