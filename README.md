@@ -176,7 +176,7 @@ import Crontab.CronExpression
 
 config :quantum, cron: [
   news_letter: [
-    schedule: ~[*/2]e, # Runs every two seconds
+    schedule: ~e[*/2]e, # Runs every two seconds
     task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
     args: [:whatever]
   ]
