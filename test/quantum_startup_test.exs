@@ -1,6 +1,8 @@
 defmodule QuantumStartupTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureLog
+
   import Crontab.CronExpression
 
   setup do
@@ -16,12 +18,14 @@ defmodule QuantumStartupTest do
        test_job: [schedule: ~e[2 * * * *], task: fn -> :ok end],
        "3 * * * *": fn -> :ok end,
        "4 * * * *": fn -> :ok end]
+       
+    capture_log(fn ->
+      Application.stop(:quantum)
+      Application.put_env(:quantum, :some_app, cron: test_jobs)
+      Application.ensure_started(:logger)
+      Application.ensure_all_started(:quantum)
+    end)
 
-    Application.stop(:quantum)
-    Application.put_env(:quantum, :some_app, cron: test_jobs)
-    Application.ensure_started(:logger)
-    Application.ensure_all_started(:quantum)
-    
     assert Enum.count(Quantum.jobs) == 3
     assert Quantum.find_job(:test_job).schedule == ~e[1 * * * *]
   end
