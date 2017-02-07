@@ -13,10 +13,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - The whole cron expression syntax is now supported.
+- Crons can now be configured for Umbrella applications. See the `README` for the new syntax.
 
 ### Changed
 - Cron Expressions can now be provided via the `%Crontab.CronExpression{}` struct or via the `~e[CRON EXPRESSION]` sigil.
 - Cron Expressions can now be extended. This way second granularity of the expressions can be provided.
+
+### Deprecated
+- The configuration property `cron` is deprecated. Use the app configuration instead.
 
 ## [1.8.1] - 2016-11-20
 ### Changed

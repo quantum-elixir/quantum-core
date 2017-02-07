@@ -3,12 +3,13 @@ defmodule Quantum.Application do
   @moduledoc false
 
   import Quantum.Normalizer
+  alias Quantum.Config
   require Logger
 
   use Application
 
   def start(_type, _args) do
-    jobs = :quantum |> Application.get_env(:cron, [])
+    jobs = Config.get
     |> Enum.map(&normalize/1)
     |> remove_jobs_with_duplicate_names
     state = %{jobs: jobs, d: nil, h: nil, m: nil, s: nil, w: nil, r: nil}

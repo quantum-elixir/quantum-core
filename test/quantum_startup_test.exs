@@ -3,6 +3,12 @@ defmodule QuantumStartupTest do
 
   import Crontab.CronExpression
 
+  setup do
+    # Clear Env
+    Application.get_all_env(:quantum)
+    |> Enum.each(fn {key, _value} -> Application.delete_env(:quantum, key) end)
+  end
+
   @tag :startup
   test "prevent duplicate job names on startup" do
     test_jobs =
@@ -12,7 +18,7 @@ defmodule QuantumStartupTest do
        "4 * * * *": fn -> :ok end]
 
     Application.stop(:quantum)
-    Application.put_env(:quantum, :cron, test_jobs)
+    Application.put_env(:quantum, :some_app, cron: test_jobs)
     Application.ensure_started(:logger)
     Application.ensure_all_started(:quantum)
     

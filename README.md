@@ -48,7 +48,8 @@ end
 Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
-config :quantum, cron: [
+config :quantum, :your_app,
+  cron: [
     # Every minute
     "* * * * *":      {"Heartbeat", :send},
     # Every 15 minutes
@@ -57,25 +58,27 @@ config :quantum, cron: [
     "0 18-6/2 * * *": fn -> :mnesia.backup('/var/backup/mnesia') end,
     # Runs every midnight:
     "@daily":         &Backup.backup/0
-]
+  ]
 ```
 
 or like this:
 
 ```elixir
-config :quantum, cron: [
+config :quantum, :your_app,
+  cron: [
     # Every minute
     "* * * * *": {MyApp.MyModule, :my_method}
-]
+  ]
 ```
 
 or you can provide module as a string:
 
 ```elixir
-config :quantum, cron: [
+config :quantum, :your_app,
+  cron: [
     # Every minute
     "* * * * *": {"MyApp.MyModule", :my_method}
-]
+  ]
 ```
 
 Or even use cron-like format (useful with
@@ -83,10 +86,11 @@ Or even use cron-like format (useful with
 [exrm](https://github.com/bitwalker/exrm) /
 [edeliver](https://github.com/boldpoker/edeliver)):
 ```elixir
-config :quantum, cron: [
+config :quantum, :your_app,
+  cron: [
     # Every minute
     "* * * * * MyApp.MyModule.my_method"
-]
+  ]
 ```
 
 If you want to add jobs on runtime, this is possible too:
@@ -115,13 +119,14 @@ Job struct:
 You can define named jobs in your config like this:
 
 ```elixir
-config :quantum, cron: [
-  news_letter: [
-    schedule: "@weekly",
-    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-    args: [:whatever]
+config :quantum, :your_app,
+  cron: [
+    news_letter: [
+      schedule: "@weekly",
+      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+      args: [:whatever]
+    ]
   ]
-]
 ```
 
 Possible options:
@@ -174,24 +179,26 @@ With Sigil:
 ```elixir
 import Crontab.CronExpression
 
-config :quantum, cron: [
-  news_letter: [
-    schedule: ~e[*/2]e, # Runs every two seconds
-    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-    args: [:whatever]
+config :quantum, :your_app,
+  cron: [
+    news_letter: [
+      schedule: ~e[*/2]e, # Runs every two seconds
+      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+      args: [:whatever]
+    ]
   ]
-]
 ```
 
 With Struct:
 ```elixir
-config :quantum, cron: [
-  news_letter: [
-    schedule: %Crontab.CronExpression{extended: true, second: [5]}, # Runs every minute at second 5
-    task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-    args: [:whatever]
+config :quantum, :your_app,
+  cron: [
+    news_letter: [
+      schedule: %Crontab.CronExpression{extended: true, second: [5]}, # Runs every minute at second 5
+      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
+      args: [:whatever]
+    ]
   ]
-]
 ```
 
 The struct & sigil are documented here: https://hexdocs.pm/crontab/Crontab.CronExpression.html
@@ -201,12 +208,13 @@ The struct & sigil are documented here: https://hexdocs.pm/crontab/Crontab.CronE
 If you need to run a job on a certain node you can define:
 
 ```elixir
-config :quantum, cron: [
-  news_letter: [
-    # your job config
-    nodes: [:app1@myhost, "app2@myhost"]
+config :quantum, your_app:
+  cron: [
+    news_letter: [
+      # your job config
+      nodes: [:app1@myhost, "app2@myhost"]
+    ]
   ]
-]
 ```
 
 **NOTE** If `nodes` is not defined current node is used and a job is performed on all nodes.
@@ -218,10 +226,12 @@ Please note that Quantum uses **UTC timezone** and not local timezone by default
 To specify another timezone, add the following `timezone` option to your configuration:
 
 ```elixir
-config :quantum,
+config :quantum, :your_app,
   cron: [
     # Your cronjobs
-  ],
+  ]
+
+config :quantum,
   timezone: "America/Chicago"
 ```
 
@@ -272,13 +282,15 @@ default setting in every job, you can set them globally.
 
 ```elixir
 config :quantum,
-  cron: [
-    # Your cronjobs
-  ],
   default_schedule: "* * * * *",
   default_args: ["my api key"],
   default_nodes: [:app1@myhost],
   default_overlap: false
+
+config :quantum, :your_app,
+  cron: [
+    # Your cronjobs
+  ]
 ```
 
 ### GenServer timeout
@@ -311,10 +323,12 @@ as a globally unique process across the cluster.
 
 ```elixir
 config :quantum,
+  global?: true
+
+config :quantum, :your_app,
   cron: [
     # Your cronjobs
-  ],
-  global?: true
+  ]
 ```
 
 ## Contribution
