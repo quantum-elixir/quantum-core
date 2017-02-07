@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [X.X.X]
+## [1.9.0] - 2017-02-07
 ### Removed
 - Three modules were removed and replaced by [crontab](https://hex.pm/packages/crontab).
   * `Quantum.Matcher`
@@ -249,7 +249,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/c-rack/quantum-elixir/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/c-rack/quantum-elixir/compare/v1.7.1...v1.8.0
 [1.7.1]: https://github.com/c-rack/quantum-elixir/compare/v1.7.0...v1.7.1
