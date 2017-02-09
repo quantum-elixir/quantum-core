@@ -208,7 +208,7 @@ The struct & sigil are documented here: https://hexdocs.pm/crontab/Crontab.CronE
 If you need to run a job on a certain node you can define:
 
 ```elixir
-config :quantum, your_app:
+config :quantum, :your_app,
   cron: [
     news_letter: [
       # your job config
