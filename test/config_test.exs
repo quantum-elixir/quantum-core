@@ -33,7 +33,7 @@ defmodule Quantum.ConfigTest do
 
       Example:
       config :quantum, your_app_name: [
-        crons: [1, 2, 3]
+        cron: [1, 2, 3]
       ]
       """
   end

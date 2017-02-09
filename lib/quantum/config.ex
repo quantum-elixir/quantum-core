@@ -39,7 +39,7 @@ defmodule Quantum.Config do
 
     ~s"""
     config :quantum, your_app_name: [
-      crons: #{crons}
+      cron: #{crons}
     ]
     """
   end
