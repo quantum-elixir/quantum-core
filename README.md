@@ -20,6 +20,7 @@
   * [Special expressions](#special-expressions)
   * [Override default settings](#override-default-settings)
   * [GenServer timeout](#genserver-timeout)
+  * [Run Quantum as a global process](#run-quantum-as-a-global-process)
 * [Contribution](#contribution)
 * [License](#license)
 
