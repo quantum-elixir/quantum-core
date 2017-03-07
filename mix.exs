@@ -20,7 +20,10 @@ defmodule Quantum.Mixfile do
       docs: [
         main: "Quantum",
         source_ref: "v#{@version}",
-        source_url: "https://github.com/c-rack/quantum-elixir"
+        source_url: "https://github.com/c-rack/quantum-elixir",
+        extras: [
+          "CHANGELOG.md"
+        ]
       ],
       elixir: ">= 1.3.0",
       name: "Quantum",
