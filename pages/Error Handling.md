@@ -34,7 +34,7 @@ defmodule Acme do
   end
 
   def execute_named_function do
-    {:ok, _pid} = Task.Supervisor.start_child(Acme.TaskSupervisor, &my_func_to_call/1)
+    {:ok, _pid} = Task.Supervisor.start_child(Acme.TaskSupervisor, &my_func_to_call/0)
   end
 
   def my_func_to_call do
