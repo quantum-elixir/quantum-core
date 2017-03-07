@@ -28,14 +28,8 @@ defmodule Quantum.Normalizer do
   #   args: [1, 2, 3]
   # }
   defp normalize_job({job_name, %Quantum.Job{} = job}) do
-    # Sets defauts for job if necessary
-    job_name |> job_opts([]) |> Map.merge(%{job | name: job_name})
-    |> Map.put(
-        :nodes,
-        case job.nodes do
-          nil -> default_nodes()
-          ns -> ns
-        end)
+    # Sets defauts for job and normalizes values
+    job |> Map.merge(job_opts(job_name, Map.to_list(job)))
   end
 
   defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do
@@ -108,6 +102,7 @@ defmodule Quantum.Normalizer do
   defp extract(name, opts, d) when opts |> is_list, do: extract(name, opts |> Enum.into(%{}), d)
   defp extract(:schedule, opts, d), do: opts |> Map.get(:schedule, d) |> normalize_schedule
   defp extract(:task, opts, d), do: opts |> Map.get(:task, d) |> normalize_task
+  defp extract(:nodes, opts, d), do: opts |> Map.get(:nodes, d) || d
   defp extract(name, opts, d), do: opts |> Map.get(name, d)
 
   defp atomize(list) when is_list(list), do: Enum.map(list, &atomize/1)
@@ -122,7 +117,7 @@ defmodule Quantum.Normalizer do
       task: extract(:task, opts),
       args: extract(:args, opts, []),
       overlap: extract(:overlap, opts, overlap),
-      nodes: :nodes |> extract(opts, [node()]) |> atomize
+      nodes: :nodes |> extract(opts, default_nodes()) |> atomize
     }
   end
 

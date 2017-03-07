@@ -31,6 +31,63 @@ defmodule Quantum.NormalizerTest do
     }}
   end
 
+  test "named job with old schedule" do
+    job = {:newsletter, [
+      schedule: "@weekly",
+      task: "MyModule.my_method",
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, "string@node"]
+    ]}
+
+    assert normalize(job) == {:newsletter, %Quantum.Job{
+      name: :newsletter,
+      schedule: ~e[@weekly],
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, :string@node]
+    }}
+  end
+
+  test "named job with struct" do
+    job = {:newsletter, %Quantum.Job{
+      schedule: ~e[@weekly],
+      task: "MyModule.my_method",
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, "string@node"]
+    }}
+
+    assert normalize(job) == {:newsletter, %Quantum.Job{
+      name: :newsletter,
+      schedule: ~e[@weekly],
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, :string@node]
+    }}
+  end
+
+  test "named job with struct and old schedule" do
+    job = {:newsletter, %Quantum.Job{
+      schedule: "@weekly",
+      task: "MyModule.my_method",
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, "string@node"]
+    }}
+
+    assert normalize(job) == {:newsletter, %Quantum.Job{
+      name: :newsletter,
+      schedule: ~e[@weekly],
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, :string@node]
+    }}
+  end
+
   test "unnamed job as string" do
     job = "* * * * * MyModule.my_method"
 
