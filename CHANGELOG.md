@@ -2,9 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## Unreleased
 
-## [1.9.0] - 2017-02-07
+ Diff for [Unreleased]
+
+
+## 1.9.0 - 2017-02-07
+
+ Diff for [1.9.0]
+
 ### Removed
 - Three modules were removed and replaced by [crontab](https://hex.pm/packages/crontab).
   * `Quantum.Matcher`
@@ -22,7 +28,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - The configuration property `cron` is deprecated. Use the app configuration instead.
 
-## [1.8.1] - 2016-11-20
+## 1.8.1 - 2016-11-20
+
+ Diff for [1.8.1]
+
 ### Changed
 - Clarity on the table to not use full name of day ([Coburn Berry](https://github.com/crododile))
 - Travis testing against erlang 19.1 and elixir 1.3.3 ([Julius Beckmann](https://github.com/h4cc))
@@ -37,7 +46,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Timex references in readme ([Coburn Berry](https://github.com/crododile))
 - License badge in README
 
-## [1.8.0] - 2016-09-19
+## 1.8.0 - 2016-09-19
+
+ Diff for [1.8.0]
+
 ### Changed
 - Requires Elixir >= 1.3
 - Updated C4 contribution process to RFC42
@@ -52,7 +64,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Unused alias ([Philip Giuliani](https://github.com/philipgiuliani))
 
-## [1.7.1] - 2016-03-24
+## 1.7.1 - 2016-03-24
+
+ Diff for [1.7.1]
+
 ### Added
 - Optional per-job timezone support
 
@@ -61,7 +76,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `job.nodes` defaulting in the normalizer
 - Test suite after changing defaulting of nodes property for the `%Quantum.Jobs{}` struct
 
-## [1.7.0] - 2016-03-09
+## 1.7.0 - 2016-03-09
+
+ Diff for [1.7.0]
+
 ### Added
 - ToC to README
 - Documentation for `overlap` option
@@ -81,7 +99,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Credo warnings
 - GenServer restarts when one of the jobs crashes (#82)
 
-## [1.6.1] - 2015-12-09
+## 1.6.1 - 2015-12-09
+
+ Diff for [1.6.1]
+
 ### Fixed
 - `@reboot` entries are throwing errors
 - Credo warnings and software design suggestions
@@ -92,7 +113,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Refactored range variables
 - `.gitignore` updated
 
-## [1.6.0] - 2015-11-25
+## 1.6.0 - 2015-11-25
+
+ Diff for [1.6.0]
+
 ### Added
 - PID of last executed task to job struct
 - Credo code linter (only for dev and test)
@@ -107,7 +131,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Unnamed job tuples cannot take args ([Lucas Charles](https://github.com/theoretick))
 - Job names can only be atoms and can't be GC ([Luis Hurtado](https://github.com/luishurtado))
 
-## [1.5.0] - 2015-09-24
+## 1.5.0 - 2015-09-24
+
+ Diff for [1.5.0]
+
 ### Added
 - Ability to run jobs on exact node ([Rodion Vshevtsov](https://github.com/alPacino))
 - Documentation of named jobs
@@ -119,7 +146,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Typos in README
 
-## [1.4.0] - 2015-09-02
+## 1.4.0 - 2015-09-02
+
+ Diff for [1.4.0]
+
 ### Added
 - Named jobs and the ability to (de)activate them ([Rodion Vshevtsov](https://github.com/alPacino))
 - Doc annotations for functions
@@ -128,14 +158,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated `ex_doc` dependency
 
-## [1.3.2] - 2015-08-22
+## 1.3.2 - 2015-08-22
+
+ Diff for [1.3.2]
+
 ### Added
 - Timezone option to README.
 
 ### Fixed
 - Using `@reboot` lead to crash.
 
-## [1.3.1] - 2015-07-27
+## 1.3.1 - 2015-07-27
+
+ Diff for [1.3.1]
+
 ### Added
 - Added contributors to changelog and project description
 - Option to use local timezone instead of UTC.
@@ -143,14 +179,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Tables in README use markdown format
 
-## [1.3.0] - 2015-07-15
+## 1.3.0 - 2015-07-15
+
+ Diff for [1.3.0]
+
 
 ### Added
 - Allow cron-like job formatting (`"* * * * * MyApp.MyModule.my_method"`) ([Rodion Vshevtsov](https://github.com/alPacino))
 - Allow defining functions as tuple (`{"Module", :method}`) in config ([Rodion Vshevtsov](https://github.com/alPacino))
 - Note about UTC ([Lenz Gschwendtner](https://github.com/norbu09))
 
-## [1.2.4] - 2015-06-22
+## 1.2.4 - 2015-06-22
+
+ Diff for [1.2.4]
+
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
 - Always use `{expression, fun}` for jobs
@@ -164,14 +206,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Unused parse/3 functions
 - Unused call to String.split on patterns starting with "*/"
 
-## [1.2.3] - 2015-06-15
+## 1.2.3 - 2015-06-15
+
+ Diff for [1.2.3]
+
 ### Added
 - Support for `@reboot`
 
 ### Fixed
 - Does not convert jobs defined in config
 
-## [1.2.2] - 2015-06-15
+## 1.2.2 - 2015-06-15
+
+ Diff for [1.2.2]
+
 ### Added
 - Support for `@annually` and `@midnight`
 
@@ -184,7 +232,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Adding a job using Quantum.add_job/2 does not convert to lowercase
 - Adding a job using Quantum.add_job/2 does not translate day/month names
 
-## [1.2.1] - 2015-06-13
+## 1.2.1 - 2015-06-13
+
+ Diff for [1.2.1]
+
 ### Added
 - Test for handle_info(:tick_state)
 - Dependencies to generate hexdocs
@@ -205,7 +256,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Quantum.start_link/1
 
-## [1.2.0] - 2015-06-11
+## 1.2.0 - 2015-06-11
+
+ Diff for [1.2.0]
+
 ### Changed
 - Date is updated in state only if it changed
 - Wake up every minute instead of every second
@@ -218,29 +272,44 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Explicit variables are not needed
 - Pattern matching can be simplified
 
-## [1.1.0] - 2015-05-28
+## 1.1.0 - 2015-05-28
+
+ Diff for [1.1.0]
+
 ### Added
 - Add ability to schedule jobs at runtime and ability to view jobs ([Dan Swain](https://github.com/dantswain))
 
 ### Changed
 - Relax Elixir version
 
-## [1.0.4] - 2015-05-26
+## 1.0.4 - 2015-05-26
+
+ Diff for [1.0.4]
+
 ### Fixed
 - Written month and weekday names are not parsed
 
-## [1.0.3] - 2015-05-01
+## 1.0.3 - 2015-05-01
+
+ Diff for [1.0.3]
+
 ### Fixed
 - Do not fire on first tick
 
-## [1.0.2] - 2015-04-29
+## 1.0.2 - 2015-04-29
+
+ Diff for [1.0.2]
+
 ### Fixed
 - Special expressions are not correctly in all cases
 
 ### Removed
 - Functions to add and reset jobs
 
-## [1.0.1] - 2015-04-27
+## 1.0.1 - 2015-04-27
+
+ Diff for [1.0.1]
+
 ### Added
 - Configure cronjobs in config
 - Add application
@@ -248,7 +317,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Parsing of cron expression fails
 
-## [1.0.0] - 2015-04-27
+## 1.0.0 - 2015-04-27
+
+ Diff for [1.0.0]
+
 ### Added
 - Initial commit
 
