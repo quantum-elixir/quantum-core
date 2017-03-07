@@ -2,6 +2,8 @@
 
 Cron Tasks can be supervised normally through a `Task.Supervisor`.
 
+The error handling can be implemented via a normal OTP Supervisor Tree.
+
 ## Setup
 
 * Start `Task.Supervisor`
