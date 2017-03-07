@@ -22,7 +22,8 @@ defmodule Quantum.Mixfile do
         source_ref: "v#{@version}",
         source_url: "https://github.com/c-rack/quantum-elixir",
         extras: [
-          "CHANGELOG.md"
+          "CHANGELOG.md",
+          "pages/Error Handling.md"
         ]
       ],
       elixir: ">= 1.3.0",
