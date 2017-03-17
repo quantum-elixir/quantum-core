@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
  Diff for [Unreleased]
 
+## 1.9.1 - 2017-03-17
+
+Diff for [1.9.1]
 
 ## 1.9.0 - 2017-02-07
 
@@ -325,7 +328,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.9.0...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/c-rack/quantum-elixir/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/c-rack/quantum-elixir/compare/v1.7.1...v1.8.0
