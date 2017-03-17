@@ -130,9 +130,9 @@ defmodule Quantum do
 
   def handle_info(:tick, state) do
     {d, h, m, s} = Timer.tick
-    state = if state.d != d, do: %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: state
-    state = %{state | h: h, m: m, s: s}
-    {:noreply, %{state | jobs: run(state)}}
+    state1 = if state.d != d, do: %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: state
+    state2 = %{state1 | h: h, m: m, s: s}
+    {:noreply, %{state2 | jobs: run(state2)}}
   end
   def handle_info(_, s), do: {:noreply, s}
 
