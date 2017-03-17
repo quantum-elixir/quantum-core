@@ -31,7 +31,8 @@ defmodule Quantum.Executor do
   def execute(_, _), do: false
 
   defp _execute({cron_expression, fun, args, tz}, state) do
-    date_naive = convert_to_timezone(state, tz)
+    date_naive = state
+      |> convert_to_timezone(tz)
       |> DateTime.to_naive
 
     if Crontab.DateChecker.matches_date?(cron_expression, date_naive) do

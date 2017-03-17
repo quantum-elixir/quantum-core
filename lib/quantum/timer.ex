@@ -21,6 +21,8 @@ defmodule Quantum.Timer do
   end
 
   def custom(timezone, _) do
-    Calendar.DateTime.now!(timezone) |> Calendar.DateTime.to_erl
+    timezone
+    |> Calendar.DateTime.now!
+    |> Calendar.DateTime.to_erl
   end
 end

@@ -7,12 +7,12 @@ defmodule Quantum.Config do
     check_for_old_configuration()
 
     List.flatten [
-      Application.get_all_env(:quantum)
+      :quantum
+      |> Application.get_all_env
       |> Keyword.values
       |> Enum.filter(&is_list(&1))
       |> Enum.map(&Keyword.get(&1, :cron, []))
       |> List.flatten,
-
       Application.get_env(:quantum, :cron, [])
     ]
   end
