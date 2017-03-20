@@ -36,10 +36,7 @@ config :quantum, :your_app,
   ]
 ```
 
-Or even use cron-like format (useful with
-[conform](https://github.com/bitwalker/conform) /
-[exrm](https://github.com/bitwalker/exrm) /
-[edeliver](https://github.com/boldpoker/edeliver)):
+Or even use cron-like format:
 ```elixir
 config :quantum, :your_app,
   cron: [
@@ -47,6 +44,16 @@ config :quantum, :your_app,
     "* * * * * MyApp.MyModule.my_method"
   ]
 ```
+
+## Release managers
+[conform](https://github.com/bitwalker/conform) /
+[exrm](https://github.com/bitwalker/exrm) /
+[edeliver](https://github.com/boldpoker/edeliver))
+
+Please note that the following config notations are not supported by release managers.
+
+* `"* * * * *": &ModuleName.function_name/arity`
+* `"* * * * *": fn -> :anonymous_function end`
 
 ## Named Jobs
 
