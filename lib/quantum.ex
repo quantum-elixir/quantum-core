@@ -34,8 +34,6 @@ defmodule Quantum do
       it being generated on multiple nodes. With the following
       configuration, Quantum will be run as a globally unique
       process across the cluster.
-
-    * `:timezone` - default timezone
   """
 
   @type t :: module
@@ -64,12 +62,7 @@ defmodule Quantum do
     quote bind_quoted: [opts: opts] do
       @behaviour Quantum
 
-      {otp_app, config} = Quantum.Supervisor.compile_config(__MODULE__, opts)
-
-      @otp_app otp_app
-      @config config
-
-      @timeout Keyword.get(@config, :timeout, 5_000)
+      @otp_app Keyword.fetch!(opts, :otp_app)
 
       def config do
         {:ok, config} = Quantum.Supervisor.runtime_config(:dry_run, __MODULE__, @otp_app, [])
@@ -109,7 +102,7 @@ defmodule Quantum do
       end
 
       def find_job(name) do
-        Quantum.Scheduler.find_by_name(jobs(), name)
+        GenServer.call(__scheduler__(), {:find_job, name}, __timeout__())
       end
 
       def delete_job(name) do
@@ -160,7 +153,7 @@ defmodule Quantum do
   application environment. It must return `{:ok, keyword}` with the updated
   list of configuration or `:ignore` (only in the `:supervisor` case).
   """
-  @callback init(:supervisor | :dry_run, config :: Keyword.t) :: {:ok, Keyword.t} | :ignore
+  @callback init(source :: :supervisor | :dry_run, config :: Keyword.t) :: {:ok, Keyword.t} | :ignore
 
   @doc """
   Shuts down the quantum represented by the given pid.

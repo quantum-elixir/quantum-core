@@ -1,4 +1,6 @@
 defmodule Quantum.Scheduler do
+  @moduledoc false
+
   use GenServer
 
   alias Quantum.Job
@@ -46,6 +48,11 @@ defmodule Quantum.Scheduler do
   end
 
   def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
+
+  def handle_call({:find_job, name}, _, s = %{jobs: jobs}) do
+    {:reply, find_by_name(jobs, name), s}
+  end
+
   def handle_call(:which_children, _, s) do
     children = [{
       Task.Supervisor,
@@ -76,7 +83,7 @@ defmodule Quantum.Scheduler do
     end
   end
 
-  def find_by_name(job_list, job_name) do
+  defp find_by_name(job_list, job_name) do
     case List.keyfind(job_list, job_name, 0) do
       nil          -> nil
       {_name, job} -> job

@@ -70,16 +70,6 @@ defmodule Quantum.Supervisor do
     end)
   end
 
-  @doc """
-  Retrieves the compile time configuration.
-  """
-  def compile_config(quantum, opts) do
-    otp_app = Keyword.fetch!(opts, :otp_app)
-    config = Application.get_env(otp_app, quantum, [])
-
-    {otp_app, config}
-  end
-
   ## Callbacks
 
   def init({quantum, otp_app, opts}) do

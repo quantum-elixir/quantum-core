@@ -353,7 +353,7 @@ defmodule QuantumTest do
     Application.put_env(:quantum, :timeout, 0)
     job = %Quantum.Job{schedule: ~e[* */5 * * *], task: fn -> :ok end}
     assert catch_exit(QuantumTest.ZeroTimeoutRunner.add_job(:tmpjob, job)) ==
-      {:timeout, {GenServer, :call, [QuantumTest.ZeroTimeoutRunner.Scheduler, :jobs, 0]}}
+      {:timeout, {GenServer, :call, [QuantumTest.ZeroTimeoutRunner.Scheduler, {:find_job, :tmpjob}, 0]}}
   after
     Application.delete_env(:quantum, :timeout)
   end
