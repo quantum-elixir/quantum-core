@@ -8,7 +8,7 @@ defmodule Quantum.Scheduler do
 
   @doc "Starts Quantum process"
   def start_link(opts) do
-    state = %{opts: opts, jobs: Keyword.fetch!(opts, :cron), d: nil, h: nil, m: nil, s: nil, w: nil, r: nil}
+    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs), d: nil, h: nil, m: nil, s: nil, w: nil, r: nil}
     case GenServer.start_link(__MODULE__, state, [name: Keyword.fetch!(opts, :scheduler)]) do
       {:ok, pid} ->
         {:ok, pid}

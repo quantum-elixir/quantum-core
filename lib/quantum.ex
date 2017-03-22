@@ -13,7 +13,7 @@ defmodule Quantum do
   Could be configured with:
 
       config :my_app, MyApp.Quantum,
-        cron: [
+        jobs: [
           "@daily": &Backup.backup/0,
         ]
 
@@ -23,7 +23,7 @@ defmodule Quantum do
       timeout errors esp. when you have too many jobs or high
       load. The default GenServer.call timeout is 5000.
 
-    * `:cron` - list of cron jobs to execute
+    * `:jobs` - list of cron jobs to execute
 
     * `:global?` - When you have a cluster of nodes, you may not
       want same jobs to be generated on every single node, e.g.

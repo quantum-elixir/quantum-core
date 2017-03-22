@@ -18,7 +18,7 @@ defmodule QuantumStartupTest do
          "3 * * * *": fn -> :ok end,
          "4 * * * *": fn -> :ok end]
 
-      Application.put_env(:quantum_test, QuantumStartupTest.Runner, cron: test_jobs)
+      Application.put_env(:quantum_test, QuantumStartupTest.Runner, jobs: test_jobs)
 
       {:ok, _pid} = QuantumStartupTest.Runner.start_link()
 

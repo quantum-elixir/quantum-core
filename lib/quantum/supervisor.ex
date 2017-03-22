@@ -24,7 +24,7 @@ defmodule Quantum.Supervisor do
                (@defaults |> Keyword.merge(config) |> Keyword.merge(custom))
 
       jobs = config
-      |> Keyword.get(:cron)
+      |> Keyword.get(:jobs)
       |> Enum.map(&Normalizer.normalize/1)
       |> remove_jobs_with_duplicate_names(quantum)
 
@@ -35,7 +35,7 @@ defmodule Quantum.Supervisor do
       task_supervisor = Module.concat(quantum, Task.Supervisor)
 
       config = config
-      |> Keyword.put(:cron, jobs)
+      |> Keyword.put(:jobs, jobs)
       |> Keyword.put(:scheduler, scheduler)
       |> Keyword.put(:task_supervisor, task_supervisor)
 

@@ -24,8 +24,8 @@ defmodule QuantumTest do
   end
 
   setup do
-    Application.put_env(:quantum_test, QuantumTest.Runner, cron: [])
-    Application.put_env(:quantum_test, QuantumTest.ZeroTimeoutRunner, timeout: 0, cron: [])
+    Application.put_env(:quantum_test, QuantumTest.Runner, jobs: [])
+    Application.put_env(:quantum_test, QuantumTest.ZeroTimeoutRunner, timeout: 0, jobs: [])
 
     start_runner(QuantumTest.Runner)
     start_runner(QuantumTest.ZeroTimeoutRunner)
