@@ -14,12 +14,14 @@ defmodule QuantumTest do
   defp job_names, do: ["test_job", :test_job, 'test_job']
 
   defp start_runner(name) do
-    case name.start_link() do
-      {:ok, _pid} ->
-        :ok
-      {:error, {:already_started, _pid}} ->
-        name.delete_all_jobs()
-        :ok
+    {:ok, _pid} = name.start_link()
+    on_exit fn ->
+      case Process.whereis(Quantum.Supervisor) do
+        nil ->
+          :ok
+        pid ->
+          name.stop(pid)
+      end
     end
   end
 
