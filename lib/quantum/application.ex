@@ -1,30 +1,22 @@
 defmodule Quantum.Application do
-
+  # See http://elixir-lang.org/docs/stable/elixir/Application.html
+  # for more information on OTP Applications
   @moduledoc false
-
-  import Quantum.Normalizer
-  alias Quantum.Config
-  require Logger
 
   use Application
 
   def start(_type, _args) do
-    jobs = Config.get
-    |> Enum.map(&normalize/1)
-    |> remove_jobs_with_duplicate_names
-    state = %{jobs: jobs, d: nil, h: nil, m: nil, s: nil, w: nil, r: nil}
-    Quantum.Supervisor.start_link(state)
-  end
+    import Supervisor.Spec, warn: false
 
-  def remove_jobs_with_duplicate_names(job_list) do
-    Enum.reduce(job_list, [], fn({name, job}, acc) ->
-      if name && Enum.member?(Keyword.keys(acc), name) do
-        Logger.warn("Job '#{name}' not started due to duplicate job name")
-        acc
-      else
-        [{name, job} | acc]
-      end
-    end)
-  end
+    # Define workers and child supervisors to be supervised
+    children = [
+      # Starts a worker by calling: Quantum.Worker.start_link(arg1, arg2, arg3)
+      # worker(Quantum.Worker, [arg1, arg2, arg3]),
+    ]
 
+    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Quantum.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
 end
