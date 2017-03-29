@@ -1,6 +1,8 @@
 defmodule QuantumTest do
   use ExUnit.Case, async: false
 
+  alias Quantum.Job
+
   import Crontab.CronExpression
 
   defmodule Runner do
@@ -10,8 +12,6 @@ defmodule QuantumTest do
   defmodule ZeroTimeoutRunner do
     use Quantum, otp_app: :quantum_test
   end
-
-  defp job_names, do: ["test_job", :test_job, 'test_job']
 
   defp start_runner(name) do
     {:ok, _pid} = name.start_link()
@@ -33,129 +33,156 @@ defmodule QuantumTest do
     start_runner(QuantumTest.ZeroTimeoutRunner)
   end
 
+  describe "new_job/0" do
+    test "returns Quantum.Job struct" do
+      %Quantum.Job{schedule: schedule, overlap: overlap, timezone: timezone} = QuantumTest.Runner.new_job()
+
+      assert schedule == ~e[*]
+      assert overlap == true
+      assert timezone == :utc
+    end
+
+    test "has defaults set" do
+      default_schedule = ~e[*/7]
+      default_overlap = false
+      default_timezone = "Europe/Zurich"
+      Application.put_env(:quantum, :default_schedule, default_schedule)
+      Application.put_env(:quantum, :default_overlap, default_overlap)
+      Application.put_env(:quantum, :default_timezone, default_timezone)
+
+      %Quantum.Job{schedule: schedule, overlap: overlap, timezone: timezone} = QuantumTest.Runner.new_job()
+
+      assert schedule == default_schedule
+      assert overlap == default_overlap
+      assert timezone == default_timezone
+    end
+  end
+
   test "adding a job at run time" do
     spec = ~e[1 * * * *]
     fun = fn -> :ok end
     :ok = QuantumTest.Runner.add_job(spec, fun)
-    job = %Quantum.Job{schedule: spec, task: fun, nodes: [node()]}
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(spec)
+    |> Job.set_task(fun)
     assert Enum.member? QuantumTest.Runner.jobs, {nil, job}
   end
 
-  test "adding a named job as options at run time" do
-    for name <- job_names() do
+  describe "add_job/2" do
+    test "adding a job at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
-      job_otps = %{schedule: spec, task: fun}
-      job = %Quantum.Job{} |> Map.merge(job_otps)
-      :ok = QuantumTest.Runner.add_job(name, job_otps)
-      assert Enum.member? QuantumTest.Runner.jobs, {name, %{job | name: name,
-                                                       nodes: [node()]}}
-    end
-  end
 
-  test "adding a named job struct at run time" do
-    for name <- job_names() do
+      :ok = QuantumTest.Runner.add_job(spec, fun)
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+      assert Enum.member? QuantumTest.Runner.jobs, {nil, job}
+    end
+
+    test "adding a named job struct at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
-      job = %Quantum.Job{schedule: spec, task: fun}
-      :ok = QuantumTest.Runner.add_job(name, job)
-      assert Enum.member? QuantumTest.Runner.jobs, {name, %{job | name: name,
-                                                       nodes: [node()]}}
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+      :ok = QuantumTest.Runner.add_job(job)
+      assert Enum.member? QuantumTest.Runner.jobs, {:test_job, %{job | nodes: [node()]}}
     end
-  end
 
-  test "adding a named {m, f, a} jpb at run time" do
-    name = "ticker"
-    spec = ~e[1 * * * *]
-    task = {IO, :puts}
-    args = ["Tick"]
-    job = %Quantum.Job{schedule: spec, task: task, args: args}
-    :ok = QuantumTest.Runner.add_job(name, job)
-    assert Enum.member? QuantumTest.Runner.jobs, {name, %{job | name: name,
-                                                     nodes: [node()]}}
-  end
+    test "adding a named {m, f, a} jpb at run time" do
+      spec = ~e[1 * * * *]
+      task = {IO, :puts, ["Tick"]}
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_name(:ticker)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(task)
+      :ok = QuantumTest.Runner.add_job(job)
+      assert Enum.member? QuantumTest.Runner.jobs, {:ticker, %{job | nodes: [node()]}}
+    end
 
-  test "adding a unnamed job at run time" do
-    spec = ~e[1 * * * *]
-    fun = fn -> :ok end
-    job = %Quantum.Job{schedule: spec, task: fun}
-    :ok = QuantumTest.Runner.add_job(job)
-    assert Enum.member? QuantumTest.Runner.jobs, {nil, %{job | nodes: [node()]}}
-  end
-
-  test "adding a job at run time with atom expression" do
-    spec = :"@daily"
-    fun = fn -> :ok end
-    :ok = QuantumTest.Runner.add_job(spec, fun)
-    job = %Quantum.Job{schedule: ~e[@daily], task: fun}
-    assert Enum.member? QuantumTest.Runner.jobs, {nil, %{job | nodes: [node()]}}
-  end
-
-  test "adding a job at run time with uppercase string" do
-    spec = "@HOURLY"
-    fun = fn -> :ok end
-    :ok = QuantumTest.Runner.add_job(spec, fun)
-    job = %Quantum.Job{schedule: ~e[@hourly], task: fun}
-    assert Enum.member? QuantumTest.Runner.jobs, {nil, %{job | nodes: [node()]}}
+    test "adding a unnamed job at run time" do
+      spec = ~e[1 * * * *]
+      fun = fn -> :ok end
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+      :ok = QuantumTest.Runner.add_job(job)
+      assert Enum.member? QuantumTest.Runner.jobs, {nil, job}
+    end
   end
 
   test "finding a named job" do
-    for name <- job_names() do
-      spec = ~e[* * * * *]
-      fun = fn -> :ok end
-      job = %Quantum.Job{schedule: spec, task: fun}
-      :ok = QuantumTest.Runner.add_job(name, job)
-      fjob = QuantumTest.Runner.find_job(name)
-      assert fjob.name == name
-      assert fjob.schedule == spec
-      assert fjob.nodes == [node()]
-    end
+    spec = ~e[* * * * *]
+    fun = fn -> :ok end
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_name(:test_job)
+    |> Job.set_schedule(spec)
+    |> Job.set_task(fun)
+    :ok = QuantumTest.Runner.add_job(job)
+    fjob = QuantumTest.Runner.find_job(:test_job)
+    assert fjob.name == :test_job
+    assert fjob.schedule == spec
+    assert fjob.nodes == [node()]
   end
 
   test "deactivating a named job" do
-    for name <- job_names() do
-      spec = ~e[* * * * *]
-      fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun, nodes: Quantum.Normalizer.default_nodes}
-      :ok = QuantumTest.Runner.add_job(name, job)
-      :ok = QuantumTest.Runner.deactivate_job(name)
-      sjob = QuantumTest.Runner.find_job(name)
-      assert sjob == %{job | state: :inactive}
-    end
+    spec = ~e[* * * * *]
+    fun = fn -> :ok end
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_name(:test_job)
+    |> Job.set_schedule(spec)
+    |> Job.set_task(fun)
+
+    :ok = QuantumTest.Runner.add_job(job)
+    :ok = QuantumTest.Runner.deactivate_job(:test_job)
+    sjob = QuantumTest.Runner.find_job(:test_job)
+    assert sjob == %{job | state: :inactive}
   end
 
   test "activating a named job" do
-    for name <- job_names() do
       spec = ~e[* * * * *]
       fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun, state: :inactive, nodes: Quantum.Normalizer.default_nodes}
 
-      :ok = QuantumTest.Runner.add_job(name, job)
-      :ok = QuantumTest.Runner.activate_job(name)
-      ajob = QuantumTest.Runner.find_job(name)
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_state(:inactive)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+
+      :ok = QuantumTest.Runner.add_job(job)
+      :ok = QuantumTest.Runner.activate_job(:test_job)
+      ajob = QuantumTest.Runner.find_job(:test_job)
       assert ajob == %{job | state: :active}
-    end
   end
 
   test "deleting a named job at run time" do
-    for name <- job_names() do
-      spec = ~e[* * * * *]
-      fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun}
-      :ok = QuantumTest.Runner.add_job(name, job)
-      djob = QuantumTest.Runner.delete_job(name)
-      assert djob.name == name
-      assert djob.schedule == spec
-      assert !Enum.member? QuantumTest.Runner.jobs, {name, job}
-    end
+    spec = ~e[* * * * *]
+    fun = fn -> :ok end
+
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_name(:test_job)
+    |> Job.set_schedule(spec)
+    |> Job.set_task(fun)
+
+    :ok = QuantumTest.Runner.add_job(job)
+    djob = QuantumTest.Runner.delete_job(:test_job)
+    assert djob.name == :test_job
+    assert djob.schedule == spec
+    assert !Enum.member? QuantumTest.Runner.jobs, {:test_job, job}
   end
 
   test "deleting all jobs" do
-    for name <- job_names() do
+    for i <- 1..3 do
+      name = String.to_atom("test_job_" <> Integer.to_string(i))
       spec = ~e[* * * * *]
       fun = fn -> :ok end
-      job = %Quantum.Job{name: name, schedule: spec, task: fun}
-      :ok = QuantumTest.Runner.add_job(name, job)
+      job = QuantumTest.Runner.new_job()
+      |> Job.set_name(name)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+      :ok = QuantumTest.Runner.add_job(job)
     end
     assert Enum.count(QuantumTest.Runner.jobs) == 3
     QuantumTest.Runner.delete_all_jobs
@@ -164,9 +191,14 @@ defmodule QuantumTest do
 
   test "prevent duplicate job names" do
     # note that "test_job", :test_job and 'test_job' are regarded as different names
-    job = %Quantum.Job{schedule: ~e[* * * * *], task: fn -> :ok end}
-    assert QuantumTest.Runner.add_job(:test_job, job) == :ok
-    assert QuantumTest.Runner.add_job(:test_job, job) == :error
+
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_name(:test_job)
+    |> Job.set_schedule(~e[* * * * *])
+    |> Job.set_task(fn -> :ok end)
+
+    assert QuantumTest.Runner.add_job(job) == :ok
+    assert QuantumTest.Runner.add_job(job) == :error
   end
 
   test "handle_info" do
@@ -190,7 +222,11 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun, nodes: Quantum.Normalizer.default_nodes}
+
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[* * * * *]e)
+    |> Job.set_task(fun)
+
     state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
@@ -206,7 +242,10 @@ defmodule QuantumTest do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
     {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
-    job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, nodes: [:remote@node]}
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[* * * * *])
+    |> Job.set_task(fun)
+    |> Job.set_nodes([:remote@node])
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
     assert Quantum.Scheduler.handle_info(:tick, state1) == {:noreply, state2}
@@ -223,7 +262,9 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[@reboot], task: fun, nodes: Quantum.Normalizer.default_nodes}
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[@reboot])
+    |> Job.set_task(fun)
     {:ok, state} = Quantum.Scheduler.init(%{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: nil, h: nil, m: nil, w: nil, r: nil})
     :timer.sleep(500)
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
@@ -242,7 +283,10 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun, overlap: false, nodes: Quantum.Normalizer.default_nodes}
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[* * * * *]e)
+    |> Job.set_overlap(false)
+    |> Job.set_task(fun)
     state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
@@ -263,7 +307,11 @@ defmodule QuantumTest do
       Agent.update(pid1, fn(_) -> fun_pid end)
       Agent.update(pid2, fn(n) -> n + 1 end)
     end
-    job = %Quantum.Job{schedule: ~e[* * * * *], task: fun, overlap: false, pid: pid1, nodes: Quantum.Normalizer.default_nodes}
+    job = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[* * * * *])
+    |> Job.set_overlap(false)
+    |> Job.set_task(fun)
+    |> Map.put(:pid, pid1)
     state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
@@ -282,18 +330,26 @@ defmodule QuantumTest do
       end
     end
 
-    job_sibling = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
-    assert QuantumTest.Runner.add_job("sibling_job", job_sibling) == :ok
+    job_sibling = QuantumTest.Runner.new_job()
+    |> Job.set_name(:job_sibling)
+    |> Job.set_schedule(~e[* * * * *]e)
+    |> Job.set_task(fun)
 
-    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
-    assert QuantumTest.Runner.add_job("job_to_crash", job_to_crash) == :ok
+    assert QuantumTest.Runner.add_job(job_sibling) == :ok
+
+    job_to_crash = QuantumTest.Runner.new_job()
+    |> Job.set_name(:job_to_crash)
+    |> Job.set_schedule(~e[* * * * *]e)
+    |> Job.set_task(fun)
+
+    assert QuantumTest.Runner.add_job(job_to_crash) == :ok
 
     assert Enum.count(QuantumTest.Runner.jobs) == 2
 
     send(QuantumTest.Runner.Scheduler, :tick)
 
-    %Quantum.Job{pid: pid_sibling} = QuantumTest.Runner.find_job("sibling_job")
-    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Runner.find_job("job_to_crash")
+    %Quantum.Job{pid: pid_sibling} = QuantumTest.Runner.find_job(:job_sibling)
+    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Runner.find_job(:job_to_crash)
 
     # both processes are alive
     :ok = ensure_alive(pid_sibling)
@@ -313,16 +369,23 @@ defmodule QuantumTest do
   end
 
   test "preserve state if one of the jobs crashes" do
-    job1 = %Quantum.Job{schedule: ~e[* * * * *], task: fn -> :ok end}
-    assert QuantumTest.Runner.add_job("job1", job1) == :ok
+    job1 = QuantumTest.Runner.new_job()
+    |> Job.set_schedule(~e[* * * * *])
+    |> Job.set_task(fn -> :ok end)
+    assert QuantumTest.Runner.add_job(job1) == :ok
 
     fun = fn ->
       receive do
         :ping -> :pong
       end
     end
-    job_to_crash = %Quantum.Job{schedule: ~e[* * * * *]e, task: fun}
-    assert QuantumTest.Runner.add_job("job_to_crash", job_to_crash) == :ok
+
+    job_to_crash = QuantumTest.Runner.new_job()
+    |> Job.set_name(:job_to_crash)
+    |> Job.set_schedule(~e[* * * * *]e)
+    |> Job.set_task(fun)
+
+    assert QuantumTest.Runner.add_job(job_to_crash) == :ok
 
     assert Enum.count(QuantumTest.Runner.jobs) == 2
 
@@ -330,7 +393,7 @@ defmodule QuantumTest do
 
     assert Enum.count(QuantumTest.Runner.jobs) == 2
 
-    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Runner.find_job("job_to_crash")
+    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Runner.find_job(:job_to_crash)
 
     # ensure process to crash is alive
     :ok = ensure_alive(pid_to_crash)
@@ -353,8 +416,13 @@ defmodule QuantumTest do
 
   test "timeout can be configured for genserver correctly" do
     Application.put_env(:quantum, :timeout, 0)
-    job = %Quantum.Job{schedule: ~e[* */5 * * *], task: fn -> :ok end}
-    assert catch_exit(QuantumTest.ZeroTimeoutRunner.add_job(:tmpjob, job)) ==
+
+    job = QuantumTest.ZeroTimeoutRunner.new_job()
+    |> Job.set_name(:tmpjob)
+    |> Job.set_schedule(~e[* */5 * * *])
+    |> Job.set_task(fn -> :ok end)
+
+    assert catch_exit(QuantumTest.ZeroTimeoutRunner.add_job(job)) ==
       {:timeout, {GenServer, :call, [QuantumTest.ZeroTimeoutRunner.Scheduler, {:find_job, :tmpjob}, 0]}}
   after
     Application.delete_env(:quantum, :timeout)

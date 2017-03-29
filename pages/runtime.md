@@ -3,13 +3,25 @@
 If you want to add jobs on runtime, this is possible too:
 
 ```elixir
+# Short Form
 Quantum.add_job("1 * * * *", fn -> :ok end)
+
+# Explicit Form
+Quantum.new_job()
+|> Quantum.Job.set_schedule(~e[1 * * * *])
+|> Quantum.Job.set_task(fn -> :ok end)
 ```
 
 Add a named job at runtime:
 
 ```elixir
-job = %Quantum.Job{schedule: "* * * * *", task: fn -> IO.puts "tick" end}
+import Crontab.CronExpression
+
+Quantum.new_job()
+|> Quantum.Job.set_name(:ticker)
+|> Quantum.Job.set_schedule(~e[1 * * * *])
+|> Quantum.Job.set_task(fn -> :ok end)
+
 Quantum.add_job(:ticker, job)
 ```
 
@@ -46,6 +58,10 @@ The following example will put a tick into the `stdout` every second.
 ```elixir
 import Crontab.CronExpression
 
-job = %Quantum.Job{schedule: ~e[* * * * *], task: fn -> IO.puts "tick" end}
-Quantum.add_job(:ticker, job)
+Quantum.new_job()
+|> Quantum.Job.set_name(:ticker)
+|> Quantum.Job.set_schedule(~e[1 * * * *]e)
+|> Quantum.Job.set_task(fn -> IO.puts "tick" end)
+
+Quantum.add_job(job)
 ```

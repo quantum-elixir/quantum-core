@@ -36,6 +36,8 @@ defmodule Quantum do
       process across the cluster.
   """
 
+  alias Quantum.Job
+
   @type t :: module
 
   @typedoc """
@@ -80,17 +82,30 @@ defmodule Quantum do
         Supervisor.stop(pid, :normal, timeout)
       end
 
-      def add_job(job) do
-        GenServer.call(__scheduler__(), {:add, Quantum.Normalizer.normalize({nil, job})}, __timeout__())
+      def add_job(job = %Job{name: nil}) do
+        GenServer.call(__scheduler__(), {:add, {nil, job}}, __timeout__())
       end
-
-      def add_job(expr, job) do
-        {name, job} = Quantum.Normalizer.normalize({expr, job})
-        if name && find_job(name) do
+      def add_job(job = %Job{name: name}) do
+        if find_job(name) do
           :error
         else
           GenServer.call(__scheduler__(), {:add, {name, job}}, __timeout__())
         end
+      end
+
+      def add_job(schedule = %Crontab.CronExpression{}, task) when is_tuple(task) or is_function(task, 0) do
+        new_job()
+        |> Job.set_schedule(schedule)
+        |> Job.set_task(task)
+        |> add_job
+      end
+
+      def new_job do
+        %Job{}
+        |> Job.set_schedule(Application.get_env(:quantum, :default_schedule, ~e[*]))
+        |> Job.set_overlap(Application.get_env(:quantum, :default_overlap, true))
+        |> Job.set_timezone(Application.get_env(:quantum, :default_timezone, :utc))
+        |> Job.set_nodes(Application.get_env(:quantum, :default_nodes, [node()]))
       end
 
       def deactivate_job(n) do
@@ -161,6 +176,11 @@ defmodule Quantum do
   @callback stop(pid, timeout) :: :ok
 
   @doc """
+  Creates a new Job. The job can be added by calling `add_job/1`.
+  """
+  @callback new_job() :: Quantum.Job.t
+
+  @doc """
   Adds a new unnamed job
   """
   @callback add_job(job) :: :ok
@@ -168,7 +188,7 @@ defmodule Quantum do
   @doc """
   Adds a new named job
   """
-  @callback add_job(expr, job) :: :ok | :error
+  @callback add_job(Crontab.CronExpression.t, Job.task) :: :ok | :error
 
   @doc """
   Deactivates a job by name

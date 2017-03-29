@@ -2,60 +2,53 @@ defmodule Quantum.Normalizer do
 
   @moduledoc false
 
-  def normalize(j) do
-    nj = normalize_job(j)
-    {nj.name, nj}
-  end
+  alias Quantum.Job
 
-  def default_nodes do
-    Application.get_env(:quantum, :default_nodes, [node()])
-  end
+  @fields [:name,
+           :schedule,
+           :task,
+           :overlap,
+           :nodes]
 
   # Creates named Quantum.Job
   # Input:
   # [
   #   newsletter: [
   #     schedule: "* * * * *",
-  #     task: "MyModule.my_method",
-  #     args: [1, 2, 3]
+  #     task: {MyModule, :my_method, [1, 2, 3]},
   #   ]
   # ]
   # Output:
   # %Quantum.Job{
   #   name: :newsletter,
   #   schedule: "* * * * *",
-  #   task: {"MyModule", "my_method"},
-  #   args: [1, 2, 3]
+  #   task: {MyModule, :my_method, [1, 2, 3]},
   # }
-  defp normalize_job({job_name, %Quantum.Job{} = job}) do
-    # Sets defauts for job and normalizes values
-    job |> Map.merge(job_opts(job_name, Map.to_list(job)))
+  def normalize(base, {job_name, opts}) when is_list(opts) do
+    opts = opts
+    |> Enum.reduce(%{}, fn {key, value}, acc -> Map.put(acc, key, value) end)
+    normalize(base, {job_name, opts})
   end
+  def normalize(base, {job_name, opts}) when is_map(opts) do
+    opts = Map.put(opts, :name, job_name)
 
-  defp normalize_job({job_name, opts}) when opts |> is_list or opts |> is_map do
-    %Quantum.Job{} |> Map.merge(job_opts(job_name, opts))
+    base
+    |> normalize_options(opts, @fields)
   end
 
   # Creates unnamed Quantum.Job
   # Input:
-  # "* * * * * MyModule.my_method"
-  # OR
-  # "* * * * *": {MyModule, "my_method"}
-  # OR
-  # "* * * * *": &MyModule.my_method/0
+  # "* * * * *": {MyModule, :my_method, []}
   # Output:
   # %Quantum.Job{
-  #   name: :__unnamed__,
+  #   name: nil,
   #   schedule: "* * * * *",
-  #   task: {"MyModule", "my_method"} / &MyModule.my_method/0,
+  #   task: {MyModule, :my_method, []},
   #   args: []
   # }
-  defp normalize_job(j) do
-    opts = case normalize_unnamed_job(j) do
-      {schedule, task, args} -> %{schedule: schedule, task: task, args: args}
-      {schedule, task} -> %{schedule: schedule, task: task}
-    end
-    normalize_job({nil, opts})
+  def normalize(base, j) do
+    {schedule, task} = normalize_unnamed_job(j)
+    normalize(base, {nil, %{schedule: schedule, task: task}})
   end
 
   # Converts a job {expr, fun} into its canonical format.
@@ -64,61 +57,70 @@ defmodule Quantum.Normalizer do
   defp normalize_unnamed_job({e, fun}) do
     schedule = normalize_schedule(e)
     case normalize_task(fun) do
-      {mod, fun, args} -> {schedule, {mod, fun}, args}
+      {mod, fun, args} -> {schedule, {mod, fun, args}}
       fun -> {schedule, fun}
     end
   end
 
-  # Converts a string representation of schedule+job into
-  # its canonical format.
-  # Input: "* * * * * MyApp.MyModule.my_method"
-  # Output: {"* * * * *", {"MyApp.MyModule", "my_method"}}
-  defp normalize_unnamed_job(e) do
-    [[_, schedule, task]] =
-      ~r/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+|@\w+)\s+(.*\.\w+)$/
-      |> Regex.scan(e)
-    {normalize_schedule(schedule), normalize_task(task)}
-  end
-
-  # Converts string representation of task into its
-  # canonical format
-  # Input: "MyApp.MyModule.my_method"
-  # Output: {"MyApp.MyModule", "my_method"}
-  defp normalize_task(t) when t |> is_binary do
-    [[_, mod, fun]] = Regex.scan(~r/^(.*)\.(\w+)$/, t)
-    {mod, fun}
-  end
   defp normalize_task({mod, fun, args}), do: {mod, fun, args}
-  defp normalize_task({mod, fun}), do: {mod, fun}
-  defp normalize_task(fun), do: fun
+  defp normalize_task(fun) when is_function(fun, 0), do: fun
+  defp normalize_task(fun) when is_function(fun), do: raise "Only 0 arity functions are supported via the short syntax."
 
   defp normalize_schedule(e = %Crontab.CronExpression{}), do: e
-  defp normalize_schedule(e) when e |> is_atom, do: e |> Atom.to_string |> normalize_schedule
-  defp normalize_schedule("nil"), do: nil
-  defp normalize_schedule(e) when e |> is_binary, do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
-
-  # Extracts given option from options list of named task
-  defp extract(name, opts, d \\ nil)
-  defp extract(name, opts, d) when opts |> is_list, do: extract(name, opts |> Enum.into(%{}), d)
-  defp extract(:schedule, opts, d), do: opts |> Map.get(:schedule, d) |> normalize_schedule
-  defp extract(:task, opts, d), do: opts |> Map.get(:task, d) |> normalize_task
-  defp extract(:nodes, opts, d), do: opts |> Map.get(:nodes, d) || d
-  defp extract(name, opts, d), do: opts |> Map.get(name, d)
+  defp normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
+  defp normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
+  defp normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!(true)
 
   defp atomize(list) when is_list(list), do: Enum.map(list, &atomize/1)
   defp atomize(string) when is_binary(string), do: String.to_atom(string)
   defp atomize(atom) when is_atom(atom), do: atom
 
-  defp job_opts(job_name, opts) do
-    overlap = Application.get_env(:quantum, :default_overlap, true)
-    %{
-      name: job_name,
-      schedule: extract(:schedule, opts),
-      task: extract(:task, opts),
-      args: extract(:args, opts, []),
-      overlap: extract(:overlap, opts, overlap),
-      nodes: :nodes |> extract(opts, default_nodes()) |> atomize
-    }
+  # defp job_opts(job_name, opts) do
+  #   job_opts(job_name, opts)
+  #
+  #   %{
+  #     name: job_name,
+  #     schedule: extract(:schedule, opts),
+  #     task: extract(:task, opts),
+  #     overlap: extract(:overlap, opts, overlap),
+  #     nodes: :nodes |> extract(opts, default_nodes()) |> atomize
+  #   }
+  # end
+
+  defp normalize_options(job, options = %{name: name}, [:name | tail]) do
+    normalize_options(Job.set_name(job, name), options, tail)
+  end
+  defp normalize_options(job, options, [:name | tail]) do
+    normalize_options(job, options, tail)
   end
 
+  defp normalize_options(job, options = %{schedule: schedule}, [:schedule | tail]) do
+    normalize_options(Job.set_schedule(job, normalize_schedule(schedule)), options, tail)
+  end
+  defp normalize_options(job, options, [:schedule | tail]) do
+    normalize_options(job, options, tail)
+  end
+
+  defp normalize_options(job, options = %{task: task}, [:task | tail]) do
+    normalize_options(Job.set_task(job, normalize_task(task)), options, tail)
+  end
+  defp normalize_options(job, options, [:task | tail]) do
+    normalize_options(job, options, tail)
+  end
+
+  defp normalize_options(job, options = %{overlap: overlap}, [:overlap | tail]) do
+    normalize_options(Job.set_overlap(job, overlap), options, tail)
+  end
+  defp normalize_options(job, options, [:overlap | tail]) do
+    normalize_options(job, options, tail)
+  end
+
+  defp normalize_options(job, options = %{nodes: nodes}, [:nodes | tail]) do
+    normalize_options(Job.set_nodes(job, atomize(nodes)), options, tail)
+  end
+  defp normalize_options(job, options, [:nodes | tail]) do
+    normalize_options(job, options, tail)
+  end
+
+  defp normalize_options(job, _, []), do: job
 end

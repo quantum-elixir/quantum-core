@@ -6,42 +6,16 @@ Configure your cronjobs in your `config/config.exs` like this:
 config :quantum, :your_app,
   cron: [
     # Every minute
-    "* * * * *":      {"Heartbeat", :send},
+    {"* * * * *",          {Heartbeat, :send, []}},
+    {{"* * * * *", false}, {Heartbeat, :send, []}},
+    # Every second
+    {{"* * * * *", true},  {Heartbeat, :send, []}},
     # Every 15 minutes
-    "*/15 * * * *":   fn -> System.cmd("rm", ["/tmp/tmp_"]) end,
+    {"*/15 * * * *",       fn -> System.cmd("rm", ["/tmp/tmp_"]) end},
     # Runs on 18, 20, 22, 0, 2, 4, 6:
-    "0 18-6/2 * * *": fn -> :mnesia.backup('/var/backup/mnesia') end,
+    {"0 18-6/2 * * *",     fn -> :mnesia.backup('/var/backup/mnesia') end},
     # Runs every midnight:
-    "@daily":         &Backup.backup/0
-  ]
-```
-
-or like this:
-
-```elixir
-config :quantum, :your_app,
-  cron: [
-    # Every minute
-    "* * * * *": {MyApp.MyModule, :my_method}
-  ]
-```
-
-or you can provide module as a string:
-
-```elixir
-config :quantum, :your_app,
-  cron: [
-    # Every minute
-    "* * * * *": {"MyApp.MyModule", :my_method}
-  ]
-```
-
-Or even use cron-like format:
-```elixir
-config :quantum, :your_app,
-  cron: [
-    # Every minute
-    "* * * * * MyApp.MyModule.my_method"
+    {"@daily",             {Backup, :backup, []}}
   ]
 ```
 
@@ -50,27 +24,13 @@ config :quantum, :your_app,
 [exrm](https://github.com/bitwalker/exrm) /
 [edeliver](https://github.com/boldpoker/edeliver))
 
-Please note that the following config notations are not supported by release managers.
+Please note that the following config notation is not supported by release managers.
 
-* `"* * * * *": &ModuleName.function_name/arity`
-* `"* * * * *": fn -> :anonymous_function end`
+```elixir
+{"* * * * *", fn -> :anonymous_function end}
+```
 
 ## Named Jobs
-
-Job struct:
-```elixir
-%Quantum.Job{
-  name: :job_name, # is set automatically on adding a job
-  schedule: "1 * * * *", # required
-  task: {MyApp.MyModule, :my_method}, # required
-  args: [:a, :b] # optional, default: []
-  state: :active, # is used for internal purposes
-  nodes: [:node@host], # default: [node()]
-  overlap: false, # run even if previous job is still running?, default: true
-  pid: nil, # PID of last executed task
-  timezone: :utc # Timezone to run task in, defaults to Quantum default which is UTC
-}
-```
 
 You can define named jobs in your config like this:
 
@@ -79,22 +39,20 @@ config :quantum, :your_app,
   cron: [
     news_letter: [
       schedule: "@weekly",
-      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-      args: [:whatever]
+      task: {Heartbeat, :send, [:arg1]},
     ]
   ]
 ```
 
 Possible options:
-- `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `~e[1 * * * *]` or `%Crontab.CronExpression{minute: [1]}`
-- `task` function to be performed, ex: `"MyApp.MyModule.my_method"` or `{MyApp.MyModule, :my_method}`
-- `args` arguments list to be passed to `task`
+- `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `{"1 * * * *", true}` or `{"1 * * * *", false}`
+- `task` function to be performed, ex: `{Heartbeat, :send, []}` or `fn -> :something end`
 - `nodes` nodes list the task should be run on, default: `[node()]`
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
 
 It is possible to control the behavior of jobs at runtime.
 For runtime configuration, job names are not restricted to be atoms.
-Strings, atoms and charlists are allowed as job names.
+Atoms are allowed as job names.
 
 ## Override default settings
 
@@ -105,9 +63,9 @@ default setting in every job, you can set them globally.
 ```elixir
 config :quantum,
   default_schedule: "* * * * *",
-  default_args: ["my api key"],
   default_nodes: [:app1@myhost],
-  default_overlap: false
+  default_overlap: false,
+  default_timezone: :utc
 
 config :quantum, :your_app,
   cron: [
@@ -117,40 +75,22 @@ config :quantum, :your_app,
 
 ## Jobs with Second granularity
 
-**There is currently an issue on how to use the sigil in the configuration. Documentation will follow.**
-
 It is possible to specify jobs with second granularity.
-To do this the `schedule` parameter has to be provided with either a `%Crontab.CronExpression{extended: true, ...}` or
-with a set `e` flag on the `e` sigil. (The sigil must be imported from `Crontab.CronExpression`)
+To do this the `schedule` parameter has to be provided with a `{"1 * * * *", true}` expression.
 
-<!--With Sigil:
+With Sigil:
+
 ```elixir
 import Crontab.CronExpression
 
 config :quantum, :your_app,
   cron: [
     news_letter: [
-      schedule: ~e[*/2]e, # Runs every two seconds
-      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-      args: [:whatever]
+      schedule: {"*/2", true}, # Runs every two seconds
+      task: {Heartbeat, :send, [:arg1]}
     ]
   ]
 ```
-
-With Struct:
-```elixir
-config :quantum, :your_app,
-  cron: [
-    news_letter: [
-      schedule: %Crontab.CronExpression{extended: true, second: [5]}, # Runs every minute at second 5
-      task: "MyApp.NewsLetter.send", # {MyApp.NewsLetter, :send} is supported too
-      args: [:whatever]
-    ]
-  ]
-```-->
-
-The struct & sigil are documented here: https://hexdocs.pm/crontab/Crontab.CronExpression.html
-
 
 ## GenServer timeout
 

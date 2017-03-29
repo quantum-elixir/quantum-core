@@ -13,10 +13,10 @@ defmodule QuantumStartupTest do
       end
 
       test_jobs =
-        [test_job: [schedule: ~e[1 * * * *], task: fn -> :ok end],
-         test_job: [schedule: ~e[2 * * * *], task: fn -> :ok end],
-         "3 * * * *": fn -> :ok end,
-         "4 * * * *": fn -> :ok end]
+        [{:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},
+         {:test_job, [schedule: ~e[2 * * * *], task: fn -> :ok end]},
+         {"3 * * * *", fn -> :ok end},
+         {"4 * * * *", fn -> :ok end}]
 
       Application.put_env(:quantum_test, QuantumStartupTest.Runner, jobs: test_jobs)
 
