@@ -33,7 +33,7 @@ defmodule Quantum.Job do
   end
 
   defp is_alive?(pid) do
-    case :rpc.pinfo(pid)  do
+    case :rpc.pinfo(pid) do
       :undefined -> false
       _ -> true
     end
