@@ -27,8 +27,15 @@ defmodule Quantum.Job do
       not node() in job.nodes -> false # Job shall not run on this node
       job.overlap == true     -> true  # Job may overlap
       job.pid == nil          -> true  # Job has not been started
-      Process.alive?(job.pid) -> false # Previous job is still running
+      is_alive?(job.pid)      -> false # Previous job is still running
       true                    -> true  # Previous job has finished
+    end
+  end
+
+  defp is_alive?(pid) do
+    case :rpc.pinfo(pid) do
+      :undefined -> false
+      _ -> true
     end
   end
 
