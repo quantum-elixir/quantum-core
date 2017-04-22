@@ -12,7 +12,7 @@ defmodule Quantum.Mixfile do
       deps: deps(),
       description: "Cron-like job scheduler for Elixir.",
       docs: docs(),
-      elixir: ">= 1.3.0",
+      elixir: ">= 1.4.0",
       name: "Quantum",
       package: package(),
       start_permanent: Mix.env == :prod,
