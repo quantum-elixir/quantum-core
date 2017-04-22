@@ -40,7 +40,7 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    [applications: [:calendar, :crontab], mod: {Quantum.Application, []}]
+    [applications: [:calendar, :crontab]]
   end
 
   defp package do

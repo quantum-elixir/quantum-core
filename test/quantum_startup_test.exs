@@ -5,29 +5,26 @@ defmodule QuantumStartupTest do
 
   import Crontab.CronExpression
 
-  setup do
-    # Clear Env
-    Application.get_all_env(:quantum)
-    |> Enum.each(fn {key, _value} -> Application.delete_env(:quantum, key) end)
-  end
-
   @tag :startup
   test "prevent duplicate job names on startup" do
-    test_jobs =
-      [test_job: [schedule: ~e[1 * * * *], task: fn -> :ok end],
-       test_job: [schedule: ~e[2 * * * *], task: fn -> :ok end],
-       "3 * * * *": fn -> :ok end,
-       "4 * * * *": fn -> :ok end]
-       
     capture_log(fn ->
-      Application.stop(:quantum)
-      Application.put_env(:quantum, :some_app, cron: test_jobs)
-      Application.ensure_started(:logger)
-      Application.ensure_all_started(:quantum)
-    end)
+      defmodule Runner do
+        use Quantum, otp_app: :quantum_test
+      end
 
-    assert Enum.count(Quantum.jobs) == 3
-    assert Quantum.find_job(:test_job).schedule == ~e[1 * * * *]
+      test_jobs =
+        [test_job: [schedule: ~e[1 * * * *], task: fn -> :ok end],
+         test_job: [schedule: ~e[2 * * * *], task: fn -> :ok end],
+         "3 * * * *": fn -> :ok end,
+         "4 * * * *": fn -> :ok end]
+
+      Application.put_env(:quantum_test, QuantumStartupTest.Runner, jobs: test_jobs)
+
+      {:ok, _pid} = QuantumStartupTest.Runner.start_link()
+
+      assert Enum.count(QuantumStartupTest.Runner.jobs) == 3
+      assert QuantumStartupTest.Runner.find_job(:test_job).schedule == ~e[1 * * * *]
+    end)
   end
 
 end
