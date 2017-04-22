@@ -34,7 +34,17 @@ defmodule Quantum do
       it being generated on multiple nodes. With the following
       configuration, Quantum will be run as a globally unique
       process across the cluster.
+
+    * `:default_schedule` - Default Schedule of new Job
+
+    * `:default_overlap` - Default Overlap of new Job
+
+    * `:default_timezone` - Default Timezone of new Job
+
+    * `:default_nodes` - Default Nodes of new Job
   """
+
+  alias Quantum.Job
 
   @type t :: module
 
@@ -80,16 +90,34 @@ defmodule Quantum do
         Supervisor.stop(pid, :normal, timeout)
       end
 
-      def add_job(job) do
-        GenServer.call(__scheduler__(), {:add, Quantum.Normalizer.normalize({nil, job})}, __timeout__())
+      def add_job(job = %Job{name: nil}) do
+        GenServer.call(__scheduler__(), {:add, {nil, job}}, __timeout__())
       end
-
-      def add_job(expr, job) do
-        {name, job} = Quantum.Normalizer.normalize({expr, job})
-        if name && find_job(name) do
+      def add_job(job = %Job{name: name}) do
+        if find_job(name) do
           :error
         else
           GenServer.call(__scheduler__(), {:add, {name, job}}, __timeout__())
+        end
+      end
+
+      def add_job(schedule = %Crontab.CronExpression{}, task) when is_tuple(task) or is_function(task, 0) do
+        new_job()
+        |> Job.set_schedule(schedule)
+        |> Job.set_task(task)
+        |> add_job
+      end
+
+      def new_job(config \\ config()) do
+        job = %Job{}
+        |> Job.set_overlap(Keyword.fetch!(config, :default_overlap))
+        |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
+        |> Job.set_nodes(Keyword.fetch!(config, :default_nodes))
+
+        if Keyword.fetch!(config, :default_schedule) do
+          Job.set_schedule(job, Keyword.fetch!(config, :default_schedule))
+        else
+          job
         end
       end
 
@@ -161,6 +189,11 @@ defmodule Quantum do
   @callback stop(pid, timeout) :: :ok
 
   @doc """
+  Creates a new Job. The job can be added by calling `add_job/1`.
+  """
+  @callback new_job() :: Quantum.Job.t
+
+  @doc """
   Adds a new unnamed job
   """
   @callback add_job(job) :: :ok
@@ -168,7 +201,7 @@ defmodule Quantum do
   @doc """
   Adds a new named job
   """
-  @callback add_job(expr, job) :: :ok | :error
+  @callback add_job(Crontab.CronExpression.t, Job.task) :: :ok | :error
 
   @doc """
   Deactivates a job by name

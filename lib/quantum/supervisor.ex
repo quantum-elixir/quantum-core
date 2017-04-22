@@ -4,8 +4,15 @@ defmodule Quantum.Supervisor do
 
   require Logger
   alias Quantum.Normalizer
+  alias Quantum.Job
 
-  @defaults [global?: false, cron: [], timezone: :utc, timeout: 5_000]
+  @defaults [global?: false,
+             cron: [],
+             timeout: 5_000,
+             default_schedule: nil,
+             default_overlap: true,
+             default_timezone: :utc,
+             default_nodes: [node()]]
 
   @doc """
   Starts the quantum supervisor.
@@ -25,7 +32,7 @@ defmodule Quantum.Supervisor do
 
       jobs = config
       |> Keyword.get(:jobs)
-      |> Enum.map(&Normalizer.normalize/1)
+      |> Enum.map(fn job_config -> Normalizer.normalize(quantum.new_job(config), job_config) end)
       |> remove_jobs_with_duplicate_names(quantum)
 
       scheduler = if Keyword.fetch!(config, :global?),
@@ -60,13 +67,16 @@ defmodule Quantum.Supervisor do
   end
 
   defp remove_jobs_with_duplicate_names(job_list, quantum) do
-    Enum.reduce(job_list, [], fn({name, job}, acc) ->
-      if name && Enum.member?(Keyword.keys(acc), name) do
-        Logger.warn("Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name")
-        acc
-      else
-        [{name, job} | acc]
-      end
+    Enum.reduce(job_list, [], fn
+      (job = %Job{name: nil}, acc) ->
+        [{nil, job} | acc]
+      (job = %Job{name: name}, acc) ->
+        if Enum.member?(Keyword.keys(acc), name) do
+          Logger.warn("Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name")
+          acc
+        else
+          [{name, job} | acc]
+        end
     end)
   end
 

@@ -18,36 +18,36 @@ defmodule Quantum.Executor do
     end
   end
 
-  def execute({%Crontab.CronExpression{reboot: true}, fun, args, _}, %{r: 1}), do: execute_fun(fun, args)
+  def execute({%Crontab.CronExpression{reboot: true}, fun, _}, %{r: 1}), do: execute_fun(fun)
   def execute(_, %{r: 1}), do: false
-  def execute({%Crontab.CronExpression{reboot: true}, _, _, _}, %{r: 0}), do: false
+  def execute({%Crontab.CronExpression{reboot: true}, _, _}, %{r: 0}), do: false
 
-  def execute(job = {%Crontab.CronExpression{extended: false}, _, _, _}, state = %{s: 0}) do
+  def execute(job = {%Crontab.CronExpression{extended: false}, _, _}, state = %{s: 0}) do
       _execute(job, state)
   end
-  def execute(job = {%Crontab.CronExpression{extended: true}, _, _, _}, state) do
+  def execute(job = {%Crontab.CronExpression{extended: true}, _, _}, state) do
     _execute(job, state)
   end
   def execute(_, _), do: false
 
-  defp _execute({cron_expression, fun, args, tz}, state) do
+  defp _execute({cron_expression, fun, tz}, state) do
     date_naive = state
       |> convert_to_timezone(tz)
       |> DateTime.to_naive
 
     if Crontab.DateChecker.matches_date?(cron_expression, date_naive) do
-      execute_fun(fun, args)
+      execute_fun(fun)
     else
       false
     end
   end
 
-  defp execute_fun({mod, fun}, args) do
+  def execute_fun({mod, fun, args}) do
     mod = if is_binary(mod), do: String.to_atom("Elixir.#{mod}"), else: mod
     fun = if is_binary(fun), do: String.to_atom(fun), else: fun
     :erlang.apply(mod, fun, args)
   end
 
-  defp execute_fun(fun, args), do: :erlang.apply(fun, args)
+  def execute_fun(fun) when is_function(fun), do: fun.()
 
 end

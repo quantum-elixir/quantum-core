@@ -75,7 +75,7 @@ defmodule Quantum.Scheduler do
     Enum.map state.jobs, fn({name, job}) ->
       if Job.executable?(job) do
         task = Task.Supervisor.async_nolink(Keyword.fetch!(state.opts, :task_supervisor), Quantum.Executor,
-            :execute, [{job.schedule, job.task, job.args, job.timezone}, state])
+            :execute, [{job.schedule, job.task, job.timezone}, state])
         {name, %{job | pid: task.pid}}
       else
         {name, job}
