@@ -34,6 +34,14 @@ defmodule Quantum do
       it being generated on multiple nodes. With the following
       configuration, Quantum will be run as a globally unique
       process across the cluster.
+
+    * `:default_schedule` - Default Schedule of new Job
+
+    * `:default_overlap` - Default Overlap of new Job
+
+    * `:default_timezone` - Default Timezone of new Job
+
+    * `:default_nodes` - Default Nodes of new Job
   """
 
   alias Quantum.Job
@@ -100,12 +108,17 @@ defmodule Quantum do
         |> add_job
       end
 
-      def new_job do
-        %Job{}
-        |> Job.set_schedule(Application.get_env(:quantum, :default_schedule, ~e[*]))
-        |> Job.set_overlap(Application.get_env(:quantum, :default_overlap, true))
-        |> Job.set_timezone(Application.get_env(:quantum, :default_timezone, :utc))
-        |> Job.set_nodes(Application.get_env(:quantum, :default_nodes, [node()]))
+      def new_job(config \\ config()) do
+        job = %Job{}
+        |> Job.set_overlap(Keyword.fetch!(config, :default_overlap))
+        |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
+        |> Job.set_nodes(Keyword.fetch!(config, :default_nodes))
+
+        if Keyword.fetch!(config, :default_schedule) do
+          Job.set_schedule(job, Keyword.fetch!(config, :default_schedule))
+        else
+          job
+        end
       end
 
       def deactivate_job(n) do

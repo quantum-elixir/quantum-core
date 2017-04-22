@@ -37,7 +37,7 @@ defmodule QuantumTest do
     test "returns Quantum.Job struct" do
       %Quantum.Job{schedule: schedule, overlap: overlap, timezone: timezone} = QuantumTest.Runner.new_job()
 
-      assert schedule == ~e[*]
+      assert schedule == nil
       assert overlap == true
       assert timezone == :utc
     end
@@ -46,9 +46,12 @@ defmodule QuantumTest do
       default_schedule = ~e[*/7]
       default_overlap = false
       default_timezone = "Europe/Zurich"
-      Application.put_env(:quantum, :default_schedule, default_schedule)
-      Application.put_env(:quantum, :default_overlap, default_overlap)
-      Application.put_env(:quantum, :default_timezone, default_timezone)
+      Application.put_env(:quantum_test, QuantumTest.Runner, [
+        jobs: [],
+        default_schedule: default_schedule,
+        default_overlap: default_overlap,
+        default_timezone: default_timezone
+      ])
 
       %Quantum.Job{schedule: schedule, overlap: overlap, timezone: timezone} = QuantumTest.Runner.new_job()
 
@@ -415,8 +418,6 @@ defmodule QuantumTest do
   end
 
   test "timeout can be configured for genserver correctly" do
-    Application.put_env(:quantum, :timeout, 0)
-
     job = QuantumTest.ZeroTimeoutRunner.new_job()
     |> Job.set_name(:tmpjob)
     |> Job.set_schedule(~e[* */5 * * *])

@@ -9,7 +9,7 @@ defmodule QuantumStartupTest do
   test "prevent duplicate job names on startup" do
     capture_log(fn ->
       defmodule Runner do
-        use Quantum, otp_app: :quantum_test
+        use Quantum, otp_app: :quantum_startup_test
       end
 
       test_jobs =
@@ -18,7 +18,7 @@ defmodule QuantumStartupTest do
          {"3 * * * *", fn -> :ok end},
          {"4 * * * *", fn -> :ok end}]
 
-      Application.put_env(:quantum_test, QuantumStartupTest.Runner, jobs: test_jobs)
+      Application.put_env(:quantum_startup_test, QuantumStartupTest.Runner, jobs: test_jobs)
 
       {:ok, _pid} = QuantumStartupTest.Runner.start_link()
 
