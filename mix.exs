@@ -1,4 +1,6 @@
 defmodule Quantum.Mixfile do
+  @moduledoc false
+
   use Mix.Project
 
   @version "1.9.1"
@@ -45,16 +47,17 @@ defmodule Quantum.Mixfile do
 
   defp docs do
     [
-      main: "Quantum",
+      main: "readme",
       source_ref: "v#{@version}",
       source_url: "https://github.com/c-rack/quantum-elixir",
       extras: [
         "README.md",
         "CHANGELOG.md",
+        "MIGRATE-V2.md",
+        "pages/supervision-tree.md",
         "pages/configuration.md",
         "pages/runtime.md",
         "pages/crontab-format.md",
-        "pages/error-handling.md",
         "pages/date-library.md"
       ]
     ]

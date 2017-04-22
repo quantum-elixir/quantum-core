@@ -3,13 +3,9 @@
 If you want to add jobs on runtime, this is possible too:
 
 ```elixir
-# Short Form
-Quantum.add_job("1 * * * *", fn -> :ok end)
+import Crontab.CronExpression
 
-# Explicit Form
-Quantum.new_job()
-|> Quantum.Job.set_schedule(~e[1 * * * *])
-|> Quantum.Job.set_task(fn -> :ok end)
+Quantum.add_job(~e[1 * * * *], fn -> :ok end)
 ```
 
 Add a named job at runtime:
@@ -17,12 +13,12 @@ Add a named job at runtime:
 ```elixir
 import Crontab.CronExpression
 
-Quantum.new_job()
+YourApp.Scheduler.new_job()
 |> Quantum.Job.set_name(:ticker)
 |> Quantum.Job.set_schedule(~e[1 * * * *])
 |> Quantum.Job.set_task(fn -> :ok end)
 
-Quantum.add_job(:ticker, job)
+Quantum.add_job(job)
 ```
 
 Deactivate a job, i.e. it will not be performed until job is activated again:
