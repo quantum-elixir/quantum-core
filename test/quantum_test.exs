@@ -5,6 +5,8 @@ defmodule QuantumTest do
 
   import Crontab.CronExpression
 
+  import ExUnit.CaptureLog
+
   defmodule Runner do
     use Quantum, otp_app: :quantum_test
   end
@@ -14,14 +16,13 @@ defmodule QuantumTest do
   end
 
   defp start_runner(name) do
-    {:ok, _pid} = name.start_link()
+    {:ok, pid} = name.start_link()
     on_exit fn ->
-      case Process.whereis(Quantum.Supervisor) do
-        nil ->
-          :ok
-        pid ->
+      capture_log(fn ->
+        if Process.alive?(pid) do
           name.stop(pid)
-      end
+        end
+      end)
     end
   end
 
