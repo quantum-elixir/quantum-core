@@ -214,8 +214,7 @@ defmodule QuantumTest do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
 
-    start_date = DateTime.utc_now
-    |> DateTime.to_naive
+    start_date = NaiveDateTime.utc_now
     # Reset MS
     |> NaiveDateTime.to_erl
     |> NaiveDateTime.from_erl!
@@ -248,8 +247,7 @@ defmodule QuantumTest do
   test "skip for current node" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
 
-    start_date = DateTime.utc_now
-    |> DateTime.to_naive
+    start_date = NaiveDateTime.utc_now
     # Reset MS
     |> NaiveDateTime.to_erl
     |> NaiveDateTime.from_erl!
@@ -295,8 +293,7 @@ defmodule QuantumTest do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
 
-    start_date = DateTime.utc_now
-    |> DateTime.to_naive
+    start_date = NaiveDateTime.utc_now
     # Reset MS
     |> NaiveDateTime.to_erl
     |> NaiveDateTime.from_erl!
@@ -334,8 +331,7 @@ defmodule QuantumTest do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
 
-    start_date = DateTime.utc_now
-    |> DateTime.to_naive
+    start_date = NaiveDateTime.utc_now
     # Reset MS
     |> NaiveDateTime.to_erl
     |> NaiveDateTime.from_erl!

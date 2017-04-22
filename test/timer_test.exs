@@ -14,8 +14,7 @@ defmodule Quantum.TimerTest do
     end
 
     test "gives back last date with reset ms" do
-      now = DateTime.utc_now
-      |> DateTime.to_naive
+      now = NaiveDateTime.utc_now
       # Reset MS
       |> NaiveDateTime.to_erl
       |> NaiveDateTime.from_erl!

@@ -16,14 +16,15 @@ To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
 **1. the list of dependencies:**
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.9.1"}]
+  [{:quantum, ">= 1.9.1"},
+   {:timex, "~> 3.0"}]
 end
 ```
 
 **2. and the list of applications:**
 ```elixir
 def application do
-  [applications: [:quantum]]
+  [applications: [:quantum, :timex]]
 end
 ```
 

@@ -2,14 +2,11 @@ defmodule Quantum.Executor do
 
   @moduledoc false
 
+  @date_library Application.get_env(:quantum, :date_library, Quantum.DateLibrary.Timex)
+
   def convert_to_timezone(date, :utc), do: date
   def convert_to_timezone(_, :local), do: raise "TZ local is no longer supported."
-  def convert_to_timezone(date, tz) do
-    date
-    |> Calendar.NaiveDateTime.to_date_time_utc
-    |> Calendar.DateTime.shift_zone!(tz)
-    |> DateTime.to_naive
-  end
+  def convert_to_timezone(date, tz), do: @date_library.utc_to_tz(date, tz)
 
   def execute({%Crontab.CronExpression{reboot: true}, fun, _}, %{reboot: true}), do: execute_fun(fun)
   def execute({%Crontab.CronExpression{reboot: false}, _, _}, %{reboot: true}), do: false

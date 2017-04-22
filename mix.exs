@@ -8,7 +8,8 @@ defmodule Quantum.Mixfile do
       app: :quantum,
       build_embedded: Mix.env == :prod,
       deps: [
-        {:calendar,    "~> 0.17"},
+        {:timex,       "~> 3.1.13", optional: true},
+        {:calendar,    "~> 0.17", optional: true},
         {:crontab,     "~> 1.0"},
         {:credo,       "~> 0.4",  only: [:dev, :test]},
         {:earmark,     "~> 1.0",  only: [:dev, :docs]},
@@ -27,7 +28,8 @@ defmodule Quantum.Mixfile do
           "pages/configuration.md",
           "pages/runtime.md",
           "pages/crontab-format.md",
-          "pages/error-handling.md"
+          "pages/error-handling.md",
+          "pages/date-library.md"
         ]
       ],
       elixir: ">= 1.3.0",
@@ -40,7 +42,7 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    [applications: [:calendar, :crontab]]
+    [applications: [:crontab]]
   end
 
   defp package do
