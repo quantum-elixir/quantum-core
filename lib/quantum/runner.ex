@@ -6,6 +6,8 @@ defmodule Quantum.Runner do
   alias Quantum.Job
   alias Quantum.Timer
 
+  require Logger
+
   @doc """
   Starts Quantum process
   """
@@ -73,13 +75,26 @@ defmodule Quantum.Runner do
 
   defp run(state) do
     Enum.map state.jobs, fn({name, job}) ->
-      if Job.executable?(job) do
-        task = Task.Supervisor.async_nolink(Keyword.fetch!(state.opts, :task_supervisor), Quantum.Executor,
-            :execute, [{job.schedule, job.task, job.timezone}, state])
-        {name, %{job | pid: task.pid}}
-      else
-        {name, job}
-      end
+      pids = job.run_strategy
+      |> Quantum.RunStrategy.nodes(job)
+      |> Enum.map(fn node ->
+        cond do
+          !Job.executable?(job, node) ->
+            {node, Keyword.get(job.pids, node, nil)}
+          !Enum.member?([node() | Node.list()], node) ->
+            Logger.warn("Node #{inspect node} is not in cluster. Skipping.")
+            {node, Keyword.get(job.pids, node, nil)}
+          true ->
+            task = Task.Supervisor.async_nolink({Keyword.fetch!(state.opts, :task_supervisor), node}, Quantum.Executor,
+                :execute, [{job.schedule, job.task, job.timezone}, state])
+            {node, task.pid}
+        end
+      end)
+      |> Enum.reject(fn ({_, pid}) -> pid == nil end)
+      |> Enum.reduce(job.pids, fn({node, pid}, acc) ->
+        Keyword.put(acc, node, pid)
+      end)
+      {name, %{job | pids: pids}}
     end
   end
 end

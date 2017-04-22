@@ -7,6 +7,7 @@ defmodule Quantum.Supervisor do
 
   alias Quantum.Normalizer
   alias Quantum.Job
+  alias Quantum.RunStrategy.Random
 
   @defaults [global?: false,
              cron: [],
@@ -14,7 +15,7 @@ defmodule Quantum.Supervisor do
              default_schedule: nil,
              default_overlap: true,
              default_timezone: :utc,
-             default_nodes: [node()]]
+             default_run_strategy: %Random{nodes: :cluster}]
 
   @doc """
   Starts the quantum supervisor.

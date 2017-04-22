@@ -4,6 +4,7 @@ defmodule QuantumTest do
   use ExUnit.Case, async: false
 
   alias Quantum.Job
+  alias Quantum.RunStrategy.Random
 
   import Crontab.CronExpression
   import ExUnit.CaptureLog
@@ -97,7 +98,7 @@ defmodule QuantumTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
       :ok = QuantumTest.Scheduler.add_job(job)
-      assert Enum.member? QuantumTest.Scheduler.jobs, {:test_job, %{job | nodes: [node()]}}
+      assert Enum.member? QuantumTest.Scheduler.jobs, {:test_job, %{job | run_strategy: %Random{nodes: :cluster}}}
     end
 
     test "adding a named {m, f, a} jpb at run time" do
@@ -108,7 +109,7 @@ defmodule QuantumTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(task)
       :ok = QuantumTest.Scheduler.add_job(job)
-      assert Enum.member? QuantumTest.Scheduler.jobs, {:ticker, %{job | nodes: [node()]}}
+      assert Enum.member? QuantumTest.Scheduler.jobs, {:ticker, %{job | run_strategy: %Random{nodes: :cluster}}}
     end
 
     test "adding a unnamed job at run time" do
@@ -133,7 +134,7 @@ defmodule QuantumTest do
     fjob = QuantumTest.Scheduler.find_job(:test_job)
     assert fjob.name == :test_job
     assert fjob.schedule == spec
-    assert fjob.nodes == [node()]
+    assert fjob.run_strategy == %Random{nodes: :cluster}
   end
 
   test "deactivating a named job" do
@@ -235,7 +236,7 @@ defmodule QuantumTest do
     state3 = Quantum.Runner.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
-    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    job = %{job | pids: [{node(), Agent.get(pid1, fn(n) -> n end)}]}
     state2 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: end_date, reboot: false}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
@@ -258,10 +259,12 @@ defmodule QuantumTest do
     job = QuantumTest.Scheduler.new_job()
     |> Job.set_schedule(~e[* * * * *])
     |> Job.set_task(fun)
-    |> Job.set_nodes([:remote@node])
-    state1 = %{jobs: [{nil, job}], date: start_date, reboot: false}
-    state2 = %{jobs: [{nil, job}], date: end_date, reboot: false}
-    assert Quantum.Runner.handle_info(:tick, state1) == {:noreply, state2}
+    |> Job.set_run_strategy(%Random{nodes: [:remote@node]})
+    state1 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: start_date, reboot: false}
+    state2 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: end_date, reboot: false}
+    capture_log(fn ->
+      assert Quantum.Runner.handle_info(:tick, state1) == {:noreply, state2}
+    end)
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 0
     :ok = Agent.stop(pid)
@@ -280,7 +283,7 @@ defmodule QuantumTest do
     |> Job.set_task(fun)
     {:ok, state} = Quantum.Runner.init(%{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], reboot: true})
     :timer.sleep(500)
-    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    job = %{job | pids: [{node(), Agent.get(pid1, fn(n) -> n end)}]}
     assert state.jobs == [{nil, job}]
     assert Agent.get(pid2, fn(n) -> n end) == 1
     :ok = Agent.stop(pid2)
@@ -315,7 +318,7 @@ defmodule QuantumTest do
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
 
-    job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
+    job = %{job | pids: [{node(), Agent.get(pid1, fn(n) -> n end)}]}
 
     state2 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: end_date, reboot: false}
 
@@ -347,13 +350,13 @@ defmodule QuantumTest do
     |> Job.set_schedule(~e[* * * * *])
     |> Job.set_overlap(false)
     |> Job.set_task(fun)
-    |> Map.put(:pid, pid1)
-    state1 = %{jobs: [{nil, job}], date: start_date, reboot: false}
+    |> Map.put(:pids, [{node(), pid1}])
+    state1 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: start_date, reboot: false}
     state3 = Quantum.Runner.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 0
-    job = %{job | pid: pid1}
-    state2 = %{jobs: [{nil, job}], date: end_date, reboot: false}
+    job = %{job | pids: [{node(), pid1}]}
+    state2 = %{opts: QuantumTest.Scheduler.config(), jobs: [{nil, job}], date: end_date, reboot: false}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
@@ -384,8 +387,8 @@ defmodule QuantumTest do
 
     send(QuantumTest.Scheduler.Runner, :tick)
 
-    %Quantum.Job{pid: pid_sibling} = QuantumTest.Scheduler.find_job(:job_sibling)
-    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Scheduler.find_job(:job_to_crash)
+    %Quantum.Job{pids: [{_, pid_sibling}]} = QuantumTest.Scheduler.find_job(:job_sibling)
+    %Quantum.Job{pids: [{_, pid_to_crash}]} = QuantumTest.Scheduler.find_job(:job_to_crash)
 
     # both processes are alive
     :ok = ensure_alive(pid_sibling)
@@ -429,7 +432,7 @@ defmodule QuantumTest do
 
     assert Enum.count(QuantumTest.Scheduler.jobs) == 2
 
-    %Quantum.Job{pid: pid_to_crash} = QuantumTest.Scheduler.find_job(:job_to_crash)
+    %Quantum.Job{pids: [{_, pid_to_crash}]} = QuantumTest.Scheduler.find_job(:job_to_crash)
 
     # ensure process to crash is alive
     :ok = ensure_alive(pid_to_crash)
