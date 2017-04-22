@@ -30,8 +30,8 @@ defmodule Quantum.Job do
   @type schedule :: Crontab.CronExpression.t
   @type nodes :: [Node.t]
 
-  @opaque t :: %__MODULE__{
-    name: String.t,
+  @type t :: %__MODULE__{
+    name: atom,
     schedule: schedule,
     task: task,
     state: state,

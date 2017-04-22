@@ -4,11 +4,11 @@ defmodule Quantum.TimezoneTest do
   import Quantum.Executor
   import Crontab.CronExpression
 
-  def ok,     do: :ok
-  def ret(v), do: v
+  def ok, do: :ok
 
   test "check timezones" do
-    # We choose timezones with no daylight savings time or other weird things going on, so that these tests can pass at all times
+    # We choose timezones with no daylight savings time or other weird things going on,
+    # so that these tests can pass at all times
     assert execute({~e[0 21 15 * *], &ok/0, "Etc/GMT+2"}, %{date: ~N[2015-12-15 23:00:00]}) === true
     assert execute({~e[0 21 15 * *], &ok/0, "Etc/GMT+3"}, %{date: ~N[2015-12-16 00:00:00]}) === true
     assert execute({~e[0 21 15 * *], &ok/0, "Etc/GMT+3"}, %{date: ~N[2015-12-15 00:00:00]}) === false

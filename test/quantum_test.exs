@@ -4,9 +4,9 @@ defmodule QuantumTest do
   use ExUnit.Case, async: false
 
   alias Quantum.Job
+  alias QuantumTest.ZeroTimeoutSchedule
 
   import Crontab.CronExpression
-
   import ExUnit.CaptureLog
 
   defmodule Scheduler do
@@ -34,10 +34,10 @@ defmodule QuantumTest do
 
   setup do
     Application.put_env(:quantum_test, QuantumTest.Scheduler, jobs: [])
-    Application.put_env(:quantum_test, QuantumTest.ZeroTimeoutScheduler, timeout: 0, jobs: [])
+    Application.put_env(:quantum_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
 
     start_scheduler(QuantumTest.Scheduler)
-    start_scheduler(QuantumTest.ZeroTimeoutScheduler)
+    start_scheduler(ZeroTimeoutScheduler)
   end
 
   describe "new_job/0" do
@@ -452,13 +452,13 @@ defmodule QuantumTest do
   end
 
   test "timeout can be configured for genserver correctly" do
-    job = QuantumTest.ZeroTimeoutScheduler.new_job()
+    job = ZeroTimeoutScheduler.new_job()
     |> Job.set_name(:tmpjob)
     |> Job.set_schedule(~e[* */5 * * *])
     |> Job.set_task(fn -> :ok end)
 
-    assert catch_exit(QuantumTest.ZeroTimeoutScheduler.add_job(job)) ==
-      {:timeout, {GenServer, :call, [QuantumTest.ZeroTimeoutScheduler.Runner, {:find_job, :tmpjob}, 0]}}
+    assert catch_exit(ZeroTimeoutScheduler.add_job(job)) ==
+      {:timeout, {GenServer, :call, [ZeroTimeoutScheduler.Runner, {:find_job, :tmpjob}, 0]}}
   after
     Application.delete_env(:quantum, :timeout)
   end

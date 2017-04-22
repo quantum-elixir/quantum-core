@@ -2,6 +2,7 @@ defmodule Quantum.Executor do
   @moduledoc false
 
   alias Crontab.CronExpression
+  alias Crontab.DateChecker
 
   @date_library Application.get_env(:quantum, :date_library, Quantum.DateLibrary.Timex)
 
@@ -40,7 +41,7 @@ defmodule Quantum.Executor do
   defp execute_task_if_date_matches({cron_expression, task, tz}, %{date: date}) do
     date_naive = convert_to_timezone(date, tz)
 
-    if Crontab.DateChecker.matches_date?(cron_expression, date_naive) do
+    if DateChecker.matches_date?(cron_expression, date_naive) do
       execute_task(task)
       true
     else

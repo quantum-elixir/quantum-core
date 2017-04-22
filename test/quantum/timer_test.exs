@@ -1,10 +1,12 @@
-defmodule Quantum.TimerTest do
+defmodule Qauntum.TimerTest do
   @moduledoc false
   use ExUnit.Case
 
+  alias Quantum.Timer
+
   describe "tick/0" do
     test "sends tick message" do
-      Quantum.Timer.tick()
+      Timer.tick()
 
       # Should be sent after a few ms and not instantly
       refute_received :tick
@@ -19,7 +21,7 @@ defmodule Quantum.TimerTest do
       |> NaiveDateTime.to_erl
       |> NaiveDateTime.from_erl!
 
-      assert now == Quantum.Timer.tick()
+      assert now == Timer.tick()
     end
   end
 end

@@ -4,7 +4,7 @@ defmodule Quantum.Timer do
   @doc """
   Send a tick as soon as the next second completes and return the
   current date (beginning of the second)
-  
+
   """
   @spec tick() :: NaiveDateTime.t
   def tick do

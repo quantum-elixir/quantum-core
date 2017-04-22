@@ -4,6 +4,7 @@ defmodule Quantum.Normalizer do
   """
 
   alias Quantum.Job
+  alias Crontab.CronExpression.Parser, as: CronExpressionParser
 
   @fields [:name,
            :schedule,
@@ -12,7 +13,8 @@ defmodule Quantum.Normalizer do
            :nodes]
 
   @type config_short_notation :: {config_schedule, config_task}
-  @type config_full_notation :: {config_name, Keyword.t | %{}}
+  # TODO: remove any and fix dialyzer
+  @type config_full_notation :: {config_name | nil, Keyword.t | struct | any}
 
   @typep field :: :name | :schedule | :task | :overlap | :nodes
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
@@ -28,7 +30,7 @@ defmodule Quantum.Normalizer do
     * `job` - The Job To Normalize
 
   """
-  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job
+  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job.t
   def normalize(base, job)
   def normalize(base, {job_name, opts}) when is_list(opts) do
     opts = opts
@@ -45,7 +47,7 @@ defmodule Quantum.Normalizer do
     normalize(base, {nil, %{schedule: normalize_schedule(schedule), task: normalize_task(task)}})
   end
 
-  @spec normalize_options(Quantum.Job, %{}, [field]) :: Quantum.Job
+  @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
   defp normalize_options(job, options = %{name: name}, [:name | tail]) do
     normalize_options(Job.set_name(job, normalize_name(name)), options, tail)
   end
@@ -90,9 +92,9 @@ defmodule Quantum.Normalizer do
 
   @spec normalize_schedule(config_schedule) :: Job.schedule
   defp normalize_schedule(e = %Crontab.CronExpression{}), do: e
-  defp normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
-  defp normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!
-  defp normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> Crontab.CronExpression.Parser.parse!(true)
+  defp normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
+  defp normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
+  defp normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
 
   @spec normalize_nodes([Node.t | String.t]) :: Job.nodes
   defp normalize_nodes(list) when is_list(list), do: Enum.map(list, &normalize_node/1)

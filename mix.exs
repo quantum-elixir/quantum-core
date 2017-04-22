@@ -15,7 +15,9 @@ defmodule Quantum.Mixfile do
         {:earmark,     "~> 1.0",  only: [:dev, :docs]},
         {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
         {:excoveralls, "~> 0.5",  only: [:dev, :test]},
-        {:inch_ex,     "~> 0.5",  only: [:dev, :docs]}
+        {:inch_ex,     "~> 0.5",  only: [:dev, :docs]},
+        {:dialyxir,    "~> 0.5",  only: [:dev], runtime: false},
+        {:credo,       "~> 0.7",  only: [:dev, :test]}
       ],
       description: "Cron-like job scheduler for Elixir.",
       docs: [

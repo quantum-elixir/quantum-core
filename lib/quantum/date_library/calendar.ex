@@ -26,11 +26,13 @@ if Code.ensure_compiled?(Calendar) do
 
     @behaviour Quantum.DateLibrary
 
+    alias Calendar.DateTime, as: CalendarDateTime
+
     @spec utc_to_tz(NaiveDateTime.t, String.t) :: NaiveDateTime.t | no_return
     def utc_to_tz(date, tz) do
       date
       |> DateTime.from_naive!("Etc/UTC")
-      |> Calendar.DateTime.shift_zone!(tz)
+      |> CalendarDateTime.shift_zone!(tz)
       |> DateTime.to_naive
     end
   end
