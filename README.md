@@ -28,6 +28,18 @@ def application do
 end
 ```
 
+**3. and create a scheduler for your app:**
+```elixir
+defmodule YourApp.Scheduler do
+  use Quantum.Scheduler,
+    otp_app: :your_app
+end
+```
+
+## Migrate to V2
+
+See the [Migration Guide](https://hexdocs.pm/quantum/migration-v2.html).
+
 ## Usage
 
 Configure your cronjobs in your `config/config.exs` like this:

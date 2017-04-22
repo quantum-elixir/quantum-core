@@ -8,8 +8,8 @@ defmodule QuantumStartupTest do
   @tag :startup
   test "prevent duplicate job names on startup" do
     capture_log(fn ->
-      defmodule Runner do
-        use Quantum, otp_app: :quantum_startup_test
+      defmodule Scheduler do
+        use Quantum.Scheduler, otp_app: :quantum_startup_test
       end
 
       test_jobs =
@@ -18,12 +18,12 @@ defmodule QuantumStartupTest do
          {"3 * * * *", fn -> :ok end},
          {"4 * * * *", fn -> :ok end}]
 
-      Application.put_env(:quantum_startup_test, QuantumStartupTest.Runner, jobs: test_jobs)
+      Application.put_env(:quantum_startup_test, QuantumStartupTest.Scheduler, jobs: test_jobs)
 
-      {:ok, _pid} = QuantumStartupTest.Runner.start_link()
+      {:ok, _pid} = QuantumStartupTest.Scheduler.start_link()
 
-      assert Enum.count(QuantumStartupTest.Runner.jobs) == 3
-      assert QuantumStartupTest.Runner.find_job(:test_job).schedule == ~e[1 * * * *]
+      assert Enum.count(QuantumStartupTest.Scheduler.jobs) == 3
+      assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
     end)
   end
 

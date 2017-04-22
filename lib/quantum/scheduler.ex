@@ -1,94 +1,215 @@
 defmodule Quantum.Scheduler do
-  @moduledoc false
+  @moduledoc """
+  Defines a quantum Scheduler.
 
-  use GenServer
+  When used, the quantum scheduler expects the `:otp_app` as option.
+  The `:otp_app` should point to an OTP application that has
+  the quantum rinner configuration. For example, the quantum scheduler:
+
+      defmodule MyApp.Scheduler do
+        use Quantum.Scheduler, otp_app: :my_app
+      end
+
+  Could be configured with:
+
+      config :my_app, MyApp.Scheduler,
+        jobs: [
+          {"@daily", {Backup, :backup, []},
+        ]
+
+  ## Configuration:
+
+    * `:timeout` - Sometimes, you may come across GenServer
+      timeout errors esp. when you have too many jobs or high
+      load. The default GenServer.call timeout is 5000.
+
+    * `:jobs` - list of cron jobs to execute
+
+    * `:global?` - When you have a cluster of nodes, you may not
+      want same jobs to be generated on every single node, e.g.
+      jobs involving db changes.
+
+      In this case, you may choose to run Quantum as a global process,
+      thus preventing same job being run multiple times because of
+      it being generated on multiple nodes. With the following
+      configuration, Quantum will be run as a globally unique
+      process across the cluster.
+
+    * `:default_schedule` - Default Schedule of new Job
+
+    * `:default_overlap` - Default Overlap of new Job
+
+    * `:default_timezone` - Default Timezone of new Job
+
+    * `:default_nodes` - Default Nodes of new Job
+  """
 
   alias Quantum.Job
-  alias Quantum.Timer
 
-  @doc "Starts Quantum process"
-  def start_link(opts) do
-    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs), reboot: true}
-    case GenServer.start_link(__MODULE__, state, [name: Keyword.fetch!(opts, :scheduler)]) do
-      {:ok, pid} ->
-        {:ok, pid}
-      {:error, {:already_started, pid}} ->
-        Process.link(pid)
-        {:ok, pid}
-    end
-  end
+  @opaque t :: module
 
-  def init(state) do
-    new_state = state
-    |> Map.put(:jobs, run(state))
-    |> Map.put(:date, Timer.tick())
-    |> Map.put(:reboot, false)
+  defmacro __using__(opts) do
+    quote bind_quoted: [opts: opts] do
+      @behaviour Quantum.Scheduler
 
-    {:ok, new_state}
-  end
+      @otp_app Keyword.fetch!(opts, :otp_app)
 
-  def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
-
-  def handle_call({:change_state, n, js}, _, s) do
-    new_jobs = Enum.map(s.jobs, fn({jn, j}) ->
-      case jn do
-        ^n -> {jn, %{j | state: js}}
-        _ -> {jn, j}
+      def config do
+        {:ok, config} = Quantum.Supervisor.runtime_config(:dry_run, __MODULE__, @otp_app, [])
+        config
       end
-    end)
-    {:reply, :ok, %{s | jobs: new_jobs}}
-  end
 
-  def handle_call({:delete, n}, _, s) do
-    {job, s} = case find_by_name(s.jobs, n) do
-      nil -> {nil, s}
-      job -> {job, %{s | jobs: List.keydelete(s.jobs, n, 0)}}
-    end
-    {:reply, job, s}
-  end
+      defp __timeout__, do: Keyword.fetch!(config(), :timeout)
+      defp __runnner__, do: Keyword.fetch!(config(), :runner)
 
-  def handle_call({:delete_all}, _, s) do
-    {:reply, :ok, %{s | jobs: []}}
-  end
+      def start_link(opts \\ []) do
+        Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
+      end
 
-  def handle_call(:jobs, _, s), do: {:reply, s.jobs, s}
+      def stop(pid, timeout \\ 5000) do
+        Supervisor.stop(pid, :normal, timeout)
+      end
 
-  def handle_call({:find_job, name}, _, s = %{jobs: jobs}) do
-    {:reply, find_by_name(jobs, name), s}
-  end
+      def add_job(job = %Job{name: nil}) do
+        GenServer.call(__runnner__(), {:add, {nil, job}}, __timeout__())
+      end
+      def add_job(job = %Job{name: name}) do
+        if find_job(name) do
+          :error
+        else
+          GenServer.call(__runnner__(), {:add, {name, job}}, __timeout__())
+        end
+      end
 
-  def handle_call(:which_children, _, s) do
-    children = [{
-      Task.Supervisor,
-      :quantum_tasks_sup,
-      :supervisor,
-      [Task.Supervisor]
-    }]
-    {:reply, children, s}
-  end
+      def add_job(schedule = %Crontab.CronExpression{}, task) when is_tuple(task) or is_function(task, 0) do
+        new_job()
+        |> Job.set_schedule(schedule)
+        |> Job.set_task(task)
+        |> add_job
+      end
 
-  def handle_info(:tick, state) do
-    new_state = Map.put(state, :date, Timer.tick())
-    {:noreply, %{new_state | jobs: run(new_state)}}
-  end
-  def handle_info(_, s), do: {:noreply, s}
+      def new_job(config \\ config()) do
+        job = %Job{}
+        |> Job.set_overlap(Keyword.fetch!(config, :default_overlap))
+        |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
+        |> Job.set_nodes(Keyword.fetch!(config, :default_nodes))
 
-  defp run(state) do
-    Enum.map state.jobs, fn({name, job}) ->
-      if Job.executable?(job) do
-        task = Task.Supervisor.async_nolink(Keyword.fetch!(state.opts, :task_supervisor), Quantum.Executor,
-            :execute, [{job.schedule, job.task, job.timezone}, state])
-        {name, %{job | pid: task.pid}}
-      else
-        {name, job}
+        if Keyword.fetch!(config, :default_schedule) do
+          Job.set_schedule(job, Keyword.fetch!(config, :default_schedule))
+        else
+          job
+        end
+      end
+
+      def deactivate_job(name) do
+        GenServer.call(__runnner__(), {:change_state, name, :inactive}, __timeout__())
+      end
+
+      def activate_job(name) do
+        GenServer.call(__runnner__(), {:change_state, name, :active}, __timeout__())
+      end
+
+      def find_job(name) do
+        GenServer.call(__runnner__(), {:find_job, name}, __timeout__())
+      end
+
+      def delete_job(name) do
+        GenServer.call(__runnner__(), {:delete, name}, __timeout__())
+      end
+
+      def delete_all_jobs do
+        GenServer.call(__runnner__(), {:delete_all}, __timeout__())
+      end
+
+      def jobs do
+        GenServer.call(__runnner__(), :jobs, __timeout__())
       end
     end
   end
 
-  defp find_by_name(job_list, job_name) do
-    case List.keyfind(job_list, job_name, 0) do
-      nil          -> nil
-      {_name, job} -> job
-    end
-  end
+  @optional_callbacks init: 2
+
+  @doc """
+  Returns the configuration stored in the `:otp_app` environment.
+  """
+  @callback config() :: Keyword.t
+
+  @doc """
+  Starts supervision and return `{:ok, pid}`
+  or just `:ok` if nothing needs to be done.
+
+  Returns `{:error, {:already_started, pid}}` if the repo is already
+  started or `{:error, term}` in case anything else goes wrong.
+
+  ## Options
+
+  See the configuration in the moduledoc for options.
+  """
+  @callback start_link(opts :: Keyword.t) :: {:ok, pid} |
+                            {:error, {:already_started, pid}} |
+                            {:error, term}
+
+  @doc """
+  A callback executed when the quantum starts or when configuration is read.
+
+  The first argument is the context the callback is being invoked. If it
+  is called because the Repo supervisor is starting, it will be `:supervisor`.
+  It will be `:dry_run` if it is called for reading configuration without
+  actually starting a process.
+
+  The second argument is the quantum configuration as stored in the
+  application environment. It must return `{:ok, keyword}` with the updated
+  list of configuration or `:ignore` (only in the `:supervisor` case).
+  """
+  @callback init(source :: :supervisor | :dry_run, config :: Keyword.t) :: {:ok, Keyword.t} | :ignore
+
+  @doc """
+  Shuts down the quantum represented by the given pid.
+  """
+  @callback stop(pid, timeout) :: :ok
+
+  @doc """
+  Creates a new Job. The job can be added by calling `add_job/1`.
+  """
+  @callback new_job() :: Quantum.Job.t
+
+  @doc """
+  Adds a new unnamed job
+  """
+  @callback add_job(Quantum.Job.t) :: :ok
+
+  @doc """
+  Adds a new named job
+  """
+  @callback add_job(Crontab.CronExpression.t, Job.task) :: :ok | :error
+
+  @doc """
+  Deactivates a job by name
+  """
+  @callback deactivate_job(atom) :: :ok | {:error, :not_found}
+
+  @doc """
+  Activates a job by name
+  """
+  @callback activate_job(atom) :: :ok | {:error, :not_found}
+
+  @doc """
+  Resolves a job by name
+  """
+  @callback find_job(atom) :: Quantum.Job.t | nil
+
+  @doc """
+  Deletes a job by name
+  """
+  @callback delete_job(atom) :: :ok | {:error, :not_found}
+
+  @doc """
+  Deletes all jobs
+  """
+  @callback delete_all_jobs :: :ok
+
+  @doc """
+  Returns the list of currently defined jobs
+  """
+  @callback jobs :: [Quantum.Job.t]
 end

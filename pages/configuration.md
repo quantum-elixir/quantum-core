@@ -6,16 +6,16 @@ Configure your cronjobs in your `config/config.exs` like this:
 config :quantum, :your_app,
   cron: [
     # Every minute
-    {"* * * * *",          {Heartbeat, :send, []}},
-    {{"* * * * *", false}, {Heartbeat, :send, []}},
+    {"* * * * *",              {Heartbeat, :send, []}},
+    {{:cron, "* * * * *"},     {Heartbeat, :send, []}},
     # Every second
-    {{"* * * * *", true},  {Heartbeat, :send, []}},
+    {{:extended, "* * * * *"}, {Heartbeat, :send, []}},
     # Every 15 minutes
-    {"*/15 * * * *",       fn -> System.cmd("rm", ["/tmp/tmp_"]) end},
+    {"*/15 * * * *",           fn -> System.cmd("rm", ["/tmp/tmp_"]) end},
     # Runs on 18, 20, 22, 0, 2, 4, 6:
-    {"0 18-6/2 * * *",     fn -> :mnesia.backup('/var/backup/mnesia') end},
+    {"0 18-6/2 * * *",         fn -> :mnesia.backup('/var/backup/mnesia') end},
     # Runs every midnight:
-    {"@daily",             {Backup, :backup, []}}
+    {"@daily",                 {Backup, :backup, []}}
   ]
 ```
 
@@ -45,7 +45,7 @@ config :quantum, :your_app,
 ```
 
 Possible options:
-- `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `{"1 * * * *", true}` or `{"1 * * * *", false}`
+- `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `{:cron, "1 * * * *"}` or `{:extended, "1 * * * *"}`
 - `task` function to be performed, ex: `{Heartbeat, :send, []}` or `fn -> :something end`
 - `nodes` nodes list the task should be run on, default: `[node()]`
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
@@ -61,13 +61,11 @@ So if you have a lot of jobs and do not want to override the
 default setting in every job, you can set them globally.
 
 ```elixir
-config :quantum,
+config :quantum, :your_app,
   default_schedule: "* * * * *",
   default_nodes: [:app1@myhost],
   default_overlap: false,
-  default_timezone: :utc
-
-config :quantum, :your_app,
+  default_timezone: :utc,
   cron: [
     # Your cronjobs
   ]
@@ -76,7 +74,7 @@ config :quantum, :your_app,
 ## Jobs with Second granularity
 
 It is possible to specify jobs with second granularity.
-To do this the `schedule` parameter has to be provided with a `{"1 * * * *", true}` expression.
+To do this the `schedule` parameter has to be provided with a `{:extended, "1 * * * *"}` expression.
 
 With Sigil:
 
@@ -99,14 +97,14 @@ too many jobs or high load. The default `GenServer.call` timeout is 5000.
 You can override this default by specifying `timeout` setting in configuration.
 
 ```elixir
-config :quantum,
+config :quantum, :your_app,
   timeout: 30_000
 ```
 
 Or if you wish to wait indefinitely:
 
 ```elixir
-config :quantum,
+config :quantum, :your_app,
   timeout: :infinity
 ```
 
@@ -138,10 +136,8 @@ on multiple nodes. With the following configuration, Quantum will be run
 as a globally unique process across the cluster.
 
 ```elixir
-config :quantum,
-  global?: true
-
 config :quantum, :your_app,
+  global?: true,
   cron: [
     # Your cronjobs
   ]
@@ -149,18 +145,16 @@ config :quantum, :your_app,
 
 ## Timezone Support
 
-Please note that Quantum uses **UTC timezone** and not local timezone by default.
+Please note that Quantum uses **UTC timezone** and not local timezone.
 
-To specify another timezone, add the following `timezone` option to your configuration:
+To specify another default timezone, add the following `default_timezone` option to your configuration:
 
 ```elixir
 config :quantum, :your_app,
+  default_timezone: "America/Chicago",
   cron: [
     # Your cronjobs
   ]
-
-config :quantum,
-  timezone: "America/Chicago"
 ```
 
 Valid options are `:utc` or a timezone name such as `"America/Chicago"`. A full list of timezone names can be downloaded from https://www.iana.org/time-zones, or at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.

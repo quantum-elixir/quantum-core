@@ -1,4 +1,6 @@
 defmodule Quantum.Mixfile do
+  @moduledoc false
+
   use Mix.Project
 
   @version "1.9.1"
@@ -7,32 +9,10 @@ defmodule Quantum.Mixfile do
     [
       app: :quantum,
       build_embedded: Mix.env == :prod,
-      deps: [
-        {:timex,       "~> 3.1.13", optional: true},
-        {:calendar,    "~> 0.17", optional: true},
-        {:crontab,     "~> 1.0"},
-        {:credo,       "~> 0.4",  only: [:dev, :test]},
-        {:earmark,     "~> 1.0",  only: [:dev, :docs]},
-        {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
-        {:excoveralls, "~> 0.5",  only: [:dev, :test]},
-        {:inch_ex,     "~> 0.5",  only: [:dev, :docs]}
-      ],
+      deps: deps(),
       description: "Cron-like job scheduler for Elixir.",
-      docs: [
-        main: "Quantum",
-        source_ref: "v#{@version}",
-        source_url: "https://github.com/c-rack/quantum-elixir",
-        extras: [
-          "README.md",
-          "CHANGELOG.md",
-          "pages/configuration.md",
-          "pages/runtime.md",
-          "pages/crontab-format.md",
-          "pages/error-handling.md",
-          "pages/date-library.md"
-        ]
-      ],
-      elixir: ">= 1.3.0",
+      docs: docs(),
+      elixir: ">= 1.4.0",
       name: "Quantum",
       package: package(),
       start_permanent: Mix.env == :prod,
@@ -54,7 +34,8 @@ defmodule Quantum.Mixfile do
         "Lucas Charles",
         "Rodion Vshevtsov",
         "Stanislav Krasnoyarov",
-        "Kai Faber"
+        "Kai Faber",
+        "Jonatan Männchen"
       ],
       licenses: ["Apache License 2.0"],
       links: %{
@@ -64,4 +45,36 @@ defmodule Quantum.Mixfile do
     }
   end
 
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/c-rack/quantum-elixir",
+      extras: [
+        "README.md",
+        "CHANGELOG.md",
+        "MIGRATE-V2.md",
+        "pages/supervision-tree.md",
+        "pages/configuration.md",
+        "pages/runtime.md",
+        "pages/crontab-format.md",
+        "pages/date-library.md"
+      ]
+    ]
+  end
+
+  defp deps do
+    [
+      {:timex,       "~> 3.1.13", optional: true},
+      {:calendar,    "~> 0.17", optional: true},
+      {:crontab,     "~> 1.0"},
+      {:credo,       "~> 0.4",  only: [:dev, :test]},
+      {:earmark,     "~> 1.0",  only: [:dev, :docs]},
+      {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
+      {:excoveralls, "~> 0.5",  only: [:dev, :test]},
+      {:inch_ex,     "~> 0.5",  only: [:dev, :docs]},
+      {:dialyxir,    "~> 0.5",  only: [:dev], runtime: false},
+      {:credo,       "~> 0.7",  only: [:dev, :test]}
+    ]
+  end
 end
