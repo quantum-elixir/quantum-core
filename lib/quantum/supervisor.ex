@@ -38,17 +38,17 @@ defmodule Quantum.Supervisor do
       |> Enum.map(fn job_config -> Normalizer.normalize(quantum.new_job(config), job_config) end)
       |> remove_jobs_with_duplicate_names(quantum)
 
-      # Scheduler Name
-      scheduler = if Keyword.fetch!(config, :global?),
-        do: {:global, Module.concat(quantum, Scheduler)},
-        else: Module.concat(quantum, Scheduler)
+      # Runner Name
+      runner = if Keyword.fetch!(config, :global?),
+        do: {:global, Module.concat(quantum, Runner)},
+        else: Module.concat(quantum, Runner)
 
       # Task Supervisor Name
       task_supervisor = Module.concat(quantum, Task.Supervisor)
 
       config = config
       |> Keyword.put(:jobs, jobs)
-      |> Keyword.put(:scheduler, scheduler)
+      |> Keyword.put(:runner, runner)
       |> Keyword.put(:task_supervisor, task_supervisor)
 
       case quantum_init(type, quantum, config) do
@@ -93,7 +93,7 @@ defmodule Quantum.Supervisor do
       {:ok, opts} ->
         children = [
           supervisor(Task.Supervisor, [[name: Keyword.get(opts, :task_supervisor)]]),
-          worker(Quantum.Scheduler, [opts], restart: :permanent)
+          worker(Quantum.Runner, [opts], restart: :permanent)
         ]
         supervise(children, strategy: :one_for_one)
       :ignore ->

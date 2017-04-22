@@ -6,11 +6,11 @@ defmodule Quantum.NormalizerTest do
 
   alias Quantum.Job
 
-  defmodule Runner do
-    use Quantum, otp_app: :quantum_test
+  defmodule Scheduler do
+    use Quantum.Scheduler, otp_app: :quantum_test
   end
 
-  defp start_runner(name) do
+  defp start_scheduler(name) do
     {:ok, _pid} = name.start_link()
     on_exit fn ->
       case Process.whereis(Quantum.Supervisor) do
@@ -23,9 +23,9 @@ defmodule Quantum.NormalizerTest do
   end
 
   setup do
-    Application.put_env(:quantum_test, Quantum.NormalizerTest.Runner, jobs: [])
+    Application.put_env(:quantum_test, Quantum.NormalizerTest.Scheduler, jobs: [])
 
-    start_runner(Quantum.NormalizerTest.Runner)
+    start_scheduler(Quantum.NormalizerTest.Scheduler)
   end
 
   test "named job" do
@@ -36,14 +36,14 @@ defmodule Quantum.NormalizerTest do
       nodes: [:atom@node, "string@node"]
     ]}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_name(:newsletter)
     |> Job.set_schedule(~e[@weekly])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
     |> Job.set_nodes([:atom@node, :string@node])
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
   test "expression tuple extended" do
@@ -54,14 +54,14 @@ defmodule Quantum.NormalizerTest do
       nodes: [:atom@node, "string@node"]
     ]}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_name(:newsletter)
     |> Job.set_schedule(~e[*]e)
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
     |> Job.set_nodes([:atom@node, :string@node])
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
   test "expression tuple not extended" do
@@ -72,14 +72,14 @@ defmodule Quantum.NormalizerTest do
       nodes: [:atom@node, "string@node"]
     ]}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_name(:newsletter)
     |> Job.set_schedule(~e[*])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
     |> Job.set_nodes([:atom@node, :string@node])
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
   test "named job with old schedule" do
@@ -90,34 +90,34 @@ defmodule Quantum.NormalizerTest do
       nodes: [:atom@node, "string@node"]
     ]}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_name(:newsletter)
     |> Job.set_schedule(~e[@weekly])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
     |> Job.set_nodes([:atom@node, :string@node])
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
   test "unnamed job as tuple" do
     job = {~e[* * * * *], {MyModule, :my_method, [1, 2, 3]}}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_schedule(~e[* * * * *])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
   test "unnamed job as tuple with arguments" do
     job = {"* * * * *", {MyModule, :my_method, [1, 2, 3]}}
 
-    expected_job = Quantum.NormalizerTest.Runner.new_job()
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
     |> Job.set_schedule(~e[* * * * *])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
 
-    assert normalize(Quantum.NormalizerTest.Runner.new_job(), job) == expected_job
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
 end
