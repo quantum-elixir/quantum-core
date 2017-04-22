@@ -67,7 +67,7 @@ defmodule Quantum.Mixfile do
     [
       {:timex,       "~> 3.1.13", optional: true},
       {:calendar,    "~> 0.17", optional: true},
-      {:crontab,     "~> 1.0"},
+      {:crontab,     "~> 1.1"},
       {:credo,       "~> 0.4",  only: [:dev, :test]},
       {:earmark,     "~> 1.0",  only: [:dev, :docs]},
       {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
