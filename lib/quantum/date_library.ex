@@ -10,5 +10,8 @@ defmodule Quantum.DateLibrary do
   unexpected behaviour can occur.
   """
 
-  @callback utc_to_tz(NaiveDateTime.t, String.t) :: NaiveDateTime.t
+  @doc """
+  Convert `NaiveDateTime` in UTC to `NaiveDateTime` in given tz.
+  """
+  @callback utc_to_tz(NaiveDateTime.t, String.t) :: NaiveDateTime.t | no_return
 end

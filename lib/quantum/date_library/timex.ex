@@ -1,9 +1,32 @@
 if Code.ensure_compiled?(Timex) do
   defmodule Quantum.DateLibrary.Timex do
-    @moduledoc false
+    @moduledoc """
+    `timex` implementation of `Quantum.DateLibrary`.
+
+    **This behaviour is considered internal. Breaking Changes can occur on every
+    release.**
+
+    ### Installation
+      `config.exs`
+
+        config :quantum,
+          date_library: Quantum.DateLibrary.Timex
+
+      `mix.exs`
+
+        def application do
+          [applications: [:quantum, :timex]]
+        end
+
+        defp deps do
+          [{:quantum, "*"},
+           {:timex, "*"}]
+        end
+    """
 
     @behaviour Quantum.DateLibrary
 
+    @spec utc_to_tz(NaiveDateTime.t, String.t) :: NaiveDateTime.t | no_return
     def utc_to_tz(date, tz) do
       date
       |> DateTime.from_naive!("Etc/UTC")

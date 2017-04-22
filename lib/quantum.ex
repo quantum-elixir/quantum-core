@@ -46,27 +46,7 @@ defmodule Quantum do
 
   alias Quantum.Job
 
-  @type t :: module
-
-  @typedoc """
-  A cron expression
-  """
-  @type expr :: String.t | Atom
-
-  @typedoc """
-  A function/0 to be called when cron expression matches
-  """
-  @type fun0 :: (() -> Type)
-
-  @typedoc """
-  A job is defined by a cron expression and a task
-  """
-  @type job :: {atom, Job.t}
-
-  @typedoc """
-  A job options can be defined as list or map
-  """
-  @type opts :: list | map | fun0
+  @opaque t :: module
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -121,12 +101,12 @@ defmodule Quantum do
         end
       end
 
-      def deactivate_job(n) do
-        GenServer.call(__scheduler__(), {:change_state, n, :inactive}, __timeout__())
+      def deactivate_job(name) do
+        GenServer.call(__scheduler__(), {:change_state, name, :inactive}, __timeout__())
       end
 
-      def activate_job(n) do
-        GenServer.call(__scheduler__(), {:change_state, n, :active}, __timeout__())
+      def activate_job(name) do
+        GenServer.call(__scheduler__(), {:change_state, name, :active}, __timeout__())
       end
 
       def find_job(name) do
@@ -196,7 +176,7 @@ defmodule Quantum do
   @doc """
   Adds a new unnamed job
   """
-  @callback add_job(job) :: :ok
+  @callback add_job(Quantum.Job.t) :: :ok
 
   @doc """
   Adds a new named job
@@ -206,22 +186,22 @@ defmodule Quantum do
   @doc """
   Deactivates a job by name
   """
-  @callback deactivate_job(expr) :: :ok
+  @callback deactivate_job(atom) :: :ok | {:error, :not_found}
 
   @doc """
   Activates a job by name
   """
-  @callback activate_job(expr) :: :ok
+  @callback activate_job(atom) :: :ok | {:error, :not_found}
 
   @doc """
   Resolves a job by name
   """
-  @callback find_job(expr) :: job
+  @callback find_job(atom) :: Quantum.Job.t | nil
 
   @doc """
   Deletes a job by name
   """
-  @callback delete_job(expr) :: job
+  @callback delete_job(atom) :: :ok | {:error, :not_found}
 
   @doc """
   Deletes all jobs
@@ -231,5 +211,5 @@ defmodule Quantum do
   @doc """
   Returns the list of currently defined jobs
   """
-  @callback jobs :: [job]
+  @callback jobs :: [Quantum.Job.t]
 end

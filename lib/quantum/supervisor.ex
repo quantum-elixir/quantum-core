@@ -1,8 +1,10 @@
 defmodule Quantum.Supervisor do
   @moduledoc false
+
   use Supervisor
 
   require Logger
+
   alias Quantum.Normalizer
   alias Quantum.Job
 
@@ -30,15 +32,18 @@ defmodule Quantum.Supervisor do
       config = [otp_app: otp_app, quantum: quantum] ++
                (@defaults |> Keyword.merge(config) |> Keyword.merge(custom))
 
+      # Load Jobs from Config
       jobs = config
       |> Keyword.get(:jobs)
       |> Enum.map(fn job_config -> Normalizer.normalize(quantum.new_job(config), job_config) end)
       |> remove_jobs_with_duplicate_names(quantum)
 
+      # Scheduler Name
       scheduler = if Keyword.fetch!(config, :global?),
         do: {:global, Module.concat(quantum, Scheduler)},
         else: Module.concat(quantum, Scheduler)
 
+      # Task Supervisor Name
       task_supervisor = Module.concat(quantum, Task.Supervisor)
 
       config = config
@@ -58,6 +63,7 @@ defmodule Quantum.Supervisor do
     end
   end
 
+  # Run Optional Callback in Quantum Scheduler Implementation
   defp quantum_init(type, quantum, config) do
     if Code.ensure_loaded?(quantum) and function_exported?(quantum, :init, 2) do
       quantum.init(type, config)

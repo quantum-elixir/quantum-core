@@ -4,7 +4,7 @@ defmodule Quantum.Job do
 
   ## Usage
 
-  The struct should never be defined by hand. Use `Quantum.new_job/0` to create a new job and use the setters mentioned
+  The struct should never be defined by hand. Use `Acme.Scheduler.new_job/0` to create a new job and use the setters mentioned
   below to mutate the job.
 
   This is to ensure type safety.
@@ -16,29 +16,42 @@ defmodule Quantum.Job do
   defstruct [
     name: nil,
     schedule: nil,
-    task: nil, # {module, function}
-    state: :active, # active/inactive
-    nodes: nil,
+    task: nil,
+    state: :active,
+    nodes: [],
     overlap: nil,
     pid: nil,
     timezone: nil
   ]
 
-  @type t :: %__MODULE__{}
   @type state :: :active | :inactive
-  @type task :: {atom, atom, [any]} | function
+  @type task :: {atom, atom, [any]} | (() -> any)
+  @type timezone :: :utc | :local | String.t
+  @type schedule :: Crontab.CronExpression.t
+  @type nodes :: [Node.t]
+
+  @opaque t :: %__MODULE__{
+    name: String.t,
+    schedule: schedule,
+    task: task,
+    state: state,
+    nodes: nodes,
+    overlap: boolean,
+    pid: pid | nil,
+    timezone: timezone
+  }
 
   @doc """
   Determines if a Job is executable.
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_state(:inactive)
       ...> |> Quantum.Job.executable?
       false
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.executable?
       true
 
@@ -72,7 +85,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_name(:name)
       ...> |> Map.get(:name)
       :name
@@ -91,7 +104,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_schedule(Crontab.CronExpression.Parser.parse!("*/7"))
       ...> |> Map.get(:schedule)
       Crontab.CronExpression.Parser.parse!("*/7")
@@ -110,7 +123,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_schedule(Crontab.CronExpression.Parser.parse!("*/7"))
       ...> |> Map.get(:schedule)
       Crontab.CronExpression.Parser.parse!("*/7")
@@ -131,7 +144,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_state(:active)
       ...> |> Map.get(:state)
       :active
@@ -151,7 +164,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_nodes([:one, :two])
       ...> |> Map.get(:nodes)
       [:one, :two]
@@ -170,7 +183,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_overlap(false)
       ...> |> Map.get(:overlap)
       false
@@ -189,7 +202,7 @@ defmodule Quantum.Job do
 
   ### Examples
 
-      iex> Quantum.new_job()
+      iex> Acme.Scheduler.new_job()
       ...> |> Quantum.Job.set_timezone("Europe/Zurich")
       ...> |> Map.get(:timezone)
       "Europe/Zurich"

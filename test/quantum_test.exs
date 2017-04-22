@@ -1,4 +1,6 @@
 defmodule QuantumTest do
+  @moduledoc false
+
   use ExUnit.Case, async: false
 
   alias Quantum.Job
@@ -8,10 +10,14 @@ defmodule QuantumTest do
   import ExUnit.CaptureLog
 
   defmodule Runner do
+    @moduledoc false
+
     use Quantum, otp_app: :quantum_test
   end
 
   defmodule ZeroTimeoutRunner do
+    @moduledoc false
+
     use Quantum, otp_app: :quantum_test
   end
 
@@ -171,9 +177,7 @@ defmodule QuantumTest do
     |> Job.set_task(fun)
 
     :ok = QuantumTest.Runner.add_job(job)
-    djob = QuantumTest.Runner.delete_job(:test_job)
-    assert djob.name == :test_job
-    assert djob.schedule == spec
+    :ok = QuantumTest.Runner.delete_job(:test_job)
     assert !Enum.member? QuantumTest.Runner.jobs, {:test_job, job}
   end
 
@@ -203,12 +207,6 @@ defmodule QuantumTest do
 
     assert QuantumTest.Runner.add_job(job) == :ok
     assert QuantumTest.Runner.add_job(job) == :error
-  end
-
-  test "handle_call for :which_children" do
-    state = %{jobs: [], d: nil, h: nil, m: nil, w: nil, r: 0}
-    children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
-    assert Quantum.Scheduler.handle_call(:which_children, :test, state) == {:reply, children, state}
   end
 
   test "execute for current node" do
