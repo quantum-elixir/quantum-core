@@ -22,7 +22,10 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    [applications: [:crontab]]
+    case Mix.env do
+      :test -> [applications: [:crontab, :timex]]
+      _ -> [applications: [:crontab]]
+    end
   end
 
   defp package do
