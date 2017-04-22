@@ -4,7 +4,6 @@ defmodule QuantumTest do
   use ExUnit.Case, async: false
 
   alias Quantum.Job
-  alias QuantumTest.ZeroTimeoutSchedule
 
   import Crontab.CronExpression
   import ExUnit.CaptureLog
