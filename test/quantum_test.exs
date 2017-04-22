@@ -204,12 +204,6 @@ defmodule QuantumTest do
     assert QuantumTest.Runner.add_job(job) == :error
   end
 
-  test "handle_info" do
-    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
-    state = %{jobs: [], d: d, h: h, m: m, s: s, w: nil, r: 0}
-    assert Quantum.Scheduler.handle_info(:tick, state) == {:noreply, state}
-  end
-
   test "handle_call for :which_children" do
     state = %{jobs: [], d: nil, h: nil, m: nil, w: nil, r: 0}
     children = [{Task.Supervisor, :quantum_tasks_sup, :supervisor, [Task.Supervisor]}]
@@ -219,7 +213,17 @@ defmodule QuantumTest do
   test "execute for current node" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
+
+    start_date = DateTime.utc_now
+    |> DateTime.to_naive
+    # Reset MS
+    |> NaiveDateTime.to_erl
+    |> NaiveDateTime.from_erl!
+    |> NaiveDateTime.add(-1)
+
+    end_date = start_date
+    |> NaiveDateTime.add(1)
+
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
@@ -230,12 +234,12 @@ defmodule QuantumTest do
     |> Job.set_schedule(~e[* * * * *]e)
     |> Job.set_task(fun)
 
-    state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
+    state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], date: start_date, reboot: false}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
-    state2 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
+    state2 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], date: end_date, reboot: false}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
@@ -243,14 +247,24 @@ defmodule QuantumTest do
 
   test "skip for current node" do
     {:ok, pid} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
+
+    start_date = DateTime.utc_now
+    |> DateTime.to_naive
+    # Reset MS
+    |> NaiveDateTime.to_erl
+    |> NaiveDateTime.from_erl!
+    |> NaiveDateTime.add(-1)
+
+    end_date = start_date
+    |> NaiveDateTime.add(1)
+
     fun = fn -> Agent.update(pid, fn(n) -> n + 1 end) end
     job = QuantumTest.Runner.new_job()
     |> Job.set_schedule(~e[* * * * *])
     |> Job.set_task(fun)
     |> Job.set_nodes([:remote@node])
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
+    state1 = %{jobs: [{nil, job}], date: start_date, reboot: false}
+    state2 = %{jobs: [{nil, job}], date: end_date, reboot: false}
     assert Quantum.Scheduler.handle_info(:tick, state1) == {:noreply, state2}
     :timer.sleep(500)
     assert Agent.get(pid, fn(n) -> n end) == 0
@@ -268,7 +282,7 @@ defmodule QuantumTest do
     job = QuantumTest.Runner.new_job()
     |> Job.set_schedule(~e[@reboot])
     |> Job.set_task(fun)
-    {:ok, state} = Quantum.Scheduler.init(%{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: nil, h: nil, m: nil, w: nil, r: nil})
+    {:ok, state} = Quantum.Scheduler.init(%{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], reboot: true})
     :timer.sleep(500)
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
     assert state.jobs == [{nil, job}]
@@ -280,7 +294,17 @@ defmodule QuantumTest do
   test "overlap, first start" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
+
+    start_date = DateTime.utc_now
+    |> DateTime.to_naive
+    # Reset MS
+    |> NaiveDateTime.to_erl
+    |> NaiveDateTime.from_erl!
+    |> NaiveDateTime.add(-1)
+
+    end_date = start_date
+    |> NaiveDateTime.add(1)
+
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
@@ -290,13 +314,18 @@ defmodule QuantumTest do
     |> Job.set_schedule(~e[* * * * *]e)
     |> Job.set_overlap(false)
     |> Job.set_task(fun)
-    state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
+
+    state1 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], date: start_date, reboot: false}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 1
+
     job = %{job | pid: Agent.get(pid1, fn(n) -> n end)}
-    state2 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
+
+    state2 = %{opts: QuantumTest.Runner.config(), jobs: [{nil, job}], date: end_date, reboot: false}
+
     assert state3 == {:noreply, state2}
+
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)
   end
@@ -304,7 +333,17 @@ defmodule QuantumTest do
   test "overlap, second start" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
-    {d, {h, m, s}} = :calendar.now_to_universal_time(:os.timestamp)
+
+    start_date = DateTime.utc_now
+    |> DateTime.to_naive
+    # Reset MS
+    |> NaiveDateTime.to_erl
+    |> NaiveDateTime.from_erl!
+    |> NaiveDateTime.add(-1)
+
+    end_date = start_date
+    |> NaiveDateTime.add(1)
+
     fun = fn ->
       fun_pid = self()
       Agent.update(pid1, fn(_) -> fun_pid end)
@@ -315,12 +354,12 @@ defmodule QuantumTest do
     |> Job.set_overlap(false)
     |> Job.set_task(fun)
     |> Map.put(:pid, pid1)
-    state1 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s - 1, w: nil, r: 0}
+    state1 = %{jobs: [{nil, job}], date: start_date, reboot: false}
     state3 = Quantum.Scheduler.handle_info(:tick, state1)
     :timer.sleep(500)
     assert Agent.get(pid2, fn(n) -> n end) == 0
     job = %{job | pid: pid1}
-    state2 = %{jobs: [{nil, job}], d: d, h: h, m: m, s: s, w: nil, r: 0}
+    state2 = %{jobs: [{nil, job}], date: end_date, reboot: false}
     assert state3 == {:noreply, state2}
     :ok = Agent.stop(pid2)
     :ok = Agent.stop(pid1)

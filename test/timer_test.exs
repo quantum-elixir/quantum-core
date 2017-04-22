@@ -1,21 +1,26 @@
 defmodule Quantum.TimerTest do
+  @moduledoc false
   use ExUnit.Case
 
-  test "tick function returns correct time when timezone is set" do
-    current_time_zone = Application.get_env(:quantum, :timezone, :utc)
+  describe "tick/0" do
+    test "sends tick message" do
+      Quantum.Timer.tick()
 
-    Application.put_env(:quantum, :timezone, :utc)
-    {d_utc, {h_utc, m_utc, s_utc}} = :calendar.now_to_universal_time(:os.timestamp)
-    assert Quantum.Timer.tick == {d_utc, h_utc, m_utc, s_utc}
+      # Should be sent after a few ms and not instantly
+      refute_received :tick
 
-    Application.put_env(:quantum, :timezone, :local)
-    {d_local, {h_local, m_local, s_local}} = :calendar.now_to_local_time(:os.timestamp)
-    assert Quantum.Timer.tick == {d_local, h_local, m_local, s_local}
+      # Should Receive tick after max 999 ms
+      assert_receive :tick, 999
+    end
 
-    Application.put_env(:quantum, :timezone, "America/Chicago")
-    {d_local, {h_local, m_local, s_local}} = Quantum.Timer.custom("America/Chicago", :os.timestamp)
-    assert Quantum.Timer.tick == {d_local, h_local, m_local, s_local}
+    test "gives back last date with reset ms" do
+      now = DateTime.utc_now
+      |> DateTime.to_naive
+      # Reset MS
+      |> NaiveDateTime.to_erl
+      |> NaiveDateTime.from_erl!
 
-    Application.put_env(:quantum, :timezone, current_time_zone)
+      assert now == Quantum.Timer.tick()
+    end
   end
 end

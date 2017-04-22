@@ -8,7 +8,7 @@ defmodule Quantum.Scheduler do
 
   @doc "Starts Quantum process"
   def start_link(opts) do
-    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs), d: nil, h: nil, m: nil, s: nil, w: nil, r: nil}
+    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs), reboot: true}
     case GenServer.start_link(__MODULE__, state, [name: Keyword.fetch!(opts, :scheduler)]) do
       {:ok, pid} ->
         {:ok, pid}
@@ -18,9 +18,13 @@ defmodule Quantum.Scheduler do
     end
   end
 
-  def init(s) do
-    Timer.tick
-    {:ok, %{s | jobs: run(%{s | r: 1}), r: 0}}
+  def init(state) do
+    new_state = state
+    |> Map.put(:jobs, run(state))
+    |> Map.put(:date, Timer.tick())
+    |> Map.put(:reboot, false)
+
+    {:ok, new_state}
   end
 
   def handle_call({:add, j}, _, s), do: {:reply, :ok, %{s | jobs: [j | s.jobs]}}
@@ -64,10 +68,8 @@ defmodule Quantum.Scheduler do
   end
 
   def handle_info(:tick, state) do
-    {d, h, m, s} = Timer.tick
-    state1 = if state.d != d, do: %{state | d: d, w: rem(:calendar.day_of_the_week(d), 7)}, else: state
-    state2 = %{state1 | h: h, m: m, s: s}
-    {:noreply, %{state2 | jobs: run(state2)}}
+    new_state = Map.put(state, :date, Timer.tick())
+    {:noreply, %{new_state | jobs: run(new_state)}}
   end
   def handle_info(_, s), do: {:noreply, s}
 

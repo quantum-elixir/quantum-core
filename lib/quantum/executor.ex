@@ -2,27 +2,19 @@ defmodule Quantum.Executor do
 
   @moduledoc false
 
-  def convert_to_timezone(s, tz) do
-    dt = {s.d, {s.h, s.m, s.s}}  # erlang datetime
-
-    tz_final = case tz do
-      :utc   -> "Etc/UTC"
-      :local -> raise "error - local timezone not allowed"
-      tz0    -> tz0
-    end
-
-    case Application.get_env(:quantum, :timezone, :utc) do
-      :utc   -> dt |> Calendar.DateTime.from_erl!("Etc/UTC") |> Calendar.DateTime.shift_zone!(tz_final)
-      :local -> raise "error - local timezone not allowed"
-      _      -> dt |> Calendar.DateTime.from_erl!(tz_final)
-    end
+  def convert_to_timezone(date, :utc), do: date
+  def convert_to_timezone(_, :local), do: raise "TZ local is no longer supported."
+  def convert_to_timezone(date, tz) do
+    date
+    |> Calendar.NaiveDateTime.to_date_time_utc
+    |> Calendar.DateTime.shift_zone!(tz)
+    |> DateTime.to_naive
   end
 
-  def execute({%Crontab.CronExpression{reboot: true}, fun, _}, %{r: 1}), do: execute_fun(fun)
-  def execute(_, %{r: 1}), do: false
-  def execute({%Crontab.CronExpression{reboot: true}, _, _}, %{r: 0}), do: false
+  def execute({%Crontab.CronExpression{reboot: true}, fun, _}, %{reboot: true}), do: execute_fun(fun)
+  def execute({%Crontab.CronExpression{reboot: false}, _, _}, %{reboot: true}), do: false
 
-  def execute(job = {%Crontab.CronExpression{extended: false}, _, _}, state = %{s: 0}) do
+  def execute(job = {%Crontab.CronExpression{extended: false}, _, _}, state = %{date: %NaiveDateTime{second: 0}}) do
       _execute(job, state)
   end
   def execute(job = {%Crontab.CronExpression{extended: true}, _, _}, state) do
@@ -30,10 +22,8 @@ defmodule Quantum.Executor do
   end
   def execute(_, _), do: false
 
-  defp _execute({cron_expression, fun, tz}, state) do
-    date_naive = state
-      |> convert_to_timezone(tz)
-      |> DateTime.to_naive
+  defp _execute({cron_expression, fun, tz}, %{date: date}) do
+    date_naive = convert_to_timezone(date, tz)
 
     if Crontab.DateChecker.matches_date?(cron_expression, date_naive) do
       execute_fun(fun)
@@ -48,6 +38,6 @@ defmodule Quantum.Executor do
     :erlang.apply(mod, fun, args)
   end
 
-  def execute_fun(fun) when is_function(fun), do: fun.()
+  def execute_fun(fun) when is_function(fun, 0), do: fun.()
 
 end
