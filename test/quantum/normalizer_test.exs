@@ -60,6 +60,18 @@ defmodule Quantum.NormalizerTest do
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
+  test "normalizer of run strategy" do
+    job = {:newsletter, [
+      run_strategy: {Quantum.RunStrategy.All, [:"node@host"]}
+    ]}
+
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
+    |> Job.set_name(:newsletter)
+    |> Job.set_run_strategy(%Quantum.RunStrategy.All{nodes: [:"node@host"]})
+
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
+  end
+
   test "expression tuple not extended" do
     job = {:newsletter, [
       schedule: {:cron, "*"},

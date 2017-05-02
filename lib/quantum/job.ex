@@ -35,7 +35,7 @@ defmodule Quantum.Job do
     schedule: schedule,
     task: task,
     state: state,
-    run_strategy: Quantum.RunStrategy,
+    run_strategy: Quantum.RunStrategy.NodeList,
     overlap: boolean,
     pids: pids,
     timezone: timezone
@@ -174,7 +174,7 @@ defmodule Quantum.Job do
       [:one, :two]
 
   """
-  @spec set_run_strategy(t, Quantum.RunStrategy) :: t
+  @spec set_run_strategy(t, Quantum.RunStrategy.NodeList) :: t
   def set_run_strategy(job = %__MODULE__{}, run_strategy), do: Map.put(job, :run_strategy, run_strategy)
 
   @doc """
