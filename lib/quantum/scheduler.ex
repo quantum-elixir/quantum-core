@@ -92,7 +92,7 @@ defmodule Quantum.Scheduler do
         job = %Job{}
         |> Job.set_overlap(Keyword.fetch!(config, :default_overlap))
         |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
-        |> Job.set_nodes(Keyword.fetch!(config, :default_nodes))
+        |> Job.set_run_strategy(Keyword.fetch!(config, :default_run_strategy))
 
         if Keyword.fetch!(config, :default_schedule) do
           Job.set_schedule(job, Keyword.fetch!(config, :default_schedule))

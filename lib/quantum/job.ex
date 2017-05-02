@@ -18,9 +18,9 @@ defmodule Quantum.Job do
     schedule: nil,
     task: nil,
     state: :active,
-    nodes: [],
+    run_strategy: nil,
     overlap: nil,
-    pid: nil,
+    pids: [],
     timezone: nil
   ]
 
@@ -28,16 +28,16 @@ defmodule Quantum.Job do
   @type task :: {atom, atom, [any]} | (() -> any)
   @type timezone :: :utc | :local | String.t
   @type schedule :: Crontab.CronExpression.t
-  @type nodes :: [Node.t]
+  @type pids :: [{Node.t, pid}]
 
   @type t :: %__MODULE__{
     name: atom,
     schedule: schedule,
     task: task,
     state: state,
-    nodes: nodes,
+    run_strategy: Quantum.RunStrategy,
     overlap: boolean,
-    pid: pid | nil,
+    pids: pids,
     timezone: timezone
   }
 
@@ -56,19 +56,23 @@ defmodule Quantum.Job do
       true
 
   """
-  @spec executable?(t) :: boolean
-  def executable?(job) do
+  @spec executable?(t, Node.t) :: boolean
+  def executable?(job, node) do
+    pid = Keyword.get(job.pids, node, nil)
     cond do
       job.state != :active    -> false # Do not execute inactive jobs
-      not node() in job.nodes -> false # Job shall not run on this node
       job.overlap == true     -> true  # Job may overlap
-      job.pid == nil          -> true  # Job has not been started
-      is_alive?(job.pid)      -> false # Previous job is still running
+      pid == nil              -> true  # Job has not been started
+      is_alive?(pid)          -> false # Previous job is still running
       true                    -> true  # Previous job has finished
     end
   end
 
-  defp is_alive?(pid) do
+  @doc """
+  Is job still running?
+  """
+  @spec is_alive?(pid) :: boolean
+  def is_alive?(pid) do
     case :rpc.pinfo(pid) do
       :undefined -> false
       _ -> true
@@ -155,23 +159,23 @@ defmodule Quantum.Job do
   def set_state(job = %__MODULE__{}, :inactive), do: Map.put(job, :state, :inactive)
 
   @doc """
-  Sets a jobs nodes to run on.
+  Sets a jobs run strategy.
 
   ### Parameters
 
     1. `job` - The job struct to modify
-    2. `nodes` - The nodes to set
+    2. `run_strategy` - The run strategy to set
 
   ### Examples
 
       iex> Acme.Scheduler.new_job()
-      ...> |> Quantum.Job.set_nodes([:one, :two])
-      ...> |> Map.get(:nodes)
+      ...> |> Quantum.Job.run_strategy(%Quantum.RunStrategy.All{nodes: [:one, :two]})
+      ...> |> Map.get(:run_strategy)
       [:one, :two]
 
   """
-  @spec set_nodes(t, [node]) :: t
-  def set_nodes(job = %__MODULE__{}, nodes), do: Map.put(job, :nodes, nodes)
+  @spec set_run_strategy(t, Quantum.RunStrategy) :: t
+  def set_run_strategy(job = %__MODULE__{}, run_strategy), do: Map.put(job, :run_strategy, run_strategy)
 
   @doc """
   Sets a jobs overlap.

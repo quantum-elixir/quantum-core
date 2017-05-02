@@ -33,7 +33,6 @@ defmodule Quantum.NormalizerTest do
       schedule: ~e[@weekly],
       task: {MyModule, :my_method, [1, 2, 3]},
       overlap: false,
-      nodes: [:atom@node, "string@node"]
     ]}
 
     expected_job = Quantum.NormalizerTest.Scheduler.new_job()
@@ -41,7 +40,6 @@ defmodule Quantum.NormalizerTest do
     |> Job.set_schedule(~e[@weekly])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
-    |> Job.set_nodes([:atom@node, :string@node])
 
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
@@ -51,7 +49,6 @@ defmodule Quantum.NormalizerTest do
       schedule: {:extended, "*"},
       task: {MyModule, :my_method, [1, 2, 3]},
       overlap: false,
-      nodes: [:atom@node, "string@node"]
     ]}
 
     expected_job = Quantum.NormalizerTest.Scheduler.new_job()
@@ -59,7 +56,6 @@ defmodule Quantum.NormalizerTest do
     |> Job.set_schedule(~e[*]e)
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
-    |> Job.set_nodes([:atom@node, :string@node])
 
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
@@ -69,7 +65,6 @@ defmodule Quantum.NormalizerTest do
       schedule: {:cron, "*"},
       task: {MyModule, :my_method, [1, 2, 3]},
       overlap: false,
-      nodes: [:atom@node, "string@node"]
     ]}
 
     expected_job = Quantum.NormalizerTest.Scheduler.new_job()
@@ -77,7 +72,6 @@ defmodule Quantum.NormalizerTest do
     |> Job.set_schedule(~e[*])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
-    |> Job.set_nodes([:atom@node, :string@node])
 
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
@@ -87,7 +81,6 @@ defmodule Quantum.NormalizerTest do
       schedule: "@weekly",
       task: {MyModule, :my_method, [1, 2, 3]},
       overlap: false,
-      nodes: [:atom@node, "string@node"]
     ]}
 
     expected_job = Quantum.NormalizerTest.Scheduler.new_job()
@@ -95,7 +88,6 @@ defmodule Quantum.NormalizerTest do
     |> Job.set_schedule(~e[@weekly])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
-    |> Job.set_nodes([:atom@node, :string@node])
 
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end

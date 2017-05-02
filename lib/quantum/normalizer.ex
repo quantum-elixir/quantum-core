@@ -9,14 +9,13 @@ defmodule Quantum.Normalizer do
   @fields [:name,
            :schedule,
            :task,
-           :overlap,
-           :nodes]
+           :overlap]
 
   @type config_short_notation :: {config_schedule, config_task}
   # TODO: remove any and fix dialyzer
   @type config_full_notation :: {config_name | nil, Keyword.t | struct | any}
 
-  @typep field :: :name | :schedule | :task | :overlap | :nodes
+  @typep field :: :name | :schedule | :task | :overlap
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
   @type config_task :: {module, fun, [any]} | (() -> any)
   @type config_name :: String.t | atom
@@ -76,13 +75,6 @@ defmodule Quantum.Normalizer do
     normalize_options(job, options, tail)
   end
 
-  defp normalize_options(job, options = %{nodes: nodes}, [:nodes | tail]) do
-    normalize_options(Job.set_nodes(job, normalize_nodes(nodes)), options, tail)
-  end
-  defp normalize_options(job, options, [:nodes | tail]) do
-    normalize_options(job, options, tail)
-  end
-
   defp normalize_options(job, _, []), do: job
 
   @spec normalize_task(config_task) :: Job.task
@@ -95,13 +87,6 @@ defmodule Quantum.Normalizer do
   defp normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   defp normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   defp normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
-
-  @spec normalize_nodes([Node.t | String.t]) :: Job.nodes
-  defp normalize_nodes(list) when is_list(list), do: Enum.map(list, &normalize_node/1)
-
-  @spec normalize_node(atom | String.t) :: Node.t
-  defp normalize_node(node) when is_binary(node), do: String.to_atom(node)
-  defp normalize_node(node) when is_atom(node), do: node
 
   @spec normalize_name(atom | String.t) :: atom
   defp normalize_name(name) when is_binary(name), do: String.to_atom(name)
