@@ -15,7 +15,7 @@ defmodule Quantum.Supervisor do
              default_schedule: nil,
              default_overlap: true,
              default_timezone: :utc,
-             default_run_strategy: %Random{nodes: :cluster}]
+             default_run_strategy: {Random, :cluster}]
 
   @doc """
   Starts the quantum supervisor.

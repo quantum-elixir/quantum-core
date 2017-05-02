@@ -76,7 +76,7 @@ defmodule Quantum.Runner do
   defp run(state) do
     Enum.map state.jobs, fn({name, job}) ->
       pids = job.run_strategy
-      |> Quantum.RunStrategy.nodes(job)
+      |> Quantum.RunStrategy.NodeList.nodes(job)
       |> Enum.map(fn node ->
         cond do
           !Job.executable?(job, node) ->

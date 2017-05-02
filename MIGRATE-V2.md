@@ -81,3 +81,7 @@ Only the `Crontab.CronExpression` struct is supported. Use the sigil `~e[EXPRESS
 The job struct should not be manipulated by hand. Please use the factory `YourApp.Scheduler.new_job` (`Quantum.Scheduler.new_job/1`) to create a new instance and the setters in `Quantum.Job` to manipulate the job.
 
 The setter do not normalize values as in `v1`. The correct type has to be provided.
+
+## Run Strategies
+
+Instead of a `nodes` list, a run strategy can be provided. The nodes list is not supported anymore.

@@ -6,13 +6,34 @@ defmodule Quantum.RunStrategy.Random do
 
   This run strategy also makes sure, that the node doesn't run in two places at the same time
   if `job.overlap` is falsy.
+
+  ### Mix Configuration
+
+      config :my_app, MyApp.Scheduler,
+        jobs: [
+          # Run on any node in cluster
+          [schedule: "* * * * *", run_strategy: {Quantum.RunStrategy.Random, :cluster}],
+          # Run on any node of given list
+          [schedule: "* * * * *", run_strategy: {Quantum.RunStrategy.Random, [:"node@host1", :"node@host2"]}],
+        ]
+
   """
 
   @type t :: %__MODULE__{nodes: [Node.t] | :cluster}
 
   defstruct [nodes: nil]
 
-  defimpl Quantum.RunStrategy do
+  @behaviour Quantum.RunStrategy
+
+  def normalize_config!(nodes) when is_list(nodes) do
+    %__MODULE__{nodes: Enum.map(nodes, &normalize_node/1)}
+  end
+  def normalize_config!(:cluster), do: %__MODULE__{nodes: :cluster}
+
+  defp normalize_node(node) when is_atom(node), do: node
+  defp normalize_node(node) when is_binary(node), do: String.to_atom(node)
+
+  defimpl Quantum.RunStrategy.NodeList do
     alias Quantum.Job
 
     def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, job) do

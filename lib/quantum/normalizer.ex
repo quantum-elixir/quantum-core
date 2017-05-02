@@ -9,7 +9,8 @@ defmodule Quantum.Normalizer do
   @fields [:name,
            :schedule,
            :task,
-           :overlap]
+           :overlap,
+           :run_strategy]
 
   @type config_short_notation :: {config_schedule, config_task}
   # TODO: remove any and fix dialyzer
@@ -68,6 +69,13 @@ defmodule Quantum.Normalizer do
     normalize_options(job, options, tail)
   end
 
+  defp normalize_options(job, options = %{run_strategy: run_strategy}, [:run_strategy | tail]) do
+    normalize_options(Job.set_run_strategy(job, normalize_run_strategy(run_strategy)), options, tail)
+  end
+  defp normalize_options(job, options, [:run_strategy | tail]) do
+    normalize_options(job, options, tail)
+  end
+
   defp normalize_options(job, options = %{overlap: overlap}, [:overlap | tail]) do
     normalize_options(Job.set_overlap(job, overlap), options, tail)
   end
@@ -91,4 +99,9 @@ defmodule Quantum.Normalizer do
   @spec normalize_name(atom | String.t) :: atom
   defp normalize_name(name) when is_binary(name), do: String.to_atom(name)
   defp normalize_name(name) when is_atom(name), do: name
+
+  @spec normalize_run_strategy({Module.t, any}) :: Quantum.RunStrategy.NodeList
+  defp normalize_run_strategy({strategy, options}) when is_atom(strategy) do
+    strategy.normalize_config!(options)
+  end
 end

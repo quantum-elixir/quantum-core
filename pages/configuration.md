@@ -3,7 +3,7 @@
 Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   cron: [
     # Every minute
     {"* * * * *",              {Heartbeat, :send, []}},
@@ -35,7 +35,7 @@ Please note that the following config notation is not supported by release manag
 You can define named jobs in your config like this:
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   cron: [
     news_letter: [
       schedule: "@weekly",
@@ -47,7 +47,7 @@ config :quantum, :your_app,
 Possible options:
 - `schedule` cron schedule, ex: `"@weekly"` / `"1 * * * *"` / `{:cron, "1 * * * *"}` or `{:extended, "1 * * * *"}`
 - `task` function to be performed, ex: `{Heartbeat, :send, []}` or `fn -> :something end`
-- `nodes` nodes list the task should be run on, default: `[node()]`
+- `run_strategy` strategy on how to run tasks inside of cluster, default: `%Quantum.RunStrategy.Random{nodes: :cluster}`
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
 
 It is possible to control the behavior of jobs at runtime.
@@ -61,9 +61,8 @@ So if you have a lot of jobs and do not want to override the
 default setting in every job, you can set them globally.
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   default_schedule: "* * * * *",
-  default_nodes: [:app1@myhost],
   default_overlap: false,
   default_timezone: :utc,
   cron: [
@@ -81,7 +80,7 @@ With Sigil:
 ```elixir
 import Crontab.CronExpression
 
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   cron: [
     news_letter: [
       schedule: {"*/2", true}, # Runs every two seconds
@@ -97,32 +96,16 @@ too many jobs or high load. The default `GenServer.call` timeout is 5000.
 You can override this default by specifying `timeout` setting in configuration.
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   timeout: 30_000
 ```
 
 Or if you wish to wait indefinitely:
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   timeout: :infinity
 ```
-
-## Cluster Nodes
-
-If you need to run a job on a certain node you can define:
-
-```elixir
-config :quantum, :your_app,
-  cron: [
-    news_letter: [
-      # your job config
-      nodes: [:app1@myhost, "app2@myhost"]
-    ]
-  ]
-```
-
-**NOTE** If `nodes` is not defined current node is used and a job is performed on all nodes.
 
 
 ## Run Quantum as a global process
@@ -136,7 +119,7 @@ on multiple nodes. With the following configuration, Quantum will be run
 as a globally unique process across the cluster.
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   global?: true,
   cron: [
     # Your cronjobs
@@ -150,7 +133,7 @@ Please note that Quantum uses **UTC timezone** and not local timezone.
 To specify another default timezone, add the following `default_timezone` option to your configuration:
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   default_timezone: "America/Chicago",
   cron: [
     # Your cronjobs
