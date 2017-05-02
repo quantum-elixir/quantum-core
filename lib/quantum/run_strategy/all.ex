@@ -13,8 +13,7 @@ defmodule Quantum.RunStrategy.All do
           # Run on all nodes of given list
           [schedule: "* * * * *", run_strategy: {Quantum.RunStrategy.All, [:"node@host1", :"node@host2"]}],
         ]
-      ```
-      
+
   """
 
   @type t :: %__MODULE__{nodes: [Node.t | :cluster]}

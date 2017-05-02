@@ -16,7 +16,6 @@ defmodule Quantum.RunStrategy.Random do
           # Run on any node of given list
           [schedule: "* * * * *", run_strategy: {Quantum.RunStrategy.Random, [:"node@host1", :"node@host2"]}],
         ]
-      ```
 
   """
 

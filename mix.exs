@@ -61,6 +61,7 @@ defmodule Quantum.Mixfile do
         "pages/configuration.md",
         "pages/runtime.md",
         "pages/crontab-format.md",
+        "pages/run-strategies.md",
         "pages/date-library.md"
       ]
     ]
