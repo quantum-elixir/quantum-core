@@ -45,7 +45,7 @@ See the [Migration Guide](https://hexdocs.pm/quantum/migration-v2.html).
 Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
-config :quantum, :your_app,
+config :your_app, YourApp.Scheduler,
   cron: [
     # Every minute
     {"* * * * *",      {Heartbeat, :send, []}},
