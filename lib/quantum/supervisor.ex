@@ -29,38 +29,35 @@ defmodule Quantum.Supervisor do
   Retrieves the runtime configuration.
   """
   def runtime_config(type, quantum, otp_app, custom) do
-    if config = Application.get_env(otp_app, quantum) do
-      config = [otp_app: otp_app, quantum: quantum] ++
-               (@defaults |> Keyword.merge(config) |> Keyword.merge(custom))
+    config = @defaults
+    |> Keyword.merge(Application.get_env(otp_app, quantum, []))
+    |> Keyword.merge(custom)
+    |> Keyword.merge([otp_app: otp_app, quantum: quantum])
 
-      # Load Jobs from Config
-      jobs = config
-      |> Keyword.get(:jobs)
-      |> Enum.map(fn job_config -> Normalizer.normalize(quantum.new_job(config), job_config) end)
-      |> remove_jobs_with_duplicate_names(quantum)
+    # Load Jobs from Config
+    jobs = config
+    |> Keyword.get(:jobs, [])
+    |> Enum.map(fn job_config -> Normalizer.normalize(quantum.new_job(config), job_config) end)
+    |> remove_jobs_with_duplicate_names(quantum)
 
-      # Runner Name
-      runner = if Keyword.fetch!(config, :global?),
-        do: {:global, Module.concat(quantum, Runner)},
-        else: Module.concat(quantum, Runner)
+    # Runner Name
+    runner = if Keyword.fetch!(config, :global?),
+      do: {:global, Module.concat(quantum, Runner)},
+      else: Module.concat(quantum, Runner)
 
-      # Task Supervisor Name
-      task_supervisor = Module.concat(quantum, Task.Supervisor)
+    # Task Supervisor Name
+    task_supervisor = Module.concat(quantum, Task.Supervisor)
 
-      config = config
-      |> Keyword.put(:jobs, jobs)
-      |> Keyword.put(:runner, runner)
-      |> Keyword.put(:task_supervisor, task_supervisor)
+    config = config
+    |> Keyword.put(:jobs, jobs)
+    |> Keyword.put(:runner, runner)
+    |> Keyword.put(:task_supervisor, task_supervisor)
 
-      case quantum_init(type, quantum, config) do
-        {:ok, config} ->
-          {:ok, config}
-        :ignore ->
-          :ignore
-      end
-    else
-      raise ArgumentError,
-        "configuration for #{inspect quantum} not specified in #{inspect otp_app} environment"
+    case quantum_init(type, quantum, config) do
+      {:ok, config} ->
+        {:ok, config}
+      :ignore ->
+        :ignore
     end
   end
 
