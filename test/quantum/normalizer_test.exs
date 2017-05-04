@@ -124,4 +124,27 @@ defmodule Quantum.NormalizerTest do
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end
 
+  test "named job as a keyword" do
+    job = [name: :newsletter, schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, overlap: false]
+
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
+    |> Job.set_name(:newsletter)
+    |> Job.set_schedule(~e[@weekly])
+    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+    |> Job.set_overlap(false)
+
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
+  end
+
+  test "unnamed job as a keyword" do
+    job = [schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, overlap: false]
+
+    expected_job = Quantum.NormalizerTest.Scheduler.new_job()
+    |> Job.set_schedule(~e[@weekly])
+    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+    |> Job.set_overlap(false)
+
+    assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
+  end
+
 end
