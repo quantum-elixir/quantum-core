@@ -4,7 +4,7 @@ Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  cron: [
+  jobs: [
     # Every minute
     {"* * * * *",              {Heartbeat, :send, []}},
     {{:cron, "* * * * *"},     {Heartbeat, :send, []}},
@@ -36,7 +36,7 @@ You can define named jobs in your config like this:
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  cron: [
+  jobs: [
     news_letter: [
       schedule: "@weekly",
       task: {Heartbeat, :send, [:arg1]},
@@ -65,7 +65,7 @@ config :your_app, YourApp.Scheduler,
   default_schedule: "* * * * *",
   default_overlap: false,
   default_timezone: :utc,
-  cron: [
+  jobs: [
     # Your cronjobs
   ]
 ```
@@ -81,7 +81,7 @@ With Sigil:
 import Crontab.CronExpression
 
 config :your_app, YourApp.Scheduler,
-  cron: [
+  jobs: [
     news_letter: [
       schedule: {"*/2", true}, # Runs every two seconds
       task: {Heartbeat, :send, [:arg1]}
@@ -121,7 +121,7 @@ as a globally unique process across the cluster.
 ```elixir
 config :your_app, YourApp.Scheduler,
   global?: true,
-  cron: [
+  jobs: [
     # Your cronjobs
   ]
 ```
@@ -135,7 +135,7 @@ To specify another default timezone, add the following `default_timezone` option
 ```elixir
 config :your_app, YourApp.Scheduler,
   default_timezone: "America/Chicago",
-  cron: [
+  jobs: [
     # Your cronjobs
   ]
 ```

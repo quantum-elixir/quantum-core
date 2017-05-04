@@ -46,7 +46,7 @@ Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  cron: [
+  jobs: [
     # Every minute
     {"* * * * *",      {Heartbeat, :send, []}},
     # Every 15 minutes

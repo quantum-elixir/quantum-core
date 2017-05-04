@@ -53,13 +53,17 @@ The configuration notations have been cleaned up. Those are the existing notatio
 ### Configuration Syntax
 
 ```elixir
-config :quantum, :your_app,
-  cron: [
-    # Named Explicit Form
+config :your_app, YourApp.Scheduler,
+  jobs: [
+    # Named Tuple Explicit Form
+   {NAME, [schedule: CONFIG_SCHEDULE_NOTATION, task: CONFIG_TASK_NOTATION, OTHER_FIELDS]},
+
+    # Named Keyword Explicit Form
    [name: NAME, schedule: CONFIG_SCHEDULE_NOTATION, task: CONFIG_TASK_NOTATION, OTHER_FIELDS],
 
     # Unnamed Explicit Form
    [schedule: CONFIG_SCHEDULE_NOTATION, task: CONFIG_TASK_NOTATION, OTHER_FIELDS],
+
     # Short Form
    {CONFIG_SCHEDULE_NOTATION, CONFIG_TASK_NOTATION},
   ]
