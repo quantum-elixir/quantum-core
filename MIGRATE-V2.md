@@ -54,8 +54,8 @@ The configuration notations have been cleaned up. Those are the existing notatio
 
 ```elixir
 config :quantum, :your_app,
-  cron: [
-    # Named Explicit Form
+  jobs: [
+    # Named Keyword Explicit Form
    [name: NAME, schedule: CONFIG_SCHEDULE_NOTATION, task: CONFIG_TASK_NOTATION, OTHER_FIELDS],
 
     # Unnamed Explicit Form
