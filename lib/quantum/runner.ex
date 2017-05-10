@@ -74,9 +74,11 @@ defmodule Quantum.Runner do
   def handle_info(_, state), do: {:noreply, state}
 
   defp run(state) do
+    task_supervisor = Keyword.fetch!(state.opts, :task_supervisor)
     Enum.map state.jobs, fn({name, job}) ->
       pids = job.run_strategy
       |> Quantum.RunStrategy.NodeList.nodes(job)
+      |> Enum.filter(&running_node?(&1, task_supervisor))
       |> Enum.map(fn node ->
         cond do
           !Job.executable?(job, node) ->
@@ -85,7 +87,7 @@ defmodule Quantum.Runner do
             Logger.warn("Node #{inspect node} is not in cluster. Skipping.")
             {node, Keyword.get(job.pids, node, nil)}
           true ->
-            task = Task.Supervisor.async_nolink({Keyword.fetch!(state.opts, :task_supervisor), node}, Quantum.Executor,
+            task = Task.Supervisor.async_nolink({task_supervisor, node}, Quantum.Executor,
                 :execute, [{job.schedule, job.task, job.timezone}, state])
             {node, task.pid}
         end
@@ -96,5 +98,11 @@ defmodule Quantum.Runner do
       end)
       {name, %{job | pids: pids}}
     end
+  end
+
+  defp running_node?(node, task_supervisor) do
+    node
+    |> :rpc.call(:erlang, :whereis, [task_supervisor])
+    |> is_pid()
   end
 end
