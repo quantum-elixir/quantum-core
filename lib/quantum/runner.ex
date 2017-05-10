@@ -100,6 +100,7 @@ defmodule Quantum.Runner do
     end
   end
 
+  defp running_node?(node, _) when node == node(), do: true
   defp running_node?(node, task_supervisor) do
     node
     |> :rpc.call(:erlang, :whereis, [task_supervisor])
