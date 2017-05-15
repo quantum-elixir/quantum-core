@@ -32,9 +32,7 @@ defmodule Quantum.ConfigTest do
       Configuring the cron configuration is deprecated. Please use the new syntax instead.
 
       Example:
-      config :quantum, your_app_name: [
-        cron: [1, 2, 3]
-      ]
+      config :quantum, :your_app_name, cron: [1, 2, 3]
       """
   end
 end
