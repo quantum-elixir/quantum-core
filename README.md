@@ -14,7 +14,7 @@
 
 ## Setup
 
-To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
+To use Quantum in your project, edit the `mix.exs` file and add Quantum to
 
 **1. the list of dependencies:**
 ```elixir
@@ -36,6 +36,25 @@ end
 defmodule YourApp.Scheduler do
   use Quantum.Scheduler,
     otp_app: :your_app
+end
+```
+
+**4. and your application's supervision tree:**
+```elixir
+defmodule YourApp.Application do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = [
+      # This is the new line
+      worker(YourApp.Scheduler, [])
+    ]
+
+    opts = [strategy: :one_for_one, name: YourApp.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
 end
 ```
 
