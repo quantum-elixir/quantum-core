@@ -38,9 +38,7 @@ defmodule Quantum.Config do
     |> String.trim
 
     ~s"""
-    config :quantum, your_app_name: [
-      cron: #{crons}
-    ]
+    config :quantum, :your_app_name, cron: #{crons}
     """
   end
 end
