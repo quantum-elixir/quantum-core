@@ -9,6 +9,9 @@
 [![Inline docs](http://inch-ci.org/github/c-rack/quantum-elixir.svg)](http://inch-ci.org/github/c-rack/quantum-elixir)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 
+> **This README follows master, which may not be the currently published version**. Here are the
+[docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
+
 ## Setup
 
 To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
