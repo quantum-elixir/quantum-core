@@ -9,22 +9,25 @@
 [![Inline docs](http://inch-ci.org/github/c-rack/quantum-elixir.svg)](http://inch-ci.org/github/c-rack/quantum-elixir)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 
+> **This README follows master, which may not be the currently published version**. Here are the
+[docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
+
 ## Setup
 
-To use Quantum in your project, edit the `mix.exs` file and add Quantum to both
+To use Quantum in your project, edit the `mix.exs` file and add Quantum to
 
 **1. the list of dependencies:**
 ```elixir
 defp deps do
-  [{:quantum, ">= 1.9.1"},
-   {:timex, "~> 3.0"}]
+  [{:quantum, ">= 1.9.1"}]
 end
 ```
 
-**2. and the list of applications:**
+**2. and the list of applications. You can skip this step if you are using
+Elixir 1.4 or later:**
 ```elixir
 def application do
-  [applications: [:quantum, :timex]]
+  [applications: [:quantum, :other_apps...]]
 end
 ```
 
@@ -33,6 +36,25 @@ end
 defmodule YourApp.Scheduler do
   use Quantum.Scheduler,
     otp_app: :your_app
+end
+```
+
+**4. and your application's supervision tree:**
+```elixir
+defmodule YourApp.Application do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = [
+      # This is the new line
+      worker(YourApp.Scheduler, [])
+    ]
+
+    opts = [strategy: :one_for_one, name: YourApp.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
 end
 ```
 
