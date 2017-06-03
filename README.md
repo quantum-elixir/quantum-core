@@ -61,7 +61,7 @@ end
 
 ## Migrate to V2
 
-See the [Migration Guide](https://hexdocs.pm/quantum/migration-v2.html).
+See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
 
 ## Usage
 
