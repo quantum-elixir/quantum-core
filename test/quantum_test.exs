@@ -50,7 +50,7 @@ defmodule QuantumTest do
     end
 
     test "has defaults set" do
-      default_schedule = ~e[*/7]
+      default_schedule = "*/7"
       default_overlap = false
       default_timezone = "Europe/Zurich"
       Application.put_env(:quantum_test, QuantumTest.Scheduler, [
@@ -62,7 +62,7 @@ defmodule QuantumTest do
 
       %Quantum.Job{schedule: schedule, overlap: overlap, timezone: timezone} = QuantumTest.Scheduler.new_job()
 
-      assert schedule == default_schedule
+      assert schedule == ~e[#{default_schedule}]
       assert overlap == default_overlap
       assert timezone == default_timezone
     end

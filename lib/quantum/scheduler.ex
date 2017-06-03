@@ -98,8 +98,9 @@ defmodule Quantum.Scheduler do
         |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
         |> Job.set_run_strategy(run_strategy)
 
-        if Keyword.fetch!(config, :default_schedule) do
-          Job.set_schedule(job, Keyword.fetch!(config, :default_schedule))
+        default_schedule = Keyword.fetch!(config, :default_schedule)
+        if default_schedule do
+          Job.set_schedule(job, Quantum.Normalizer.normalize_schedule(default_schedule))
         else
           job
         end
