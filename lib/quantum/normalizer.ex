@@ -92,11 +92,12 @@ defmodule Quantum.Normalizer do
   defp normalize_task(fun) when is_function(fun, 0), do: fun
   defp normalize_task(fun) when is_function(fun), do: raise "Only 0 arity functions are supported via the short syntax."
 
+  @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule
-  defp normalize_schedule(e = %Crontab.CronExpression{}), do: e
-  defp normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
-  defp normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
-  defp normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
+  def normalize_schedule(e = %Crontab.CronExpression{}), do: e
+  def normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
+  def normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
+  def normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
 
   @spec normalize_name(atom | String.t) :: atom
   defp normalize_name(name) when is_binary(name), do: String.to_atom(name)
