@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migration-v2.html).
+The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
 
 ## 1.9.1 - 2017-03-17
 
