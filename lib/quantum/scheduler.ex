@@ -50,7 +50,11 @@ defmodule Quantum.Scheduler do
   @opaque t :: module
 
   defmacro __using__(opts) do
-    quote bind_quoted: [opts: opts] do
+    quote bind_quoted: [opts: opts, moduledoc: @moduledoc] do
+      @moduledoc moduledoc
+      |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
+      |> String.replace(~r/:my_app/, Atom.to_string(Keyword.fetch!(opts, :otp_app)))
+
       @behaviour Quantum.Scheduler
 
       @otp_app Keyword.fetch!(opts, :otp_app)
