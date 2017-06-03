@@ -75,15 +75,11 @@ config :your_app, YourApp.Scheduler,
 It is possible to specify jobs with second granularity.
 To do this the `schedule` parameter has to be provided with a `{:extended, "1 * * * *"}` expression.
 
-With Sigil:
-
 ```elixir
-import Crontab.CronExpression
-
 config :your_app, YourApp.Scheduler,
   jobs: [
     news_letter: [
-      schedule: {"*/2", true}, # Runs every two seconds
+      schedule: {:extended, "*/2"}, # Runs every two seconds
       task: {Heartbeat, :send, [:arg1]}
     ]
   ]
