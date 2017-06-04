@@ -60,7 +60,7 @@ defmodule Quantum.Executor do
   # * Other: Convert via `Quantum.DateLibrary`
   @spec convert_to_timezone(NaiveDateTime.t, :utc) :: NaiveDateTime.t
   defp convert_to_timezone(date, :utc), do: date
-  @spec convert_to_timezone(NaiveDateTime.t, :locale) :: no_return
+  @spec convert_to_timezone(NaiveDateTime.t, :local) :: no_return
   defp convert_to_timezone(_, :local), do: raise "TZ local is no longer supported."
   @spec convert_to_timezone(NaiveDateTime.t, String.t) :: NaiveDateTime.t
   defp convert_to_timezone(date, tz), do: @date_library.utc_to_tz(date, tz)
