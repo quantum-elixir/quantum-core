@@ -1,4 +1,4 @@
-if Code.ensure_compiled?(Calendar) do
+if Code.ensure_compiled?(Calendar.DateTime) do
   defmodule Quantum.DateLibrary.Calendar do
     @moduledoc """
     `calendar` implementation of `Quantum.DateLibrary`.
