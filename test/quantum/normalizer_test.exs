@@ -10,22 +10,11 @@ defmodule Quantum.NormalizerTest do
     use Quantum.Scheduler, otp_app: :quantum_test
   end
 
-  defp start_scheduler(name) do
-    {:ok, _pid} = name.start_link()
-    on_exit fn ->
-      case Process.whereis(Quantum.Supervisor) do
-        nil ->
-          :ok
-        pid ->
-          name.stop(pid)
-      end
-    end
-  end
+  setup_all do
+    Application.put_env(:quantum_test, Scheduler, jobs: [])
 
-  setup do
-    Application.put_env(:quantum_test, Quantum.NormalizerTest.Scheduler, jobs: [])
-
-    start_scheduler(Quantum.NormalizerTest.Scheduler)
+    {:ok, _pid} = Scheduler.start_link()
+    :ok
   end
 
   test "named job" do
