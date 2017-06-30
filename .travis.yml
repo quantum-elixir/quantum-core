@@ -1,8 +1,8 @@
 language: elixir
 sudo: false
 elixir:
-  - 1.4.0
   - 1.4.5
+  - 1.5.0-rc.0
 otp_release:
   - 18.3
   - 19.3
@@ -12,7 +12,3 @@ after_success:
 after_script:
   - MIX_ENV=docs mix deps.get
   - MIX_ENV=docs mix inch.report
-matrix:
-  exclude:
-    - elixir: 1.4.0
-      otp_release: 20.0
