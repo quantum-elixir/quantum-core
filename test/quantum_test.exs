@@ -23,6 +23,7 @@ defmodule QuantumTest do
 
   defp start_scheduler(name) do
     {:ok, pid} = name.start_link()
+
     on_exit fn ->
       capture_log(fn ->
         if Process.alive?(pid) do
@@ -33,10 +34,10 @@ defmodule QuantumTest do
   end
 
   setup do
-    Application.put_env(:quantum_test, QuantumTest.Scheduler, jobs: [])
+    Application.put_env(:quantum_test, Scheduler, jobs: [])
     Application.put_env(:quantum_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
 
-    start_scheduler(QuantumTest.Scheduler)
+    start_scheduler(Scheduler)
     start_scheduler(ZeroTimeoutScheduler)
   end
 
