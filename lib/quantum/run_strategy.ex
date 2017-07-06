@@ -8,16 +8,18 @@ defmodule Quantum.RunStrategy do
 
   Raise / Do not Match on invalid config.
   """
-  @callback normalize_config!(any) :: Quantum.RunStrategy.NodeList
-end
+  @callback normalize_config!(any) :: any
 
-defprotocol Quantum.RunStrategy.NodeList do
-  @moduledoc """
-  Strategy to run Jobs over nodes
-  """
+  defprotocol NodeList do
+    @moduledoc """
+    Strategy to run Jobs over nodes
+    """
 
-  @doc """
-  Get nodes to run on
-  """
-  def nodes(strategy, job)
+    @doc """
+    Get nodes to run on
+    """
+    @dialyzer {:nowarn_function, __protocol__: 1}
+    @spec nodes(any, Quantum.Job.t) :: [Node.t]
+    def nodes(strategy, job)
+  end
 end

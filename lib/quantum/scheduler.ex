@@ -97,10 +97,11 @@ defmodule Quantum.Scheduler do
         {run_strategy_name, options} = Keyword.fetch!(config, :default_run_strategy)
         run_strategy = run_strategy_name.normalize_config!(options)
 
-        job = %Job{}
-        |> Job.set_overlap(Keyword.fetch!(config, :default_overlap))
-        |> Job.set_timezone(Keyword.fetch!(config, :default_timezone))
-        |> Job.set_run_strategy(run_strategy)
+        job = %Job{
+          overlap: Keyword.fetch!(config, :default_overlap),
+          timezone: Keyword.fetch!(config, :default_timezone),
+          run_strategy: run_strategy,
+        }
 
         default_schedule = Keyword.fetch!(config, :default_schedule)
         if default_schedule do

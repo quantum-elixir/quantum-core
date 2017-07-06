@@ -13,15 +13,17 @@ defmodule Quantum.Job do
 
   alias Crontab.CronExpression
 
+  @enforce_keys [:run_strategy, :overlap, :timezone]
+
   defstruct [
+    :run_strategy,
+    :overlap,
+    :timezone,
     name: nil,
     schedule: nil,
     task: nil,
     state: :active,
-    run_strategy: nil,
-    overlap: false,
     pids: [],
-    timezone: nil
   ]
 
   @type state :: :active | :inactive
@@ -35,10 +37,10 @@ defmodule Quantum.Job do
     schedule: schedule | nil,
     task: task | nil,
     state: state,
-    run_strategy: Quantum.RunStrategy.NodeList | nil,
+    run_strategy: Quantum.RunStrategy.NodeList,
     overlap: boolean,
     pids: pids,
-    timezone: timezone | nil
+    timezone: timezone
   }
 
   @doc """
