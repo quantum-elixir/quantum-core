@@ -24,13 +24,15 @@ defmodule QuantumTest do
   defp start_scheduler(name) do
     {:ok, pid} = name.start_link()
 
-    on_exit fn ->
-      capture_log(fn ->
-        if Process.alive?(pid) do
-          name.stop(pid)
-        end
-      end)
-    end
+    on_exit fn -> stop_scheduler(name, pid) end
+  end
+
+  defp stop_scheduler(name, pid) do
+    capture_log(fn ->
+      if Process.alive?(pid) do
+        name.stop(pid)
+      end
+    end)
   end
 
   setup do
