@@ -19,7 +19,7 @@ defmodule Quantum.Job do
     task: nil,
     state: :active,
     run_strategy: nil,
-    overlap: nil,
+    overlap: false,
     pids: [],
     timezone: nil
   ]
@@ -31,14 +31,14 @@ defmodule Quantum.Job do
   @type pids :: [{Node.t, pid}]
 
   @type t :: %__MODULE__{
-    name: atom,
-    schedule: schedule,
-    task: task,
+    name: atom | nil,
+    schedule: schedule | nil,
+    task: task | nil,
     state: state,
-    run_strategy: Quantum.RunStrategy.NodeList,
+    run_strategy: Quantum.RunStrategy.NodeList | nil,
     overlap: boolean,
     pids: pids,
-    timezone: timezone
+    timezone: timezone | nil
   }
 
   @doc """
