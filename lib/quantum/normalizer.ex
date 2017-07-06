@@ -13,8 +13,7 @@ defmodule Quantum.Normalizer do
            :run_strategy]
 
   @type config_short_notation :: {config_schedule, config_task}
-  # TODO: remove any and fix dialyzer
-  @type config_full_notation :: {config_name | nil, Keyword.t | struct | any}
+  @type config_full_notation :: {config_name | nil, Keyword.t | struct}
 
   @typep field :: :name | :schedule | :task | :overlap
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
@@ -103,7 +102,7 @@ defmodule Quantum.Normalizer do
   defp normalize_name(name) when is_binary(name), do: String.to_atom(name)
   defp normalize_name(name) when is_atom(name), do: name
 
-  @spec normalize_run_strategy({Module.t, any}) :: Quantum.RunStrategy.NodeList
+  @spec normalize_run_strategy({module, any}) :: Quantum.RunStrategy.NodeList
   defp normalize_run_strategy({strategy, options}) when is_atom(strategy) do
     strategy.normalize_config!(options)
   end

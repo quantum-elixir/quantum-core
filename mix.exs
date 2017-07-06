@@ -18,6 +18,7 @@ defmodule Quantum.Mixfile do
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
       version: @version,
+      dialyzer: [plt_add_apps: [:timex, :calendar]]
     ]
   end
 
