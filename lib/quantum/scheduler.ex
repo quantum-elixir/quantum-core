@@ -46,6 +46,7 @@ defmodule Quantum.Scheduler do
   """
 
   alias Quantum.Job
+  alias Quantum.Normalizer
 
   @opaque t :: module
 
@@ -105,7 +106,7 @@ defmodule Quantum.Scheduler do
 
         default_schedule = Keyword.fetch!(config, :default_schedule)
         if default_schedule do
-          Job.set_schedule(job, Quantum.Normalizer.normalize_schedule(default_schedule))
+          Job.set_schedule(job, Normalizer.normalize_schedule(default_schedule))
         else
           job
         end

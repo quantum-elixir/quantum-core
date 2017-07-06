@@ -5,6 +5,7 @@ defmodule Quantum.Runner do
 
   alias Quantum.Job
   alias Quantum.Timer
+  alias Quantum.RunStrategy.NodeList
 
   require Logger
 
@@ -77,21 +78,9 @@ defmodule Quantum.Runner do
     task_supervisor = Keyword.fetch!(state.opts, :task_supervisor)
     Enum.map state.jobs, fn({name, job}) ->
       pids = job.run_strategy
-      |> Quantum.RunStrategy.NodeList.nodes(job)
+      |> NodeList.nodes(job)
       |> Enum.filter(&running_node?(&1, task_supervisor))
-      |> Enum.map(fn node ->
-        cond do
-          !Job.executable?(job, node) ->
-            {node, Keyword.get(job.pids, node, nil)}
-          !Enum.member?([node() | Node.list()], node) ->
-            Logger.warn("Node #{inspect node} is not in cluster. Skipping.")
-            {node, Keyword.get(job.pids, node, nil)}
-          true ->
-            task = Task.Supervisor.async_nolink({task_supervisor, node}, Quantum.Executor,
-                :execute, [{job.schedule, job.task, job.timezone}, state])
-            {node, task.pid}
-        end
-      end)
+      |> Enum.map(&run_if_possible(&1, job, state, task_supervisor))
       |> Enum.reject(fn ({_, pid}) -> pid == nil end)
       |> Enum.reduce(job.pids, fn({node, pid}, acc) ->
         Keyword.put(acc, node, pid)
@@ -105,5 +94,19 @@ defmodule Quantum.Runner do
     node
     |> :rpc.call(:erlang, :whereis, [task_supervisor])
     |> is_pid()
+  end
+
+  defp run_if_possible(node, job, state, task_supervisor) do
+    cond do
+      !Job.executable?(job, node) ->
+        {node, Keyword.get(job.pids, node, nil)}
+      !Enum.member?([node() | Node.list()], node) ->
+        Logger.warn("Node #{inspect node} is not in cluster. Skipping.")
+        {node, Keyword.get(job.pids, node, nil)}
+      true ->
+        task = Task.Supervisor.async_nolink({task_supervisor, node}, Quantum.Executor,
+            :execute, [{job.schedule, job.task, job.timezone}, state])
+        {node, task.pid}
+    end
   end
 end

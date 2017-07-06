@@ -7,6 +7,9 @@ otp_release:
   - 18.3
   - 19.3
   - 20.0
+script:
+  - mix test
+  - mix credo --strict
 after_success:
   - "mix compile && mix coveralls.travis"
 after_script:
