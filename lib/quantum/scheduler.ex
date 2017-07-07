@@ -67,19 +67,19 @@ defmodule Quantum.Scheduler do
       defp __runner__, do: Keyword.fetch!(config(), :runner)
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
-      def start_link(opts \\ []) do
+      def start_link(opts \\ [name: __MODULE__]) do
         Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
       end
 
-      def stop(pid, timeout \\ 5000) do
-        Supervisor.stop(pid, :normal, timeout)
+      def stop(server, timeout \\ 5000) do
+        Supervisor.stop(server, :normal, timeout)
       end
 
       def add_job(server \\ __runner__(), job)
-      def add_job(server, job = %Job{name: nil}) do
+      def add_job(server, %Job{name: nil} = job) do
         GenServer.call(server, {:add, {nil, job}}, __timeout__())
       end
-      def add_job(server, job = %Job{name: name}) do
+      def add_job(server, %Job{name: name} = job) do
         if find_job(name) do
           :error
         else
@@ -127,7 +127,7 @@ defmodule Quantum.Scheduler do
   @doc """
   Returns the configuration stored in the `:otp_app` environment.
   """
-  @callback config() :: Keyword.t
+  @callback config(Keyword.t) :: Keyword.t
 
   @doc """
   Starts supervision and return `{:ok, pid}`
@@ -157,12 +157,12 @@ defmodule Quantum.Scheduler do
   @doc """
   Shuts down the quantum represented by the given pid.
   """
-  @callback stop(pid, timeout) :: :ok
+  @callback stop(server :: GenServer.server, timeout) :: :ok
 
   @doc """
   Creates a new Job. The job can be added by calling `add_job/1`.
   """
-  @callback new_job() :: Quantum.Job.t
+  @callback new_job(Keyword.t) :: Quantum.Job.t
 
   @doc """
   Adds a new job

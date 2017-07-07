@@ -7,8 +7,8 @@ defmodule Quantum.Supervisor do
   Starts the quantum supervisor.
   """
   def start_link(quantum, otp_app, opts) do
-    name = Keyword.get(opts, :name, quantum)
-    Supervisor.start_link(__MODULE__, {quantum, otp_app, opts}, [name: name])
+    name = Keyword.take(opts, [:name])
+    Supervisor.start_link(__MODULE__, {quantum, otp_app, opts}, name)
   end
 
   ## Callbacks
