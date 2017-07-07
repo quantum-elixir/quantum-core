@@ -18,7 +18,6 @@ defmodule Quantum.RunStrategy do
     @doc """
     Get nodes to run on
     """
-    @dialyzer {:nowarn_function, __protocol__: 1}
     @spec nodes(any, Quantum.Job.t) :: [Node.t]
     def nodes(strategy, job)
   end
