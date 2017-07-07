@@ -146,7 +146,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_schedule(t, CronExpression.t) :: t
-  def set_schedule(%__MODULE__{} = job, schedule = %CronExpression{}), do: Map.put(job, :schedule, schedule)
+  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule), do: Map.put(job, :schedule, schedule)
 
   @doc """
   Sets a jobs schedule.
@@ -165,7 +165,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_task(t, task) :: t
-  def set_task(%__MODULE__{} = job, task = {module, function, args})
+  def set_task(%__MODULE__{} = job, {module, function, args} = task)
   when is_atom(module) and is_atom(function) and is_list(args), do: Map.put(job, :task, task)
   def set_task(%__MODULE__{} = job, task) when is_function(task, 0), do: Map.put(job, :task, task)
 

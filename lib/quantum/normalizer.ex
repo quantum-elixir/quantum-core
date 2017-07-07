@@ -93,7 +93,7 @@ defmodule Quantum.Normalizer do
 
   @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule
-  def normalize_schedule(e = %Crontab.CronExpression{}), do: e
+  def normalize_schedule(%Crontab.CronExpression{} = e), do: e
   def normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)

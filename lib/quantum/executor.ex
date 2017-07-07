@@ -32,7 +32,7 @@ defmodule Quantum.Executor do
     execute_task_if_date_matches(job, state)
   end
   # On Second 0 check all expressions
-  def execute({%CronExpression{extended: false}, _, _} = job, state = %{date: %NaiveDateTime{second: 0}}) do
+  def execute({%CronExpression{extended: false}, _, _} = job, %{date: %NaiveDateTime{second: 0}} = state) do
       execute_task_if_date_matches(job, state)
   end
   def execute({%CronExpression{extended: false}, _, _}, _), do: false

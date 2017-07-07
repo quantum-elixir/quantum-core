@@ -35,7 +35,7 @@ defmodule Quantum.Runner do
     {:reply, :ok, %{state | jobs: [job | jobs]}}
   end
 
-  def handle_call({:change_state, name, job_state}, _, state = %{jobs: jobs}) do
+  def handle_call({:change_state, name, job_state}, _, %{jobs: jobs} = state) do
     if Keyword.has_key?(jobs, name) do
       job = jobs
       |> Keyword.fetch!(name)
