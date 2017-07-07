@@ -28,11 +28,11 @@ defmodule Quantum.Executor do
   # Reboot enabled cron expressions run only on reboot, cancel
   def execute({%CronExpression{reboot: true}, _, _}, %{reboot: false}), do: false
   # Check Extended Expression every second
-  def execute(job = {%CronExpression{extended: true}, _, _}, state) do
+  def execute({%CronExpression{extended: true}, _, _} = job, state) do
     execute_task_if_date_matches(job, state)
   end
   # On Second 0 check all expressions
-  def execute(job = {%CronExpression{extended: false}, _, _}, state = %{date: %NaiveDateTime{second: 0}}) do
+  def execute({%CronExpression{extended: false}, _, _} = job, state = %{date: %NaiveDateTime{second: 0}}) do
       execute_task_if_date_matches(job, state)
   end
   def execute({%CronExpression{extended: false}, _, _}, _), do: false

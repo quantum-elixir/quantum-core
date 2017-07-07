@@ -31,7 +31,7 @@ defmodule Quantum.Runner do
     {:ok, new_state}
   end
 
-  def handle_call({:add, job}, _, state = %{jobs: jobs}) do
+  def handle_call({:add, job}, _, %{jobs: jobs} = state) do
     {:reply, :ok, %{state | jobs: [job | jobs]}}
   end
 
@@ -49,7 +49,7 @@ defmodule Quantum.Runner do
     end
   end
 
-  def handle_call({:delete, name}, _, state = %{jobs: jobs}) do
+  def handle_call({:delete, name}, _, %{jobs: jobs} = state) do
     if Keyword.has_key?(jobs, name) do
       {:reply, :ok, %{state | jobs: List.keydelete(jobs, name, 0)}}
     else
@@ -61,9 +61,9 @@ defmodule Quantum.Runner do
     {:reply, :ok, %{state | jobs: []}}
   end
 
-  def handle_call(:jobs, _, state = %{jobs: jobs}), do: {:reply, jobs, state}
+  def handle_call(:jobs, _, %{jobs: jobs} = state), do: {:reply, jobs, state}
 
-  def handle_call({:find_job, name}, _, state = %{jobs: jobs}) do
+  def handle_call({:find_job, name}, _, %{jobs: jobs} = state) do
     {:reply, Keyword.get(jobs, name), state}
   end
 
