@@ -56,11 +56,12 @@ defmodule Quantum.SchedulerTest do
       default_schedule = "*/7"
       default_overlap = false
       default_timezone = "Europe/Zurich"
+
       Application.put_env(:quantum_test, Scheduler, [
         jobs: [],
-        default_schedule: default_schedule,
-        default_overlap: default_overlap,
-        default_timezone: default_timezone
+        schedule: default_schedule,
+        overlap: default_overlap,
+        timezone: default_timezone
       ])
 
       %Job{schedule: schedule, overlap: overlap, timezone: timezone} = Scheduler.new_job()
