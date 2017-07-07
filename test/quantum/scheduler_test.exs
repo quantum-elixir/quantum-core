@@ -1,7 +1,7 @@
 defmodule Quantum.SchedulerTest do
   @moduledoc false
 
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   alias Quantum.Job
   alias Quantum.RunStrategy.Random
@@ -12,40 +12,55 @@ defmodule Quantum.SchedulerTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum_test
+    use Quantum.Scheduler, otp_app: :scheduler_test
+  end
+
+  @defaults %{
+    schedule: "*/7",
+    overlap: false,
+    timezone: "Europe/Zurich"
+  }
+
+  defmodule DefaultConfigScheduler do
+    @moduledoc false
+
+    use Quantum.Scheduler, otp_app: :scheduler_test
   end
 
   defmodule ZeroTimeoutScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum_test
+    use Quantum.Scheduler, otp_app: :scheduler_test
   end
 
   defp start_scheduler(name) do
-    {:ok, pid} = name.start_link()
-
-    on_exit fn -> stop_scheduler(name, pid) end
+    {:ok, pid} = name.start_link([])
+    pid
   end
 
-  defp stop_scheduler(name, pid) do
-    capture_log(fn ->
-      if Process.alive?(pid) do
-        name.stop(pid)
-      end
-    end)
+  setup_all do
+    Application.put_env(:scheduler_test, Scheduler, jobs: [])
+
+    Application.put_env(:scheduler_test, DefaultConfigScheduler, [
+      jobs: [],
+      schedule: @defaults.schedule,
+      overlap: @defaults.overlap,
+      timezone: @defaults.timezone
+    ])
+
+    Application.put_env(:scheduler_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
   end
 
   setup do
-    Application.put_env(:quantum_test, Scheduler, jobs: [])
-    Application.put_env(:quantum_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
-
     start_scheduler(Scheduler)
-    start_scheduler(ZeroTimeoutScheduler)
+
+    :ok
   end
 
   describe "new_job/0" do
     test "returns Quantum.Job struct" do
-      %Job{schedule: schedule, overlap: overlap, timezone: timezone} = Scheduler.new_job()
+      %Job{schedule: schedule, overlap: overlap, timezone: timezone} =
+        Scheduler.new_job()
 
       assert schedule == nil
       assert overlap == true
@@ -53,22 +68,12 @@ defmodule Quantum.SchedulerTest do
     end
 
     test "has defaults set" do
-      default_schedule = "*/7"
-      default_overlap = false
-      default_timezone = "Europe/Zurich"
+      %Job{schedule: schedule, overlap: overlap, timezone: timezone} =
+        DefaultConfigScheduler.new_job()
 
-      Application.put_env(:quantum_test, Scheduler, [
-        jobs: [],
-        schedule: default_schedule,
-        overlap: default_overlap,
-        timezone: default_timezone
-      ])
-
-      %Job{schedule: schedule, overlap: overlap, timezone: timezone} = Scheduler.new_job()
-
-      assert schedule == ~e[#{default_schedule}]
-      assert overlap == default_overlap
-      assert timezone == default_timezone
+      assert schedule == ~e[#{@defaults.schedule}]
+      assert overlap == @defaults.overlap
+      assert timezone == @defaults.timezone
     end
   end
 
@@ -458,6 +463,8 @@ defmodule Quantum.SchedulerTest do
   end
 
   test "timeout can be configured for genserver correctly" do
+    start_scheduler(ZeroTimeoutScheduler)
+
     job = ZeroTimeoutScheduler.new_job()
     |> Job.set_name(:tmpjob)
     |> Job.set_schedule(~e[* */5 * * *])
@@ -465,8 +472,6 @@ defmodule Quantum.SchedulerTest do
 
     assert catch_exit(ZeroTimeoutScheduler.add_job(job)) ==
       {:timeout, {GenServer, :call, [ZeroTimeoutScheduler.Runner, {:find_job, :tmpjob}, 0]}}
-  after
-    Application.delete_env(:quantum, :timeout)
   end
 
   # loop until given process is alive
