@@ -44,6 +44,33 @@ defmodule Quantum.Job do
   }
 
   @doc """
+  Takes some config from a scheduler and returns a new job
+
+  ### Examples
+
+      iex> Acme.Scheduler.config
+      ...> |> Quantum.Job.new
+      %Quantum.Job{...}
+  """
+  @spec new(config :: Keyword.t) :: t
+  def new(config) do
+    {run_strategy_name, options} = Keyword.fetch!(config, :run_strategy)
+    run_strategy = run_strategy_name.normalize_config!(options)
+
+    job = %__MODULE__{}
+    |> set_overlap(Keyword.fetch!(config, :overlap))
+    |> set_timezone(Keyword.fetch!(config, :timezone))
+    |> set_run_strategy(run_strategy)
+
+    schedule = Keyword.fetch!(config, :schedule)
+    if schedule do
+      set_schedule(job, Quantum.Normalizer.normalize_schedule(schedule))
+    else
+      job
+    end
+  end
+
+  @doc """
   Determines if a Job is executable.
 
   ### Examples

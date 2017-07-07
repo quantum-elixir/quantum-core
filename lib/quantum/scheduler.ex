@@ -94,22 +94,7 @@ defmodule Quantum.Scheduler do
         add_job(server, job)
       end
 
-      def new_job(config \\ config()) do
-        {run_strategy_name, options} = Keyword.fetch!(config, :run_strategy)
-        run_strategy = run_strategy_name.normalize_config!(options)
-
-        job = %Job{}
-        |> Job.set_overlap(Keyword.fetch!(config, :overlap))
-        |> Job.set_timezone(Keyword.fetch!(config, :timezone))
-        |> Job.set_run_strategy(run_strategy)
-
-        schedule = Keyword.fetch!(config, :schedule)
-        if schedule do
-          Job.set_schedule(job, Quantum.Normalizer.normalize_schedule(schedule))
-        else
-          job
-        end
-      end
+      def new_job(config \\ config()), do: Job.new(config)
 
       def deactivate_job(server \\ __runner__(), name) do
         GenServer.call(server, {:change_state, name, :inactive}, __timeout__())
