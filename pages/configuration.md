@@ -116,7 +116,7 @@ as a globally unique process across the cluster.
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  global?: true,
+  global: true,
   jobs: [
     # Your cronjobs
   ]

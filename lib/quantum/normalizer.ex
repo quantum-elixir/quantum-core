@@ -49,35 +49,35 @@ defmodule Quantum.Normalizer do
   end
 
   @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
-  defp normalize_options(job, options = %{name: name}, [:name | tail]) do
+  defp normalize_options(job, %{name: name} = options, [:name | tail]) do
     normalize_options(Job.set_name(job, normalize_name(name)), options, tail)
   end
   defp normalize_options(job, options, [:name | tail]) do
     normalize_options(job, options, tail)
   end
 
-  defp normalize_options(job, options = %{schedule: schedule}, [:schedule | tail]) do
+  defp normalize_options(job, %{schedule: schedule} = options, [:schedule | tail]) do
     normalize_options(Job.set_schedule(job, normalize_schedule(schedule)), options, tail)
   end
   defp normalize_options(job, options, [:schedule | tail]) do
     normalize_options(job, options, tail)
   end
 
-  defp normalize_options(job, options = %{task: task}, [:task | tail]) do
+  defp normalize_options(job, %{task: task} = options, [:task | tail]) do
     normalize_options(Job.set_task(job, normalize_task(task)), options, tail)
   end
   defp normalize_options(job, options, [:task | tail]) do
     normalize_options(job, options, tail)
   end
 
-  defp normalize_options(job, options = %{run_strategy: run_strategy}, [:run_strategy | tail]) do
+  defp normalize_options(job, %{run_strategy: run_strategy} = options, [:run_strategy | tail]) do
     normalize_options(Job.set_run_strategy(job, normalize_run_strategy(run_strategy)), options, tail)
   end
   defp normalize_options(job, options, [:run_strategy | tail]) do
     normalize_options(job, options, tail)
   end
 
-  defp normalize_options(job, options = %{overlap: overlap}, [:overlap | tail]) do
+  defp normalize_options(job, %{overlap: overlap} = options, [:overlap | tail]) do
     normalize_options(Job.set_overlap(job, overlap), options, tail)
   end
   defp normalize_options(job, options, [:overlap | tail]) do
@@ -93,7 +93,7 @@ defmodule Quantum.Normalizer do
 
   @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule
-  def normalize_schedule(e = %Crontab.CronExpression{}), do: e
+  def normalize_schedule(%Crontab.CronExpression{} = e), do: e
   def normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
