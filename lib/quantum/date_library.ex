@@ -18,5 +18,5 @@ defmodule Quantum.DateLibrary do
   @doc """
   Gives back the required application dependency to start, if any is needed.
   """
-  @callback dependency_application :: :atom | nil
+  @callback dependency_application :: atom | nil
 end

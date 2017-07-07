@@ -6,14 +6,15 @@ defmodule Quantum.Application do
   @dependency_application Application.get_env(:quantum, :date_library, Quantum.DateLibrary.Timex)
     .dependency_application()
 
-  def start(_type, _args) do
-    start_dependencies(@dependency_application)
-
-    {:ok, self()}
+  case @dependency_application do
+    nil ->
+      def start(_type, _args) do
+        {:ok, self()}
+      end
+    _ ->
+      def start(_type, _args) do
+        Application.ensure_all_started(@dependency_application, :permanent)
+        {:ok, self()}
+      end
   end
-
-  defp start_dependencies(nil),
-    do: nil
-  defp start_dependencies(application) when is_atom(application),
-    do: Application.ensure_all_started(application, :permanent)
 end
