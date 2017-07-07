@@ -14,4 +14,9 @@ defmodule Quantum.DateLibrary do
   Convert `NaiveDateTime` in UTC to `NaiveDateTime` in given tz.
   """
   @callback utc_to_tz(NaiveDateTime.t, String.t) :: NaiveDateTime.t | no_return
+
+  @doc """
+  Gives back the required application dependency to start, if any is needed.
+  """
+  @callback dependency_application :: :atom | nil
 end

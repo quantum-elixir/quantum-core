@@ -28,7 +28,7 @@ end
 Elixir 1.4 or later:**
 ```elixir
 def application do
-  [applications: [:quantum, :timex, :other_apps...]]
+  [applications: [:quantum, :other_apps...]]
 end
 ```
 
