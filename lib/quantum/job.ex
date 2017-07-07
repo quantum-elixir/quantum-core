@@ -11,6 +11,7 @@ defmodule Quantum.Job do
 
   """
 
+  alias Quantum.Normalizer
   alias Crontab.CronExpression
 
   @enforce_keys [:run_strategy, :overlap, :timezone]
@@ -64,7 +65,7 @@ defmodule Quantum.Job do
 
     schedule = Keyword.fetch!(config, :schedule)
     if schedule do
-      set_schedule(job, Quantum.Normalizer.normalize_schedule(schedule))
+      set_schedule(job, Normalizer.normalize_schedule(schedule))
     else
       job
     end
