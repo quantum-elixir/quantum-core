@@ -13,7 +13,7 @@ defmodule Quantum.Runner do
   Starts Quantum process
   """
   def start_link(opts) do
-    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs), reboot: true}
+    state = %{opts: opts, jobs: Keyword.fetch!(opts, :jobs)}
     case GenServer.start_link(__MODULE__, state, [name: Keyword.fetch!(opts, :runner)]) do
       {:ok, pid} ->
         {:ok, pid}
@@ -27,7 +27,6 @@ defmodule Quantum.Runner do
     new_state = state
     |> Map.put(:jobs, run(state))
     |> Map.put(:date, Timer.tick())
-    |> Map.put(:reboot, false)
 
     {:ok, new_state}
   end
