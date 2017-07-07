@@ -46,7 +46,6 @@ defmodule Quantum.Scheduler do
   """
 
   alias Quantum.Job
-  alias Quantum.Normalizer
 
   @opaque t :: module
 
