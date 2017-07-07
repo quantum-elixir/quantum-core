@@ -5,12 +5,13 @@ defmodule QuantumStartupTest do
 
   import Crontab.CronExpression
 
+  defmodule Scheduler do
+    use Quantum.Scheduler, otp_app: :quantum_startup_test
+  end
+
   @tag :startup
   test "prevent duplicate job names on startup" do
     capture_log(fn ->
-      defmodule Scheduler do
-        use Quantum.Scheduler, otp_app: :quantum_startup_test
-      end
 
       test_jobs =
         [{:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},

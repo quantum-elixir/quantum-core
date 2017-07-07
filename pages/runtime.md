@@ -5,7 +5,7 @@ If you want to add jobs on runtime, this is possible too:
 ```elixir
 import Crontab.CronExpression
 
-Quantum.add_job(~e[1 * * * *], fn -> :ok end)
+Quantum.add_job({~e[1 * * * *], fn -> :ok end})
 ```
 
 Add a named job at runtime:

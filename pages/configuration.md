@@ -62,9 +62,9 @@ default setting in every job, you can set them globally.
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  default_schedule: "* * * * *",
-  default_overlap: false,
-  default_timezone: :utc,
+  schedule: "* * * * *",
+  overlap: false,
+  timezone: :utc,
   jobs: [
     # Your cronjobs
   ]
@@ -116,7 +116,7 @@ as a globally unique process across the cluster.
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  global?: true,
+  global: true,
   jobs: [
     # Your cronjobs
   ]
