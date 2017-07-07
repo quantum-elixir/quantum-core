@@ -11,6 +11,7 @@ defmodule Quantum.Job do
 
   """
 
+  alias Quantum.Normalizer
   alias Crontab.CronExpression
 
   @enforce_keys [:run_strategy, :overlap, :timezone]
@@ -42,6 +43,34 @@ defmodule Quantum.Job do
     pids: pids,
     timezone: timezone
   }
+
+  @doc """
+  Takes some config from a scheduler and returns a new job
+
+  ### Examples
+
+      iex> Acme.Scheduler.config
+      ...> |> Quantum.Job.new
+      %Quantum.Job{...}
+  """
+  @spec new(config :: Keyword.t) :: t
+  def new(config) do
+    {run_strategy_name, options} = Keyword.fetch!(config, :run_strategy)
+    run_strategy = run_strategy_name.normalize_config!(options)
+
+    job = %__MODULE__{
+      overlap: Keyword.fetch!(config, :overlap),
+      timezone: Keyword.fetch!(config, :timezone),
+      run_strategy: run_strategy
+    }
+
+    schedule = Keyword.fetch!(config, :schedule)
+    if schedule do
+      set_schedule(job, Normalizer.normalize_schedule(schedule))
+    else
+      job
+    end
+  end
 
   @doc """
   Determines if a Job is executable.
@@ -98,7 +127,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_name(t, atom) :: t
-  def set_name(job = %__MODULE__{}, name) when is_atom(name), do: Map.put(job, :name, name)
+  def set_name(%__MODULE__{} = job, name) when is_atom(name), do: Map.put(job, :name, name)
 
   @doc """
   Sets a jobs schedule.
@@ -117,7 +146,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_schedule(t, CronExpression.t) :: t
-  def set_schedule(job = %__MODULE__{}, schedule = %CronExpression{}), do: Map.put(job, :schedule, schedule)
+  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule), do: Map.put(job, :schedule, schedule)
 
   @doc """
   Sets a jobs schedule.
@@ -136,9 +165,9 @@ defmodule Quantum.Job do
 
   """
   @spec set_task(t, task) :: t
-  def set_task(job = %__MODULE__{}, task = {module, function, args})
+  def set_task(%__MODULE__{} = job, {module, function, args} = task)
   when is_atom(module) and is_atom(function) and is_list(args), do: Map.put(job, :task, task)
-  def set_task(job = %__MODULE__{}, task) when is_function(task, 0), do: Map.put(job, :task, task)
+  def set_task(%__MODULE__{} = job, task) when is_function(task, 0), do: Map.put(job, :task, task)
 
   @doc """
   Sets a jobs state.
@@ -157,8 +186,8 @@ defmodule Quantum.Job do
 
   """
   @spec set_state(t, state) :: t
-  def set_state(job = %__MODULE__{}, :active), do: Map.put(job, :state, :active)
-  def set_state(job = %__MODULE__{}, :inactive), do: Map.put(job, :state, :inactive)
+  def set_state(%__MODULE__{} = job, :active), do: Map.put(job, :state, :active)
+  def set_state(%__MODULE__{} = job, :inactive), do: Map.put(job, :state, :inactive)
 
   @doc """
   Sets a jobs run strategy.
@@ -177,7 +206,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_run_strategy(t, Quantum.RunStrategy.NodeList) :: t
-  def set_run_strategy(job = %__MODULE__{}, run_strategy), do: Map.put(job, :run_strategy, run_strategy)
+  def set_run_strategy(%__MODULE__{} = job, run_strategy), do: Map.put(job, :run_strategy, run_strategy)
 
   @doc """
   Sets a jobs overlap.
@@ -196,7 +225,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_overlap(t, boolean) :: t
-  def set_overlap(job = %__MODULE__{}, overlap?) when is_boolean(overlap?), do: Map.put(job, :overlap, overlap?)
+  def set_overlap(%__MODULE__{} = job, overlap?) when is_boolean(overlap?), do: Map.put(job, :overlap, overlap?)
 
   @doc """
   Sets a jobs timezone.
@@ -215,5 +244,5 @@ defmodule Quantum.Job do
 
   """
   @spec set_timezone(t, String.t | :utc | :local) :: t
-  def set_timezone(job = %__MODULE__{}, timezone), do: Map.put(job, :timezone, timezone)
+  def set_timezone(%__MODULE__{} = job, timezone), do: Map.put(job, :timezone, timezone)
 end
