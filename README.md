@@ -24,15 +24,7 @@ defp deps do
 end
 ```
 
-**2. and the list of applications. You can skip this step if you are using
-Elixir 1.4 or later:**
-```elixir
-def application do
-  [applications: [:quantum, :other_apps...]]
-end
-```
-
-**3. and create a scheduler for your app:**
+**2. and create a scheduler for your app:**
 ```elixir
 defmodule YourApp.Scheduler do
   use Quantum.Scheduler,
@@ -40,7 +32,7 @@ defmodule YourApp.Scheduler do
 end
 ```
 
-**4. and your application's supervision tree:**
+**3. and your application's supervision tree:**
 ```elixir
 defmodule YourApp.Application do
   use Application
