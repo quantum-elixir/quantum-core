@@ -1,0 +1,11 @@
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Atom':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.BitString':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Float':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Function':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Integer':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.List':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Map':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.PID':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Port':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Reference':'__impl__'/1
+Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Tuple':'__impl__'/1
