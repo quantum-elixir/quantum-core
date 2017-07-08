@@ -23,11 +23,12 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    case Mix.env do
-      :test -> [applications: [:crontab, :timex]]
-      _ -> [applications: [:crontab]]
-    end
+    [mod: {Quantum.Application, []},
+     extra_applications: extra_applications(Mix.env)]
   end
+
+  defp extra_applications(:test), do: [:logger, :timex]
+  defp extra_applications(_), do: [:logger]
 
   defp package do
     %{
@@ -73,12 +74,12 @@ defmodule Quantum.Mixfile do
       {:timex,       "~> 3.1.13", optional: true},
       {:calendar,    "~> 0.17", optional: true},
       {:crontab,     "~> 1.1"},
-      {:earmark,     "~> 1.0",  only: [:dev, :docs]},
-      {:ex_doc,      "~> 0.13", only: [:dev, :docs]},
-      {:excoveralls, "~> 0.5",  only: [:dev, :test]},
-      {:inch_ex,     "~> 0.5",  only: [:dev, :docs]},
+      {:earmark,     "~> 1.0",  only: [:dev, :docs], runtime: false},
+      {:ex_doc,      "~> 0.13", only: [:dev, :docs], runtime: false},
+      {:excoveralls, "~> 0.5",  only: [:dev, :test], runtime: false},
+      {:inch_ex,     "~> 0.5",  only: [:dev, :docs], runtime: false},
       {:dialyxir,    "~> 0.5",  only: [:dev], runtime: false},
-      {:credo,       "~> 0.7",  only: [:dev, :test]}
+      {:credo,       "~> 0.7",  only: [:dev, :test], runtime: false}
     ]
   end
 end

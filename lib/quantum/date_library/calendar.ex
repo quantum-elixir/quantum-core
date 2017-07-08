@@ -14,10 +14,6 @@ if Code.ensure_compiled?(Calendar.DateTime) do
 
       `mix.exs`
 
-        def application do
-          [applications: [:quantum, :calendar]]
-        end
-
         defp deps do
           [{:quantum, "*"},
            {:calendar, "*"}]
@@ -35,5 +31,8 @@ if Code.ensure_compiled?(Calendar.DateTime) do
       |> CalendarDateTime.shift_zone!(tz)
       |> DateTime.to_naive
     end
+
+    @spec dependency_application :: :calendar
+    def dependency_application, do: :calendar
   end
 end

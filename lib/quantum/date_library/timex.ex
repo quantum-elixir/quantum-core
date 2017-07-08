@@ -14,10 +14,6 @@ if Code.ensure_compiled?(Timex) do
 
       `mix.exs`
 
-        def application do
-          [applications: [:quantum, :timex]]
-        end
-
         defp deps do
           [{:quantum, "*"},
            {:timex, "*"}]
@@ -35,5 +31,8 @@ if Code.ensure_compiled?(Timex) do
       |> Timezone.convert(tz)
       |> DateTime.to_naive
     end
+
+    @spec dependency_application :: :timex
+    def dependency_application, do: :timex
   end
 end
