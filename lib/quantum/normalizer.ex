@@ -13,7 +13,7 @@ defmodule Quantum.Normalizer do
            :run_strategy]
 
   @type config_short_notation :: {config_schedule, config_task}
-  @type config_full_notation :: {config_name | nil, Keyword.t | struct}
+  @type config_full_notation :: {config_name | nil, [{atom, any}] | map}
 
   @typep field :: :name | :schedule | :task | :overlap
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
@@ -30,22 +30,26 @@ defmodule Quantum.Normalizer do
 
   """
   @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job.t
-  def normalize(base, job) when is_list(job) do
-    normalize(base, {Keyword.get(job, :name), job})
-  end
-  def normalize(base, {job_name, opts}) when is_list(opts) do
-    opts = opts
+  def normalize(%Job{} = base, job) when is_list(job) do
+    opts = job
     |> Enum.reduce(%{}, fn {key, value}, acc -> Map.put(acc, key, value) end)
-    normalize(base, {job_name, opts})
-  end
-  def normalize(base, {job_name, opts}) when is_map(opts) do
-    opts = Map.put(opts, :name, job_name)
 
-    base
-    |> normalize_options(opts, @fields)
+    normalize_options(base, opts, @fields)
   end
-  def normalize(base, {schedule, task}) do
-    normalize(base, {nil, %{schedule: normalize_schedule(schedule), task: normalize_task(task)}})
+  def normalize(%Job{} = base, {schedule, {_, _, _} = task}) do
+    normalize(base, [schedule: normalize_schedule(schedule), task: normalize_task(task)])
+  end
+  def normalize(%Job{} = base, {schedule, task}) when is_function(task, 0) do
+    normalize(base, [schedule: normalize_schedule(schedule), task: normalize_task(task)])
+  end
+  def normalize(%Job{} = base, {job_name, opts}) when is_atom(job_name) and is_list(opts) do
+    job = opts
+    |> Keyword.put_new(:name, job_name)
+
+    normalize(base, job)
+  end
+  def normalize(%Job{} = base, {job_name, opts}) when is_atom(job_name) and is_map(opts) do
+    normalize(base, {job_name, Map.to_list(opts)})
   end
 
   @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
@@ -89,7 +93,6 @@ defmodule Quantum.Normalizer do
   @spec normalize_task(config_task) :: Job.task
   defp normalize_task({mod, fun, args}), do: {mod, fun, args}
   defp normalize_task(fun) when is_function(fun, 0), do: fun
-  defp normalize_task(fun) when is_function(fun), do: raise "Only 0 arity functions are supported via the short syntax."
 
   @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule
