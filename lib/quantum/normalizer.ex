@@ -34,9 +34,7 @@ defmodule Quantum.Normalizer do
     normalize(base, {Keyword.get(job, :name), job})
   end
   def normalize(base, {job_name, opts}) when is_list(opts) do
-    opts = opts
-    |> Enum.reduce(%{}, fn {key, value}, acc -> Map.put(acc, key, value) end)
-    normalize(base, {job_name, opts})
+    normalize(base, {job_name, opts |> Enum.into(%{})})
   end
   def normalize(base, {job_name, opts}) when is_map(opts) do
     opts = Map.put(opts, :name, job_name)
