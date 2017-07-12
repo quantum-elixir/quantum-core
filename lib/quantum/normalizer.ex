@@ -13,7 +13,7 @@ defmodule Quantum.Normalizer do
            :run_strategy]
 
   @type config_short_notation :: {config_schedule, config_task}
-  @type config_full_notation :: {config_name | nil, Keyword.t | struct}
+  @type config_full_notation :: {config_name | nil, Keyword.t | map}
 
   @typep field :: :name | :schedule | :task | :overlap | :run_strategy
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
@@ -39,8 +39,7 @@ defmodule Quantum.Normalizer do
   def normalize(base, {job_name, opts}) when is_map(opts) do
     opts = Map.put(opts, :name, job_name)
 
-    base
-    |> normalize_options(opts, @fields)
+    normalize_options(base, opts, @fields)
   end
   def normalize(base, {schedule, task}) do
     %{base | name: nil, schedule: normalize_schedule(schedule), task: normalize_task(task)}
