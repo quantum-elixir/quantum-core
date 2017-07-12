@@ -43,7 +43,7 @@ defmodule Quantum.Normalizer do
     |> normalize_options(opts, @fields)
   end
   def normalize(base, {schedule, task}) do
-    normalize(base, {nil, %{schedule: normalize_schedule(schedule), task: normalize_task(task)}})
+    %{base | name: nil, schedule: normalize_schedule(schedule), task: normalize_task(task)}
   end
 
   @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
