@@ -117,7 +117,8 @@ defmodule Quantum.Normalizer do
       task: extract(:task, opts),
       args: extract(:args, opts, []),
       overlap: extract(:overlap, opts, overlap),
-      nodes: :nodes |> extract(opts, default_nodes()) |> atomize
+      nodes: :nodes |> extract(opts, default_nodes()) |> atomize,
+      timezone: extract(:timezone, opts, :utc),
     }
   end
 
