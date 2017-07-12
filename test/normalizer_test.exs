@@ -18,7 +18,8 @@ defmodule Quantum.NormalizerTest do
       task: "MyModule.my_method",
       args: [1, 2, 3],
       overlap: false,
-      nodes: [:atom@node, "string@node"]
+      nodes: [:atom@node, "string@node"],
+      timezone: "America/Mexico_City"
     ]}
 
     assert normalize(job) == {:newsletter, %Quantum.Job{
@@ -27,7 +28,8 @@ defmodule Quantum.NormalizerTest do
       task: {"MyModule", "my_method"},
       args: [1, 2, 3],
       overlap: false,
-      nodes: [:atom@node, :string@node]
+      nodes: [:atom@node, :string@node],
+      timezone: "America/Mexico_City"
     }}
   end
 
