@@ -18,17 +18,14 @@ defmodule Quantum.Mixfile do
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
       version: @version,
-      dialyzer: [plt_add_apps: [:timex, :calendar], ignore_warnings: "dialyzer.ignore-warnings"]
+      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]
     ]
   end
 
   def application do
     [mod: {Quantum.Application, []},
-     extra_applications: extra_applications(Mix.env)]
+     extra_applications: [:logger]]
   end
-
-  defp extra_applications(:test), do: [:logger, :timex]
-  defp extra_applications(_), do: [:logger]
 
   defp package do
     %{
@@ -78,7 +75,7 @@ defmodule Quantum.Mixfile do
       {:ex_doc,      "~> 0.13", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5",  only: [:dev, :test], runtime: false},
       {:inch_ex,     "~> 0.5",  only: [:dev, :docs], runtime: false},
-      {:dialyxir,    "~> 0.5",  only: [:dev], runtime: false},
+      {:dialyxir,    "~> 0.5",  only: [:dev, :test], runtime: false},
       {:credo,       "~> 0.7",  only: [:dev, :test], runtime: false}
     ]
   end
