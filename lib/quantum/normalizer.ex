@@ -15,7 +15,7 @@ defmodule Quantum.Normalizer do
   @type config_short_notation :: {config_schedule, config_task}
   @type config_full_notation :: {config_name | nil, Keyword.t | struct}
 
-  @typep field :: :name | :schedule | :task | :overlap
+  @typep field :: :name | :schedule | :task | :overlap | :run_strategy
   @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
   @type config_task :: {module, fun, [any]} | (() -> any)
   @type config_name :: String.t | atom
@@ -34,9 +34,7 @@ defmodule Quantum.Normalizer do
     normalize(base, {Keyword.get(job, :name), job})
   end
   def normalize(base, {job_name, opts}) when is_list(opts) do
-    opts = opts
-    |> Enum.reduce(%{}, fn {key, value}, acc -> Map.put(acc, key, value) end)
-    normalize(base, {job_name, opts})
+    normalize(base, {job_name, opts |> Enum.into(%{})})
   end
   def normalize(base, {job_name, opts}) when is_map(opts) do
     opts = Map.put(opts, :name, job_name)
@@ -45,7 +43,7 @@ defmodule Quantum.Normalizer do
     |> normalize_options(opts, @fields)
   end
   def normalize(base, {schedule, task}) do
-    normalize(base, {nil, %{schedule: normalize_schedule(schedule), task: normalize_task(task)}})
+    %{base | name: nil, schedule: normalize_schedule(schedule), task: normalize_task(task)}
   end
 
   @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
