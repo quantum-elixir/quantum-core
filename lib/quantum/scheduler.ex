@@ -70,7 +70,7 @@ defmodule Quantum.Scheduler do
         Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
       end
 
-      def stop(server, timeout \\ 5000) do
+      def stop(server \\ __MODULE__, timeout \\ 5000) do
         Supervisor.stop(server, :normal, timeout)
       end
 

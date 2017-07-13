@@ -33,11 +33,6 @@ defmodule Quantum.SchedulerTest do
     use Quantum.Scheduler, otp_app: :scheduler_test
   end
 
-  defp start_scheduler(name) do
-    {:ok, pid} = name.start_link([])
-    pid
-  end
-
   setup_all do
     Application.put_env(:scheduler_test, Scheduler, jobs: [])
 
@@ -51,8 +46,12 @@ defmodule Quantum.SchedulerTest do
     Application.put_env(:scheduler_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
   end
 
-  setup do
-    start_scheduler(Scheduler)
+  setup context do
+    schedulers = Map.get(context, :schedulers, [])
+
+    for scheduler <- schedulers do
+      scheduler.start_link([])
+    end
 
     :ok
   end
@@ -77,6 +76,7 @@ defmodule Quantum.SchedulerTest do
     end
   end
 
+  @tag schedulers: [Scheduler]
   test "adding a job at run time" do
     spec = ~e[1 * * * *]
     fun = fn -> :ok end
@@ -87,6 +87,7 @@ defmodule Quantum.SchedulerTest do
     assert Enum.member? Scheduler.jobs, {nil, job}
   end
 
+  @tag schedulers: [Scheduler]
   describe "add_job/2" do
     test "adding a job at run time" do
       spec = ~e[1 * * * *]
@@ -99,6 +100,7 @@ defmodule Quantum.SchedulerTest do
       assert Enum.member? Scheduler.jobs, {nil, job}
     end
 
+    @tag schedulers: [Scheduler]
     test "adding a named job struct at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
@@ -110,6 +112,7 @@ defmodule Quantum.SchedulerTest do
       assert Enum.member? Scheduler.jobs, {:test_job, %{job | run_strategy: %Random{nodes: :cluster}}}
     end
 
+    @tag schedulers: [Scheduler]
     test "adding a named {m, f, a} jpb at run time" do
       spec = ~e[1 * * * *]
       task = {IO, :puts, ["Tick"]}
@@ -121,6 +124,7 @@ defmodule Quantum.SchedulerTest do
       assert Enum.member? Scheduler.jobs, {:ticker, %{job | run_strategy: %Random{nodes: :cluster}}}
     end
 
+    @tag schedulers: [Scheduler]
     test "adding a unnamed job at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
@@ -132,6 +136,7 @@ defmodule Quantum.SchedulerTest do
     end
   end
 
+  @tag schedulers: [Scheduler]
   test "finding a named job" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
@@ -146,6 +151,7 @@ defmodule Quantum.SchedulerTest do
     assert fjob.run_strategy == %Random{nodes: :cluster}
   end
 
+  @tag schedulers: [Scheduler]
   test "deactivating a named job" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
@@ -160,6 +166,7 @@ defmodule Quantum.SchedulerTest do
     assert sjob == %{job | state: :inactive}
   end
 
+  @tag schedulers: [Scheduler]
   test "activating a named job" do
       spec = ~e[* * * * *]
       fun = fn -> :ok end
@@ -176,6 +183,7 @@ defmodule Quantum.SchedulerTest do
       assert ajob == %{job | state: :active}
   end
 
+  @tag schedulers: [Scheduler]
   test "deleting a named job at run time" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
@@ -190,6 +198,7 @@ defmodule Quantum.SchedulerTest do
     assert !Enum.member? Scheduler.jobs, {:test_job, job}
   end
 
+  @tag schedulers: [Scheduler]
   test "deleting all jobs" do
     for i <- 1..3 do
       name = String.to_atom("test_job_" <> Integer.to_string(i))
@@ -206,9 +215,8 @@ defmodule Quantum.SchedulerTest do
     assert Scheduler.jobs == []
   end
 
+  @tag schedulers: [Scheduler]
   test "prevent duplicate job names" do
-    # note that "test_job", :test_job and 'test_job' are regarded as different names
-
     job = Scheduler.new_job()
     |> Job.set_name(:test_job)
     |> Job.set_schedule(~e[* * * * *])
@@ -218,6 +226,7 @@ defmodule Quantum.SchedulerTest do
     assert Scheduler.add_job(job) == :error
   end
 
+  @tag schedulers: [Scheduler]
   test "execute for current node" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
@@ -279,6 +288,7 @@ defmodule Quantum.SchedulerTest do
     :ok = Agent.stop(pid)
   end
 
+  @tag schedulers: [Scheduler]
   test "reboot" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
@@ -299,6 +309,7 @@ defmodule Quantum.SchedulerTest do
     :ok = Agent.stop(pid1)
   end
 
+  @tag schedulers: [Scheduler]
   test "overlap, first start" do
     {:ok, pid1} = Agent.start_link(fn -> nil end)
     {:ok, pid2} = Agent.start_link(fn -> 0 end)
@@ -371,6 +382,7 @@ defmodule Quantum.SchedulerTest do
     :ok = Agent.stop(pid1)
   end
 
+  @tag schedulers: [Scheduler]
   test "do not crash sibling jobs when a job crashes" do
     fun = fn ->
       receive do
@@ -416,6 +428,7 @@ defmodule Quantum.SchedulerTest do
     refute_receive {:DOWN, ^ref_sibling, _, _, _}
   end
 
+  @tag schedulers: [Scheduler]
   test "preserve state if one of the jobs crashes" do
     job1 = Scheduler.new_job()
     |> Job.set_schedule(~e[* * * * *])
@@ -462,9 +475,8 @@ defmodule Quantum.SchedulerTest do
     assert Enum.count(Scheduler.jobs) == 2
   end
 
+  @tag schedulers: [ZeroTimeoutScheduler]
   test "timeout can be configured for genserver correctly" do
-    start_scheduler(ZeroTimeoutScheduler)
-
     job = ZeroTimeoutScheduler.new_job()
     |> Job.set_name(:tmpjob)
     |> Job.set_schedule(~e[* */5 * * *])
