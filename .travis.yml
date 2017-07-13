@@ -1,5 +1,7 @@
 language: elixir
 sudo: false
+env:
+  - MIX_ENV=test
 elixir:
   - 1.4.5
   - 1.5.0-rc.0
@@ -7,11 +9,19 @@ otp_release:
   - 18.3
   - 19.3
   - 20.0
+before_script:
+  - mix compile
+  - travis_wait mix dialyzer --plt
 script:
   - mix test
   - mix credo --strict
+  - mix dialyzer
 after_success:
   - "mix compile && mix coveralls.travis"
 after_script:
   - MIX_ENV=docs mix deps.get
   - MIX_ENV=docs mix inch.report
+cache:
+  directories:
+    - ~/.mix
+    - ~/.hex
