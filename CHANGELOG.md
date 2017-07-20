@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.0.0 - 2017-07-20
+
+Diff for [2.0.0]
+
+The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
+
+## 2.0.0-beta.2 - 2017-07-13
+
+Diff for [2.0.0-beta.2]
+
+The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
+
 ## 2.0.0-beta.1 - 2017-06-07
 
 Diff for [2.0.0-beta.1]
@@ -334,7 +346,9 @@ Diff for [1.9.1]
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.2...v2.0.0
+[2.0.0-beta.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.1...v2.0.0-beta.2
 [2.0.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.1...v2.0.0-beta.1
 [1.9.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...v1.9.0
