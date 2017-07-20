@@ -10,9 +10,13 @@ Diff for [unreleased]
 
 Diff for [2.0.0]
 
+The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
+
 ## 2.0.0-beta.2 - 2017-07-13
 
 Diff for [2.0.0-beta.2]
+
+The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
 
 ## 2.0.0-beta.1 - 2017-06-07
 
