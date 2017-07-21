@@ -25,45 +25,25 @@ defmodule Quantum.RunStrategy.Random do
 
   @behaviour Quantum.RunStrategy
 
+  alias Quantum.Job
+
+  @spec normalize_config!([Node.t] | :cluster) :: t
   def normalize_config!(nodes) when is_list(nodes) do
     %__MODULE__{nodes: Enum.map(nodes, &normalize_node/1)}
   end
   def normalize_config!(:cluster), do: %__MODULE__{nodes: :cluster}
 
+  @spec normalize_node(Node.t | binary) :: Node.t
   defp normalize_node(node) when is_atom(node), do: node
   defp normalize_node(node) when is_binary(node), do: String.to_atom(node)
 
   defimpl Quantum.RunStrategy.NodeList do
-    alias Quantum.Job
-
-    def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, job) do
-      if job_pending?(job) do
-        []
-      else
-        [node() | Node.list]
-        |> Enum.shuffle
-        |> Enum.take(1)
-      end
+    @spec nodes(Quantum.RunStrategy.Random.t, Job.t) :: [Node.t]
+    def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, _job) do
+      [Enum.random([node() | Node.list])]
     end
-    def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, job) do
-      if job_pending?(job) do
-        []
-      else
-        nodes
-        |> Enum.shuffle
-        |> Enum.take(1)
-      end
-    end
-
-    defp job_pending?(%Job{overlap: false, pids: pids}) do
-      count = pids
-      |> Enum.reject(fn({_, pid}) -> pid == nil end)
-      |> Enum.filter(fn({_, pid}) -> Job.is_alive?(pid) end)
-      |> Enum.count
-      count > 0
-    end
-    defp job_pending?(%Job{overlap: true}) do
-      false
+    def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, _job) do
+      [Enum.random(nodes)]
     end
   end
 end

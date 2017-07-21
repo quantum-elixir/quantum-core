@@ -22,15 +22,20 @@ defmodule Quantum.RunStrategy.All do
 
   @behaviour Quantum.RunStrategy
 
+  alias Quantum.Job
+
+  @spec normalize_config!([Node.t] | :cluster) :: t
   def normalize_config!(nodes) when is_list(nodes) do
     %__MODULE__{nodes: Enum.map(nodes, &normalize_node/1)}
   end
   def normalize_config!(:cluster), do: %__MODULE__{nodes: :cluster}
 
+  @spec normalize_node(Node.t | binary) :: Node.t
   defp normalize_node(node) when is_atom(node), do: node
   defp normalize_node(node) when is_binary(node), do: String.to_atom(node)
 
   defimpl Quantum.RunStrategy.NodeList do
+    @spec nodes(Quantum.RunStrategy.All.t, Job.t) :: [Node.t]
     def nodes(%Quantum.RunStrategy.All{nodes: :cluster}, _) do
       [node() | Node.list]
     end

@@ -1,4 +1,6 @@
 defmodule QuantumStartupTest do
+  @moduledoc false
+
   use ExUnit.Case
 
   import ExUnit.CaptureLog
@@ -6,6 +8,8 @@ defmodule QuantumStartupTest do
   import Crontab.CronExpression
 
   defmodule Scheduler do
+    @moduledoc false
+
     use Quantum.Scheduler, otp_app: :quantum_startup_test
   end
 
@@ -21,7 +25,7 @@ defmodule QuantumStartupTest do
 
       Application.put_env(:quantum_startup_test, QuantumStartupTest.Scheduler, jobs: test_jobs)
 
-      {:ok, _pid} = QuantumStartupTest.Scheduler.start_link()
+      {:ok, _pid} = start_supervised(Scheduler)
 
       assert Enum.count(QuantumStartupTest.Scheduler.jobs) == 3
       assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]

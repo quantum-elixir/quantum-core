@@ -10,7 +10,8 @@ defmodule Quantum.Normalizer do
            :schedule,
            :task,
            :overlap,
-           :run_strategy]
+           :run_strategy,
+           :timezone]
 
   @type config_short_notation :: {config_schedule, config_task}
   @type config_full_notation :: {config_name | nil, Keyword.t | map}
@@ -29,23 +30,27 @@ defmodule Quantum.Normalizer do
     * `job` - The Job To Normalize
 
   """
-  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job.t
-  def normalize(base, job) when is_list(job) do
-    normalize(base, {Keyword.get(job, :name), job})
+  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job.t | no_return
+  def normalize(base, job)
+  def normalize(%Job{} = base, job) when is_list(job) do
+    normalize_options(base, job |> Enum.into(%{}), @fields)
   end
-  def normalize(base, {job_name, opts}) when is_list(opts) do
+  def normalize(%Job{} = base, {job_name, opts}) when is_list(opts) do
     normalize(base, {job_name, opts |> Enum.into(%{})})
   end
-  def normalize(base, {job_name, opts}) when is_map(opts) do
+  def normalize(%Job{} = base, {nil, opts}) when is_map(opts) do
+    normalize_options(base, opts, @fields)
+  end
+  def normalize(%Job{} = base, {job_name, opts}) when is_map(opts) do
     opts = Map.put(opts, :name, job_name)
 
     normalize_options(base, opts, @fields)
   end
-  def normalize(base, {schedule, task}) do
-    %{base | name: nil, schedule: normalize_schedule(schedule), task: normalize_task(task)}
+  def normalize(%Job{} = base, {schedule, task}) do
+    normalize_options(base, %{schedule: schedule, task: task}, @fields)
   end
 
-  @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t
+  @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t | no_return
   defp normalize_options(job, %{name: name} = options, [:name | tail]) do
     normalize_options(Job.set_name(job, normalize_name(name)), options, tail)
   end
@@ -81,15 +86,25 @@ defmodule Quantum.Normalizer do
     normalize_options(job, options, tail)
   end
 
+  defp normalize_options(job, %{timezone: timezone} = options, [:timezone | tail]) when is_binary(timezone) do
+    normalize_options(Job.set_timezone(job, timezone), options, tail)
+  end
+  defp normalize_options(job, %{timezone: :utc} = options, [:timezone | tail]) do
+    normalize_options(Job.set_timezone(job, :utc), options, tail)
+  end
+  defp normalize_options(job, options, [:timezone | tail]) do
+    normalize_options(job, options, tail)
+  end
+
   defp normalize_options(job, _, []), do: job
 
-  @spec normalize_task(config_task) :: Job.task
+  @spec normalize_task(config_task) :: Job.task | no_return
   defp normalize_task({mod, fun, args}), do: {mod, fun, args}
   defp normalize_task(fun) when is_function(fun, 0), do: fun
   defp normalize_task(fun) when is_function(fun), do: raise "Only 0 arity functions are supported via the short syntax."
 
   @doc false
-  @spec normalize_schedule(config_schedule) :: Job.schedule
+  @spec normalize_schedule(config_schedule) :: Job.schedule | no_return
   def normalize_schedule(%Crontab.CronExpression{} = e), do: e
   def normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!

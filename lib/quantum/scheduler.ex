@@ -63,7 +63,7 @@ defmodule Quantum.Scheduler do
         Quantum.scheduler_config(__MODULE__, @otp_app, custom)
       end
 
-      defp __runner__, do: Keyword.fetch!(config(), :runner)
+      defp __job_broadcaster__, do: Keyword.fetch!(config(), :job_broadcaster)
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
       def start_link(opts \\ [name: __MODULE__]) do
@@ -74,18 +74,10 @@ defmodule Quantum.Scheduler do
         Supervisor.stop(server, :normal, timeout)
       end
 
-      def add_job(server \\ __runner__(), job)
-      def add_job(server, %Job{name: nil} = job) do
-        GenServer.call(server, {:add, {nil, job}}, __timeout__())
-      end
+      def add_job(server \\ __job_broadcaster__(), job)
       def add_job(server, %Job{name: name} = job) do
-        if find_job(name) do
-          :error
-        else
-          GenServer.call(server, {:add, {name, job}}, __timeout__())
-        end
+        GenStage.cast(server, {:add, job})
       end
-
       def add_job(server, {%Crontab.CronExpression{} = schedule, task}) when is_tuple(task) or is_function(task, 0) do
         job = new_job()
         |> Job.set_schedule(schedule)
@@ -95,29 +87,44 @@ defmodule Quantum.Scheduler do
 
       def new_job(config \\ config()), do: Job.new(config)
 
-      def deactivate_job(server \\ __runner__(), name) do
-        GenServer.call(server, {:change_state, name, :inactive}, __timeout__())
+      def deactivate_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+        GenStage.cast(server, {:change_state, name, :inactive})
       end
 
-      def activate_job(server \\ __runner__(), name) do
-        GenServer.call(server, {:change_state, name, :active}, __timeout__())
+      def activate_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+        GenStage.cast(server, {:change_state, name, :active})
       end
 
-      def find_job(server \\ __runner__(), name) do
-        GenServer.call(server, {:find_job, name}, __timeout__())
+      def find_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+        GenStage.call(server, {:find_job, name}, __timeout__())
       end
 
-      def delete_job(server \\ __runner__(), name) do
-        GenServer.call(server, {:delete, name}, __timeout__())
+      def delete_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+        GenStage.cast(server, {:delete, name})
       end
 
-      def delete_all_jobs(server \\ __runner__()) do
-        GenServer.call(server, {:delete_all}, __timeout__())
+      def delete_all_jobs(server \\ __job_broadcaster__()) do
+        GenStage.cast(server, :delete_all)
       end
 
-      def jobs(server \\ __runner__()) do
-        GenServer.call(server, :jobs, __timeout__())
+      def jobs(server \\ __job_broadcaster__()) do
+        GenStage.call(server, :jobs, __timeout__())
       end
+
+      spec = [
+        id: opts[:id] || __MODULE__,
+        start: Macro.escape(opts[:start]) || quote(do: {__MODULE__, :start_link, [opts]}),
+        restart: opts[:restart] || :permanent,
+        type: :worker
+      ]
+
+      @doc false
+      @spec child_spec(Keyword.t) :: Supervisor.child_spec
+      def child_spec(opts) do
+        %{unquote_splicing(spec)}
+      end
+
+      defoverridable child_spec: 1
     end
   end
 
@@ -166,35 +173,35 @@ defmodule Quantum.Scheduler do
   @doc """
   Adds a new job
   """
-  @callback add_job(GenServer.server, Quantum.Job.t | {Crontab.CronExpression.t, Job.task}) :: :ok | :error
+  @callback add_job(GenStage.stage, Quantum.Job.t | {Crontab.CronExpression.t, Job.task}) :: :ok
 
   @doc """
   Deactivates a job by name
   """
-  @callback deactivate_job(GenServer.server, atom) :: :ok | {:error, :not_found}
+  @callback deactivate_job(GenStage.stage, atom) :: :ok
 
   @doc """
   Activates a job by name
   """
-  @callback activate_job(GenServer.server, atom) :: :ok | {:error, :not_found}
+  @callback activate_job(GenStage.stage, atom) :: :ok
 
   @doc """
   Resolves a job by name
   """
-  @callback find_job(GenServer.server, atom) :: Quantum.Job.t | nil
+  @callback find_job(GenStage.stage, atom) :: Quantum.Job.t | nil
 
   @doc """
   Deletes a job by name
   """
-  @callback delete_job(GenServer.server, atom) :: :ok | {:error, :not_found}
+  @callback delete_job(GenStage.stage, atom) :: :ok
 
   @doc """
   Deletes all jobs
   """
-  @callback delete_all_jobs(GenServer.server) :: :ok
+  @callback delete_all_jobs(GenStage.stage) :: :ok
 
   @doc """
   Returns the list of currently defined jobs
   """
-  @callback jobs(GenServer.server) :: [Quantum.Job.t]
+  @callback jobs(GenStage.stage) :: [Quantum.Job.t]
 end

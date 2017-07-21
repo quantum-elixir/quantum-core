@@ -14,33 +14,30 @@ defmodule Quantum.Job do
   alias Quantum.Normalizer
   alias Crontab.CronExpression
 
-  @enforce_keys [:run_strategy, :overlap, :timezone]
+  @enforce_keys [:name, :run_strategy, :overlap, :timezone]
 
   defstruct [
     :run_strategy,
     :overlap,
     :timezone,
-    name: nil,
+    :name,
     schedule: nil,
     task: nil,
     state: :active,
-    pids: [],
   ]
 
   @type state :: :active | :inactive
   @type task :: {atom, atom, [any]} | (() -> any)
   @type timezone :: :utc | :local | String.t
   @type schedule :: Crontab.CronExpression.t
-  @type pids :: [{Node.t, pid}]
 
   @type t :: %__MODULE__{
-    name: atom | nil,
+    name: atom | Reference,
     schedule: schedule | nil,
     task: task | nil,
     state: state,
     run_strategy: Quantum.RunStrategy.NodeList,
     overlap: boolean,
-    pids: pids,
     timezone: timezone
   }
 
@@ -59,6 +56,7 @@ defmodule Quantum.Job do
     run_strategy = run_strategy_name.normalize_config!(options)
 
     job = %__MODULE__{
+      name: make_ref(),
       overlap: Keyword.fetch!(config, :overlap),
       timezone: Keyword.fetch!(config, :timezone),
       run_strategy: run_strategy
@@ -69,44 +67,6 @@ defmodule Quantum.Job do
       set_schedule(job, Normalizer.normalize_schedule(schedule))
     else
       job
-    end
-  end
-
-  @doc """
-  Determines if a Job is executable.
-
-  ### Examples
-
-      iex> Acme.Scheduler.new_job()
-      ...> |> Quantum.Job.set_state(:inactive)
-      ...> |> Quantum.Job.executable?
-      false
-
-      iex> Acme.Scheduler.new_job()
-      ...> |> Quantum.Job.executable?
-      true
-
-  """
-  @spec executable?(t, Node.t) :: boolean
-  def executable?(job, node) do
-    pid = Keyword.get(job.pids, node, nil)
-    cond do
-      job.state != :active    -> false # Do not execute inactive jobs
-      job.overlap == true     -> true  # Job may overlap
-      pid == nil              -> true  # Job has not been started
-      is_alive?(pid)          -> false # Previous job is still running
-      true                    -> true  # Previous job has finished
-    end
-  end
-
-  @doc """
-  Is job still running?
-  """
-  @spec is_alive?(pid) :: boolean
-  def is_alive?(pid) do
-    case :rpc.pinfo(pid) do
-      :undefined -> false
-      _ -> true
     end
   end
 
@@ -146,7 +106,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_schedule(t, CronExpression.t) :: t
-  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule), do: Map.put(job, :schedule, schedule)
+  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule), do: %{job | schedule: schedule}
 
   @doc """
   Sets a jobs schedule.

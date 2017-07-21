@@ -12,8 +12,9 @@ defmodule Quantum.Mixfile do
       deps: deps(),
       description: "Cron-like job scheduler for Elixir.",
       docs: docs(),
-      elixir: ">= 1.4.0",
+      elixir: ">= 1.5.1",
       name: "Quantum",
+      elixirc_paths: elixirc_paths(Mix.env),
       package: package(),
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -26,6 +27,9 @@ defmodule Quantum.Mixfile do
     [mod: {Quantum.Application, []},
      extra_applications: [:logger]]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   defp package do
     %{
@@ -71,6 +75,7 @@ defmodule Quantum.Mixfile do
       {:timex,       "~> 3.1.13", optional: true},
       {:calendar,    "~> 0.17", optional: true},
       {:crontab,     "~> 1.1"},
+      {:gen_stage,   "~> 0.12.2"},
       {:earmark,     "~> 1.0",  only: [:dev, :docs], runtime: false},
       {:ex_doc,      "~> 0.13", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5",  only: [:dev, :test], runtime: false},
