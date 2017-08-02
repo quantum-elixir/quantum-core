@@ -24,9 +24,8 @@ defmodule Quantum.Runner do
   end
 
   def init(state) do
-    new_state = state
-    |> Map.put(:jobs, run(state))
-    |> Map.put(:date, Timer.tick())
+    new_state = Map.put(state, :date, Timer.tick())
+    new_state = Map.put(state, :jobs, run(new_state))
 
     {:ok, new_state}
   end
