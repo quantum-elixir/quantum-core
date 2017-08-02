@@ -5,7 +5,7 @@ If you want to add jobs on runtime, this is possible too:
 ```elixir
 import Crontab.CronExpression
 
-Quantum.add_job({~e[1 * * * *], fn -> :ok end})
+YourApp.Scheduler.add_job({~e[1 * * * *], fn -> :ok end})
 ```
 
 Add a named job at runtime:
@@ -17,29 +17,28 @@ YourApp.Scheduler.new_job()
 |> Quantum.Job.set_name(:ticker)
 |> Quantum.Job.set_schedule(~e[1 * * * *])
 |> Quantum.Job.set_task(fn -> :ok end)
-
-Quantum.add_job(job)
+|> YourApp.Scheduler.add_job()
 ```
 
 Deactivate a job, i.e. it will not be performed until job is activated again:
 ```elixir
-Quantum.deactivate_job(:ticker)
+YourApp.Scheduler.deactivate_job(:ticker)
 ```
 
 Activate an inactive job:
 ```elixir
-Quantum.activate_job(:ticker)
+YourApp.Scheduler.activate_job(:ticker)
 ```
 
 Find a job:
 ```elixir
-Quantum.find_job(:ticker)
+YourApp.Scheduler.find_job(:ticker)
 # %Quantum.Job{...}
 ```
 
 Delete a job:
 ```elixir
-Quantum.delete_job(:ticker)
+YourApp.Scheduler.delete_job(:ticker)
 # %Quantum.Job{...}
 ```
 
@@ -54,10 +53,9 @@ The following example will put a tick into the `stdout` every second.
 ```elixir
 import Crontab.CronExpression
 
-Quantum.new_job()
+YourApp.Scheduler.new_job()
 |> Quantum.Job.set_name(:ticker)
 |> Quantum.Job.set_schedule(~e[1 * * * *]e)
 |> Quantum.Job.set_task(fn -> IO.puts "tick" end)
-
-Quantum.add_job(job)
+|> YourApp.Scheduler.add_job()
 ```
