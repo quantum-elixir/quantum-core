@@ -112,7 +112,7 @@ defmodule Quantum.Normalizer do
   defp job_opts(job_name, opts) do
     overlap = Application.get_env(:quantum, :default_overlap, true)
     %{
-      name: job_name,
+      name: job_name || extract(:name, opts),
       schedule: extract(:schedule, opts),
       task: extract(:task, opts),
       args: extract(:args, opts, []),

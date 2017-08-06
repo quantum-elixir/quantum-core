@@ -33,6 +33,28 @@ defmodule Quantum.NormalizerTest do
     }}
   end
 
+  test "named job in nil tuple" do
+    job = {nil, %Quantum.Job{
+      name: :newsletter,
+      schedule: ~e[@weekly],
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, :string@node],
+      timezone: "America/Mexico_City"
+    }}
+
+    assert normalize(job) == {:newsletter, %Quantum.Job{
+      name: :newsletter,
+      schedule: ~e[@weekly],
+      task: {"MyModule", "my_method"},
+      args: [1, 2, 3],
+      overlap: false,
+      nodes: [:atom@node, :string@node],
+      timezone: "America/Mexico_City"
+    }}
+  end
+
   test "named job with old schedule" do
     job = {:newsletter, [
       schedule: "@weekly",
