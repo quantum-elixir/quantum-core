@@ -126,11 +126,11 @@ config :your_app, YourApp.Scheduler,
 
 Please note that Quantum uses **UTC timezone** and not local timezone.
 
-To specify another default timezone, add the following `default_timezone` option to your configuration:
+To specify another default timezone, add the following `timezone` option to your configuration:
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  default_timezone: "America/Chicago",
+  timezone: "America/Chicago",
   jobs: [
     # Your cronjobs
   ]
