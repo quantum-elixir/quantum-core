@@ -1,5 +1,7 @@
 defmodule Quantum.Application do
-  @moduledoc false
+  @moduledoc """
+  Start needed dynamic applications
+  """
 
   use Application
 

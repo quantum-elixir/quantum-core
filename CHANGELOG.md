@@ -6,6 +6,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+The internal handling has been refactored onto `gen_stage`.
+There were a few Breaking Changes which should not influence a user of the library.
+
+### Changed
+- Replaced `call` with `cast`
+  * `Scheduler.add_job`
+  * `Scheduler.deactivate_job`
+  * `Scheduler.activate_job`
+  * `Scheduler.delete_job`
+  * `Scheduler.delete_all_jobs`
+
+### Removed
+- The overlap handling is removed from the Job struct.
+  * removed `Job.pids`
+  * removed `Job.executable?`
+
 ## 2.0.0 - 2017-07-20
 
 Diff for [2.0.0]

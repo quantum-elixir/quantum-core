@@ -27,16 +27,31 @@ defmodule Quantum do
       |> Keyword.merge(custom)
       |> Keyword.merge([otp_app: otp_app, quantum: quantum])
 
-    # Default Runner Name
-    runner = if Keyword.fetch!(config, :global),
-      do: {:global, Module.concat(quantum, Runner)},
-      else: Module.concat(quantum, Runner)
+    # Default Job Broadcaster Name
+    job_broadcaster = if Keyword.fetch!(config, :global),
+      do: {:global, Module.concat(quantum, JobBroadcaster)},
+      else: Module.concat(quantum, JobBroadcaster)
+
+    execution_broadcaster = if Keyword.fetch!(config, :global),
+      do: {:global, Module.concat(quantum, ExecutionBroadcaster)},
+      else: Module.concat(quantum, ExecutionBroadcaster)
+
+    executor_supervisor = if Keyword.fetch!(config, :global),
+      do: {:global, Module.concat(quantum, ExecutorSupervisor)},
+      else: Module.concat(quantum, ExecutorSupervisor)
+
+    task_registry = if Keyword.fetch!(config, :global),
+      do: {:global, Module.concat(quantum, TaskRegistry)},
+      else: Module.concat(quantum, TaskRegistry)
 
     # Default Task Supervisor Name
     task_supervisor = Module.concat(quantum, Task.Supervisor)
 
     config
-    |> Keyword.put_new(:runner, runner)
+    |> Keyword.put_new(:job_broadcaster, job_broadcaster)
+    |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
+    |> Keyword.put_new(:executor_supervisor, executor_supervisor)
+    |> Keyword.put_new(:task_registry, task_registry)
     |> Keyword.put_new(:task_supervisor, task_supervisor)
   end
 
@@ -57,16 +72,15 @@ defmodule Quantum do
   end
 
   defp remove_jobs_with_duplicate_names(job_list, quantum) do
-    Enum.reduce(job_list, [], fn
-      %Job{name: nil} = job, acc ->
-        [{nil, job} | acc]
-      %Job{name: name} = job, acc ->
-        if Enum.member?(Keyword.keys(acc), name) do
-          Logger.warn("Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name")
-          acc
-        else
-          [{name, job} | acc]
-        end
+    job_list
+    |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
+      if Enum.member?(Map.keys(acc), name) do
+        Logger.warn("Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name")
+        acc
+      else
+        Map.put_new(acc, name, job)
+      end
     end)
+    |> Map.values
   end
 end

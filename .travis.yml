@@ -3,8 +3,7 @@ sudo: false
 env:
   - MIX_ENV=test
 elixir:
-  - 1.4.5
-  - 1.5.0
+  - 1.5.1
 otp_release:
   - 18.3
   - 19.3
