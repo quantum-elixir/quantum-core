@@ -1,6 +1,6 @@
 defmodule Quantum.JobBroadcaster do
   @moduledoc """
-  This Module is here to bradcast added / removed tobs into the execution pipeline.
+  This Module is here to broadcast added / removed tabs into the execution pipeline.
   """
 
   use GenStage
