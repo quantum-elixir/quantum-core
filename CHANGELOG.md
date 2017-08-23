@@ -24,6 +24,10 @@ Diff for [2.0.0-beta.1]
 
 The whole library has been refactored. See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
 
+## 1.9.2 - 2017-05-19
+
+Diff for [1.9.2]
+
 ## 1.9.1 - 2017-03-17
 
 Diff for [1.9.1]
@@ -349,7 +353,8 @@ Diff for [1.9.1]
 [unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0...HEAD
 [2.0.0]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.2...v2.0.0
 [2.0.0-beta.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.1...v2.0.0-beta.2
-[2.0.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.1...v2.0.0-beta.1
+[2.0.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.2...v2.0.0-beta.1
+[1.9.2]: https://github.com/c-rack/quantum-elixir/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/c-rack/quantum-elixir/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/c-rack/quantum-elixir/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/c-rack/quantum-elixir/compare/v1.8.0...v1.8.1
