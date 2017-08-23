@@ -26,12 +26,18 @@ There were a few Breaking Changes which should not influence a user of the libra
   * removed `Job.pids`
   * removed `Job.executable?`
 
+## 2.0.2 - 2017-08-23
+
+  Diff for [2.0.2]
+
+  ### Fixed
+  - Updated Docs.
+
 ## 2.0.1 - 2017-08-23
 
 Diff for [2.0.1]
 
 - Timezone in job configuration is now normalized into a job.
->>>>>>> 2.0-dev
 
 ## 2.0.0 - 2017-07-20
 
@@ -378,7 +384,8 @@ Diff for [1.9.1]
 
 
 [unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...HEAD
-[2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.1...v2.1.0-beta.1
+[2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.1.0-beta.1
+[2.0.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.2...v2.0.0
 [2.0.0-beta.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.1...v2.0.0-beta.2
