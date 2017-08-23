@@ -22,6 +22,7 @@ defmodule Quantum.NormalizerTest do
       schedule: ~e[@weekly],
       task: {MyModule, :my_method, [1, 2, 3]},
       overlap: false,
+      timezone: "Europe/Zurich",
     ]}
 
     expected_job = Quantum.NormalizerTest.Scheduler.new_job()
@@ -29,6 +30,7 @@ defmodule Quantum.NormalizerTest do
     |> Job.set_schedule(~e[@weekly])
     |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
     |> Job.set_overlap(false)
+    |> Job.set_timezone("Europe/Zurich")
 
     assert normalize(Quantum.NormalizerTest.Scheduler.new_job(), job) == expected_job
   end

@@ -10,7 +10,8 @@ defmodule Quantum.Normalizer do
            :schedule,
            :task,
            :overlap,
-           :run_strategy]
+           :run_strategy,
+           :timezone]
 
   @type config_short_notation :: {config_schedule, config_task}
   @type config_full_notation :: {config_name | nil, Keyword.t | map}
@@ -78,6 +79,13 @@ defmodule Quantum.Normalizer do
     normalize_options(Job.set_overlap(job, overlap), options, tail)
   end
   defp normalize_options(job, options, [:overlap | tail]) do
+    normalize_options(job, options, tail)
+  end
+
+  defp normalize_options(job, %{timezone: timezone} = options, [:timezone | tail]) do
+    normalize_options(Job.set_timezone(job, timezone), options, tail)
+  end
+  defp normalize_options(job, options, [:timezone | tail]) do
     normalize_options(job, options, tail)
   end
 
