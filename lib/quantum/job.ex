@@ -52,21 +52,20 @@ defmodule Quantum.Job do
   """
   @spec new(config :: Keyword.t) :: t
   def new(config) do
-    {run_strategy_name, options} = Keyword.fetch!(config, :run_strategy)
-    run_strategy = run_strategy_name.normalize_config!(options)
-
-    job = %__MODULE__{
-      name: make_ref(),
-      overlap: Keyword.fetch!(config, :overlap),
-      timezone: Keyword.fetch!(config, :timezone),
-      run_strategy: run_strategy
-    }
-
-    schedule = Keyword.fetch!(config, :schedule)
-    if schedule do
-      set_schedule(job, Normalizer.normalize_schedule(schedule))
-    else
-      job
+    with {run_strategy_name, options} <- Keyword.fetch!(config, :run_strategy),
+         run_strategy <- run_strategy_name.normalize_config!(options),
+         name <- make_ref(),
+         overlap when is_boolean(overlap) <- Keyword.fetch!(config, :overlap),
+         timezone when timezone == :utc or is_binary(timezone) <- Keyword.fetch!(config, :timezone),
+         schedule <- Keyword.get(config, :schedule)
+    do
+      %__MODULE__{
+        name: name,
+        overlap: Keyword.fetch!(config, :overlap),
+        timezone: Keyword.fetch!(config, :timezone),
+        run_strategy: run_strategy,
+        schedule: schedule,
+      }
     end
   end
 
