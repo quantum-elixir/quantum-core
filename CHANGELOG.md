@@ -26,6 +26,13 @@ There were a few Breaking Changes which should not influence a user of the libra
   * removed `Job.pids`
   * removed `Job.executable?`
 
+## 2.0.3 - 2017-08-29
+
+Diff for [2.0.3]
+
+### Fixed
+- `@reboot` cron expressions
+
 ## 2.0.2 - 2017-08-23
 
   Diff for [2.0.2]
@@ -384,7 +391,8 @@ Diff for [1.9.1]
 
 
 [unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...HEAD
-[2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.1.0-beta.1
+[2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.3...v2.1.0-beta.1
+[2.0.3]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.2...v2.0.0
