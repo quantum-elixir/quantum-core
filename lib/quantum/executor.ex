@@ -24,18 +24,19 @@ defmodule Quantum.Executor do
     execute_task(fun)
     true
   end
-  def execute(_, %{reboot: true}), do: false
   # Reboot enabled cron expressions run only on reboot, cancel
   def execute({%CronExpression{reboot: true}, _, _}, %{reboot: false}), do: false
+  # No other jobs run on reboot
+  def execute(_, %{reboot: true}), do: false
   # Check Extended Expression every second
-  def execute({%CronExpression{extended: true}, _, _} = job, state) do
+  def execute({%CronExpression{extended: true}, _, _} = job, %{reboot: false} = state) do
     execute_task_if_date_matches(job, state)
   end
   # On Second 0 check all expressions
-  def execute({%CronExpression{extended: false}, _, _} = job, %{date: %NaiveDateTime{second: 0}} = state) do
+  def execute({%CronExpression{extended: false}, _, _} = job, %{date: %NaiveDateTime{second: 0}} = %{reboot: false} = state) do
       execute_task_if_date_matches(job, state)
   end
-  def execute({%CronExpression{extended: false}, _, _}, _), do: false
+  def execute({%CronExpression{extended: false}, _, _}, %{reboot: false}), do: false
 
   @spec execute_task_if_date_matches(job, state) :: executed
   defp execute_task_if_date_matches({cron_expression, task, tz}, %{date: date}) do
