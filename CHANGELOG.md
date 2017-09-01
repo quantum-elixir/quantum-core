@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+### Fixed
+- Fix Race Condition with reboot in Runner state
+
 ## 2.0.3 - 2017-08-29
 
 Diff for [2.0.3]
