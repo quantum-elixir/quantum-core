@@ -48,6 +48,7 @@ defmodule Quantum do
     task_supervisor = Module.concat(quantum, Task.Supervisor)
 
     config
+    |> update_in([:schedule], &Normalizer.normalize_schedule/1)
     |> Keyword.put_new(:job_broadcaster, job_broadcaster)
     |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)

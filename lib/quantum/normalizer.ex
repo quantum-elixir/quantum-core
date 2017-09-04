@@ -5,6 +5,8 @@ defmodule Quantum.Normalizer do
 
   alias Quantum.Job
   alias Crontab.CronExpression.Parser, as: CronExpressionParser
+  alias Crontab.CronExpression
+  alias Quantum.RunStrategy.NodeList
 
   @fields [:name,
            :schedule,
@@ -17,7 +19,7 @@ defmodule Quantum.Normalizer do
   @type config_full_notation :: {config_name | nil, Keyword.t | map}
 
   @typep field :: :name | :schedule | :task | :overlap | :run_strategy
-  @type config_schedule :: Crontab.CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
+  @type config_schedule :: CronExpression.t | String.t | {:cron, String.t} | {:extended, String.t}
   @type config_task :: {module, fun, [any]} | (() -> any)
   @type config_name :: String.t | atom
 
@@ -30,7 +32,7 @@ defmodule Quantum.Normalizer do
     * `job` - The Job To Normalize
 
   """
-  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Quantum.Job.t | no_return
+  @spec normalize(Job.t, config_full_notation | config_short_notation) :: Job.t | no_return
   def normalize(base, job)
   def normalize(%Job{} = base, job) when is_list(job) do
     normalize_options(base, job |> Enum.into(%{}), @fields)
@@ -50,7 +52,7 @@ defmodule Quantum.Normalizer do
     normalize_options(base, %{schedule: schedule, task: task}, @fields)
   end
 
-  @spec normalize_options(Quantum.Job.t, struct, [field]) :: Quantum.Job.t | no_return
+  @spec normalize_options(Job.t, map, [field]) :: Job.t | no_return
   defp normalize_options(job, %{name: name} = options, [:name | tail]) do
     normalize_options(Job.set_name(job, normalize_name(name)), options, tail)
   end
@@ -105,7 +107,8 @@ defmodule Quantum.Normalizer do
 
   @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule | no_return
-  def normalize_schedule(%Crontab.CronExpression{} = e), do: e
+  def normalize_schedule(nil), do: nil
+  def normalize_schedule(%CronExpression{} = e), do: e
   def normalize_schedule(e) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:cron, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!
   def normalize_schedule({:extended, e}) when is_binary(e), do: e |> String.downcase |> CronExpressionParser.parse!(true)
@@ -114,7 +117,7 @@ defmodule Quantum.Normalizer do
   defp normalize_name(name) when is_binary(name), do: String.to_atom(name)
   defp normalize_name(name) when is_atom(name), do: name
 
-  @spec normalize_run_strategy({module, any}) :: Quantum.RunStrategy.NodeList
+  @spec normalize_run_strategy({module, any}) :: NodeList
   defp normalize_run_strategy({strategy, options}) when is_atom(strategy) do
     strategy.normalize_config!(options)
   end
