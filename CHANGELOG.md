@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.0.4 - 2017-09-01
+
+Diff for [2.0.4]
+
 ### Fixed
 - Fix Race Condition with reboot in Runner state
 
@@ -374,8 +378,9 @@ Diff for [1.9.1]
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.0.3...HEAD
-[2.0.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.0.3
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.0.4...HEAD
+[2.0.4]: https://github.com/c-rack/quantum-elixir/compare/v2.0.3...v2.0.4
+[2.0.3]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/c-rack/quantum-elixir/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/c-rack/quantum-elixir/compare/v2.0.0-beta.2...v2.0.0
