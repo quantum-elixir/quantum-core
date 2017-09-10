@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.1.0 - 2017-09-10
+
+Diff for [2.1.0]
+
+### Fixed
+- Resolved some Dialyzer Warnings
+
 ## 2.1.0-beta.1 - 2017-08-20
 
 Diff for [2.1.0-beta.1]
@@ -397,7 +404,8 @@ Diff for [1.9.1]
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...v2.1.0
 [2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.4...v2.1.0-beta.1
 [2.0.4]: https://github.com/c-rack/quantum-elixir/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/c-rack/quantum-elixir/compare/v2.0.2...v2.0.3
