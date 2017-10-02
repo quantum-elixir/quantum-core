@@ -134,4 +134,25 @@ defmodule Quantum.NormalizerTest do
     assert is_reference(name)
   end
 
+  test "named job with unknown option" do
+    job = [name: :newsletter, schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, unknown_option: true]
+
+    expected_job = Scheduler.new_job()
+    |> Job.set_name(:newsletter)
+    |> Job.set_schedule(~e[@weekly])
+    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+
+    assert normalize(Scheduler.new_job(), job) == expected_job
+  end
+
+  test "unnamed job with unknown option" do
+    schedule = ~e[@weekly]
+    task = {MyModule, :my_method, [1, 2, 3]}
+
+    job = [schedule: "@weekly", task: task, unknown_option: true]
+
+    assert %{schedule: ^schedule, task: ^task, name: name} = normalize(Scheduler.new_job(), job)
+    assert is_reference(name)
+  end
+
 end
