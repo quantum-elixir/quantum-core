@@ -11,7 +11,6 @@ defmodule Quantum.Job do
 
   """
 
-  alias Quantum.Normalizer
   alias Crontab.CronExpression
 
   @enforce_keys [:name, :run_strategy, :overlap, :timezone]
