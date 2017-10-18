@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## Fixed
+- Removed unused Alias from `Quantum.Job`
+
 ## 2.1.1 - 2017-10-02
 
 Diff for [2.1.1]
