@@ -31,12 +31,14 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
   describe "add" do
     test "reboot triggers", %{producer: producer} do
-      reboot_job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[@reboot])
+      reboot_job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[@reboot])
 
-      non_reboot_job = TestScheduler.new_job()
       # Some schedule that is valid but will not trigger the next 10 years
-      |> Job.set_schedule(~e[* * * * * #{NaiveDateTime.utc_now.year + 1}])
+      non_reboot_job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[* * * * * #{NaiveDateTime.utc_now().year + 1}])
 
       TestProducer.send(producer, {:add, reboot_job})
       TestProducer.send(producer, {:add, non_reboot_job})
@@ -46,8 +48,9 @@ defmodule Quantum.ExecutionBroadcasterTest do
     end
 
     test "normal schedule triggers once per second", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
 
       TestProducer.send(producer, {:add, job})
 
@@ -56,9 +59,10 @@ defmodule Quantum.ExecutionBroadcasterTest do
     end
 
     test "normal schedule in other timezone triggers once per second", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
-      |> Job.set_timezone("Europe/Zurich")
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+        |> Job.set_timezone("Europe/Zurich")
 
       TestProducer.send(producer, {:add, job})
 
@@ -67,38 +71,43 @@ defmodule Quantum.ExecutionBroadcasterTest do
     end
 
     test "impossible schedule will not create a crash", %{producer: producer} do
-      job = TestScheduler.new_job()
       # Some schedule that will never trigger
-      |> Job.set_schedule(~e[1 1 1 1 1 2000])
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[1 1 1 1 1 2000])
 
       assert capture_log(fn ->
-        TestProducer.send(producer, {:add, job})
+               TestProducer.send(producer, {:add, job})
 
-        refute_receive {:received, {:execute, ^job}}, @max_timeout
-      end) =~ """
-      Invalid Schedule #{inspect job.schedule} provided for job #{inspect job.name}.
-      No matching dates found. The job was removed.
-      """
+               refute_receive {:received, {:execute, ^job}}, @max_timeout
+             end) =~ """
+             Invalid Schedule #{inspect(job.schedule)} provided for job #{inspect(job.name)}.
+             No matching dates found. The job was removed.
+             """
     end
 
     test "invalid timezone will not create a crash", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
-      |> Job.set_timezone("Foobar")
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+        |> Job.set_timezone("Foobar")
 
       assert capture_log(fn ->
-        TestProducer.send(producer, {:add, job})
+               TestProducer.send(producer, {:add, job})
 
-        refute_receive {:received, {:execute, ^job}}, @max_timeout
-      end) =~ "Invalid Timezone #{inspect job.timezone} provided for job #{inspect job.name}."
+               refute_receive {:received, {:execute, ^job}}, @max_timeout
+             end) =~
+               "Invalid Timezone #{inspect(job.timezone)} provided for job #{inspect(job.name)}."
     end
 
     test "will continue to send after new job is added", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
 
-      job_new = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*])
+      job_new =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*])
 
       TestProducer.send(producer, {:add, job})
 
@@ -112,8 +121,9 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
   describe "remove" do
     test "stops triggering after remove", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
 
       TestProducer.send(producer, {:add, job})
 
@@ -125,8 +135,9 @@ defmodule Quantum.ExecutionBroadcasterTest do
     end
 
     test "remove inexistent will not crash", %{producer: producer} do
-      job = TestScheduler.new_job()
-      |> Job.set_schedule(~e[*]e)
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
 
       TestProducer.send(producer, {:add, job})
 

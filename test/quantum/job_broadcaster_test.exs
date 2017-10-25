@@ -19,25 +19,32 @@ defmodule Quantum.JobBroadcasterTest do
     active_job = TestScheduler.new_job()
     inactive_job = Job.set_state(TestScheduler.new_job(), :inactive)
 
-    init_jobs = case tags[:jobs] do
-      :both ->
-        [active_job, inactive_job]
-      :active ->
-        [active_job]
-      :inactive ->
-        [inactive_job]
-      _ ->
-        []
-    end
+    init_jobs =
+      case tags[:jobs] do
+        :both ->
+          [active_job, inactive_job]
+
+        :active ->
+          [active_job]
+
+        :inactive ->
+          [inactive_job]
+
+        _ ->
+          []
+      end
 
     {:ok, broadcaster} = start_supervised({JobBroadcaster, {__MODULE__, init_jobs}})
     {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
-    {:ok, %{
-      broadcaster: broadcaster,
-      active_job: active_job,
-      inactive_job: inactive_job,
-    }}
+    {
+      :ok,
+      %{
+        broadcaster: broadcaster,
+        active_job: active_job,
+        inactive_job: inactive_job
+      }
+    }
   end
 
   describe "init" do
@@ -135,7 +142,11 @@ defmodule Quantum.JobBroadcasterTest do
 
   describe "delete_all" do
     @tag jobs: :both
-    test "only active jobs", %{broadcaster: broadcaster, active_job: active_job, inactive_job: inactive_job} do
+    test "only active jobs", %{
+      broadcaster: broadcaster,
+      active_job: active_job,
+      inactive_job: inactive_job
+    } do
       active_job_name = active_job.name
       inactive_job_name = inactive_job.name
 
@@ -148,11 +159,16 @@ defmodule Quantum.JobBroadcasterTest do
 
   describe "jobs" do
     @tag jobs: :both
-    test "gets all jobs", %{broadcaster: broadcaster, active_job: active_job, inactive_job: inactive_job} do
+    test "gets all jobs", %{
+      broadcaster: broadcaster,
+      active_job: active_job,
+      inactive_job: inactive_job
+    } do
       active_job_name = active_job.name
       inactive_job_name = inactive_job.name
 
-      assert [{^active_job_name, %Job{}}, {^inactive_job_name, %Job{}}] = TestScheduler.jobs(broadcaster)
+      assert [{^active_job_name, %Job{}}, {^inactive_job_name, %Job{}}] =
+               TestScheduler.jobs(broadcaster)
     end
   end
 

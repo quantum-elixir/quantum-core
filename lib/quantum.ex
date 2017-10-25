@@ -9,13 +9,15 @@ defmodule Quantum do
   alias Quantum.Job
   alias Quantum.RunStrategy.Random
 
-  @defaults [global: false,
-             cron: [],
-             timeout: 5_000,
-             schedule: nil,
-             overlap: true,
-             timezone: :utc,
-             run_strategy: {Random, :cluster}]
+  @defaults [
+    global: false,
+    cron: [],
+    timeout: 5_000,
+    schedule: nil,
+    overlap: true,
+    timezone: :utc,
+    run_strategy: {Random, :cluster}
+  ]
 
   @doc """
   Retrieves only scheduler related configuration.
@@ -25,24 +27,28 @@ defmodule Quantum do
       @defaults
       |> Keyword.merge(Application.get_env(otp_app, quantum, []))
       |> Keyword.merge(custom)
-      |> Keyword.merge([otp_app: otp_app, quantum: quantum])
+      |> Keyword.merge(otp_app: otp_app, quantum: quantum)
 
     # Default Job Broadcaster Name
-    job_broadcaster = if Keyword.fetch!(config, :global),
-      do: {:global, Module.concat(quantum, JobBroadcaster)},
-      else: Module.concat(quantum, JobBroadcaster)
+    job_broadcaster =
+      if Keyword.fetch!(config, :global),
+        do: {:global, Module.concat(quantum, JobBroadcaster)},
+        else: Module.concat(quantum, JobBroadcaster)
 
-    execution_broadcaster = if Keyword.fetch!(config, :global),
-      do: {:global, Module.concat(quantum, ExecutionBroadcaster)},
-      else: Module.concat(quantum, ExecutionBroadcaster)
+    execution_broadcaster =
+      if Keyword.fetch!(config, :global),
+        do: {:global, Module.concat(quantum, ExecutionBroadcaster)},
+        else: Module.concat(quantum, ExecutionBroadcaster)
 
-    executor_supervisor = if Keyword.fetch!(config, :global),
-      do: {:global, Module.concat(quantum, ExecutorSupervisor)},
-      else: Module.concat(quantum, ExecutorSupervisor)
+    executor_supervisor =
+      if Keyword.fetch!(config, :global),
+        do: {:global, Module.concat(quantum, ExecutorSupervisor)},
+        else: Module.concat(quantum, ExecutorSupervisor)
 
-    task_registry = if Keyword.fetch!(config, :global),
-      do: {:global, Module.concat(quantum, TaskRegistry)},
-      else: Module.concat(quantum, TaskRegistry)
+    task_registry =
+      if Keyword.fetch!(config, :global),
+        do: {:global, Module.concat(quantum, TaskRegistry)},
+        else: Module.concat(quantum, TaskRegistry)
 
     # Default Task Supervisor Name
     task_supervisor = Module.concat(quantum, Task.Supervisor)
@@ -75,13 +81,16 @@ defmodule Quantum do
   defp remove_jobs_with_duplicate_names(job_list, quantum) do
     job_list
     |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
-      if Enum.member?(Map.keys(acc), name) do
-        Logger.warn("Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name")
-        acc
-      else
-        Map.put_new(acc, name, job)
-      end
-    end)
-    |> Map.values
+         if Enum.member?(Map.keys(acc), name) do
+           Logger.warn(
+             "Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name"
+           )
+
+           acc
+         else
+           Map.put_new(acc, name, job)
+         end
+       end)
+    |> Map.values()
   end
 end

@@ -20,6 +20,7 @@ defmodule Quantum.TestConsumer do
     for event <- events do
       send(owner, {:received, event})
     end
+
     {:noreply, [], owner}
   end
 end
