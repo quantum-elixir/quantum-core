@@ -20,11 +20,14 @@ config :your_app, YourApp.Scheduler,
 ```
 
 ## Release managers
+(
 [conform](https://github.com/bitwalker/conform) /
+[distillery](https://github.com/bitwalker/distillery) /
 [exrm](https://github.com/bitwalker/exrm) /
-[edeliver](https://github.com/boldpoker/edeliver))
+[edeliver](https://github.com/boldpoker/edeliver)
+)
 
-Please note that the following config notation is not supported by release managers.
+Please note that the following config notation **is not supported** by release managers.
 
 ```elixir
 {"* * * * *", fn -> :anonymous_function end}
