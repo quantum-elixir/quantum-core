@@ -19,77 +19,97 @@ defmodule Quantum.NormalizerTest do
   end
 
   test "named job" do
-    job = {:newsletter, [
-      schedule: ~e[@weekly],
-      task: {MyModule, :my_method, [1, 2, 3]},
-      overlap: false,
-    ]}
+    job = {
+      :newsletter,
+      [
+        schedule: ~e[@weekly],
+        task: {MyModule, :my_method, [1, 2, 3]},
+        overlap: false
+      ]
+    }
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[@weekly])
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
-    |> Job.set_overlap(false)
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[@weekly])
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+      |> Job.set_overlap(false)
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
 
   test "expression tuple extended" do
-    job = {:newsletter, [
-      schedule: {:extended, "*"},
-      task: {MyModule, :my_method, [1, 2, 3]},
-      overlap: false,
-    ]}
+    job = {
+      :newsletter,
+      [
+        schedule: {:extended, "*"},
+        task: {MyModule, :my_method, [1, 2, 3]},
+        overlap: false
+      ]
+    }
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[*]e)
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
-    |> Job.set_overlap(false)
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[*]e)
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+      |> Job.set_overlap(false)
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
 
   test "normalizer of run strategy" do
-    job = {:newsletter, [
-      run_strategy: {Quantum.RunStrategy.All, [:"node@host"]}
-    ]}
+    job = {
+      :newsletter,
+      [
+        run_strategy: {Quantum.RunStrategy.All, [:node@host]}
+      ]
+    }
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_run_strategy(%Quantum.RunStrategy.All{nodes: [:"node@host"]})
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_run_strategy(%Quantum.RunStrategy.All{nodes: [:node@host]})
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
 
   test "expression tuple not extended" do
-    job = {:newsletter, [
-      schedule: {:cron, "*"},
-      task: {MyModule, :my_method, [1, 2, 3]},
-      overlap: false,
-    ]}
+    job = {
+      :newsletter,
+      [
+        schedule: {:cron, "*"},
+        task: {MyModule, :my_method, [1, 2, 3]},
+        overlap: false
+      ]
+    }
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[*])
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
-    |> Job.set_overlap(false)
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[*])
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+      |> Job.set_overlap(false)
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
 
   test "named job with old schedule" do
-    job = {:newsletter, [
-      schedule: "@weekly",
-      task: {MyModule, :my_method, [1, 2, 3]},
-      overlap: false,
-    ]}
+    job = {
+      :newsletter,
+      [
+        schedule: "@weekly",
+        task: {MyModule, :my_method, [1, 2, 3]},
+        overlap: false
+      ]
+    }
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[@weekly])
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
-    |> Job.set_overlap(false)
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[@weekly])
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+      |> Job.set_overlap(false)
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
@@ -98,7 +118,9 @@ defmodule Quantum.NormalizerTest do
     schedule = ~e[* * * * *]
     task = {MyModule, :my_method, [1, 2, 3]}
 
-    assert %{schedule: ^schedule, task: ^task, name: name} = normalize(Scheduler.new_job(), {schedule, task})
+    assert %{schedule: ^schedule, task: ^task, name: name} =
+             normalize(Scheduler.new_job(), {schedule, task})
+
     assert is_reference(name)
   end
 
@@ -113,13 +135,19 @@ defmodule Quantum.NormalizerTest do
   end
 
   test "named job as a keyword" do
-    job = [name: :newsletter, schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, overlap: false]
+    job = [
+      name: :newsletter,
+      schedule: "@weekly",
+      task: {MyModule, :my_method, [1, 2, 3]},
+      overlap: false
+    ]
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[@weekly])
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
-    |> Job.set_overlap(false)
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[@weekly])
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+      |> Job.set_overlap(false)
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
@@ -129,18 +157,29 @@ defmodule Quantum.NormalizerTest do
 
     job = [schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, overlap: false]
 
-    assert %{schedule: ^schedule, task: {MyModule, :my_method, [1, 2, 3]}, overlap: false, name: name}
-      = normalize(Scheduler.new_job(), job)
+    assert %{
+             schedule: ^schedule,
+             task: {MyModule, :my_method, [1, 2, 3]},
+             overlap: false,
+             name: name
+           } = normalize(Scheduler.new_job(), job)
+
     assert is_reference(name)
   end
 
   test "named job with unknown option" do
-    job = [name: :newsletter, schedule: "@weekly", task: {MyModule, :my_method, [1, 2, 3]}, unknown_option: true]
+    job = [
+      name: :newsletter,
+      schedule: "@weekly",
+      task: {MyModule, :my_method, [1, 2, 3]},
+      unknown_option: true
+    ]
 
-    expected_job = Scheduler.new_job()
-    |> Job.set_name(:newsletter)
-    |> Job.set_schedule(~e[@weekly])
-    |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_schedule(~e[@weekly])
+      |> Job.set_task({MyModule, :my_method, [1, 2, 3]})
 
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
@@ -154,5 +193,4 @@ defmodule Quantum.NormalizerTest do
     assert %{schedule: ^schedule, task: ^task, name: name} = normalize(Scheduler.new_job(), job)
     assert is_reference(name)
   end
-
 end

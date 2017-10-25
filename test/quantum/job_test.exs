@@ -11,7 +11,7 @@ defmodule Quantum.JobTest do
   end
 
   test "new/1 returns a new job" do
-    assert %Job{} = Scheduler.config |> Job.new
+    assert %Job{} = Scheduler.config() |> Job.new()
   end
 
   test "new/1 returns new job with proper configs" do

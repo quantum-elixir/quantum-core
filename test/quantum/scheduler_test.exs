@@ -7,7 +7,7 @@ defmodule Quantum.SchedulerTest do
   alias Quantum.RunStrategy.Random
 
   import Crontab.CronExpression
-  #import ExUnit.CaptureLog
+  # import ExUnit.CaptureLog
 
   defmodule Scheduler do
     @moduledoc false
@@ -36,12 +36,14 @@ defmodule Quantum.SchedulerTest do
   setup_all do
     Application.put_env(:scheduler_test, Scheduler, jobs: [])
 
-    Application.put_env(:scheduler_test, DefaultConfigScheduler, [
+    Application.put_env(
+      :scheduler_test,
+      DefaultConfigScheduler,
       jobs: [],
       schedule: @defaults.schedule,
       overlap: @defaults.overlap,
       timezone: @defaults.timezone
-    ])
+    )
 
     Application.put_env(:scheduler_test, ZeroTimeoutScheduler, timeout: 0, jobs: [])
   end
@@ -58,8 +60,7 @@ defmodule Quantum.SchedulerTest do
 
   describe "new_job/0" do
     test "returns Quantum.Job struct" do
-      %Job{schedule: schedule, overlap: overlap, timezone: timezone} =
-        Scheduler.new_job()
+      %Job{schedule: schedule, overlap: overlap, timezone: timezone} = Scheduler.new_job()
 
       assert schedule == nil
       assert overlap == true
@@ -84,44 +85,61 @@ defmodule Quantum.SchedulerTest do
 
       :ok = Scheduler.add_job({spec, fun})
 
-      assert Enum.any? Scheduler.jobs, fn {_, %Job{schedule: schedule, task: task}} ->
-        schedule == spec && task == fun
-      end
+      assert Enum.any?(Scheduler.jobs(), fn {_, %Job{schedule: schedule, task: task}} ->
+               schedule == spec && task == fun
+             end)
     end
 
     @tag schedulers: [Scheduler]
     test "adding a named job struct at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
-      job = Scheduler.new_job()
-      |> Job.set_name(:test_job)
-      |> Job.set_schedule(spec)
-      |> Job.set_task(fun)
+
+      job =
+        Scheduler.new_job()
+        |> Job.set_name(:test_job)
+        |> Job.set_schedule(spec)
+        |> Job.set_task(fun)
+
       :ok = Scheduler.add_job(job)
-      assert Enum.member? Scheduler.jobs, {:test_job, %{job | run_strategy: %Random{nodes: :cluster}}}
+
+      assert Enum.member?(Scheduler.jobs(), {
+               :test_job,
+               %{job | run_strategy: %Random{nodes: :cluster}}
+             })
     end
 
     @tag schedulers: [Scheduler]
     test "adding a named {m, f, a} jpb at run time" do
       spec = ~e[1 * * * *]
       task = {IO, :puts, ["Tick"]}
-      job = Scheduler.new_job()
-      |> Job.set_name(:ticker)
-      |> Job.set_schedule(spec)
-      |> Job.set_task(task)
+
+      job =
+        Scheduler.new_job()
+        |> Job.set_name(:ticker)
+        |> Job.set_schedule(spec)
+        |> Job.set_task(task)
+
       :ok = Scheduler.add_job(job)
-      assert Enum.member? Scheduler.jobs, {:ticker, %{job | run_strategy: %Random{nodes: :cluster}}}
+
+      assert Enum.member?(Scheduler.jobs(), {
+               :ticker,
+               %{job | run_strategy: %Random{nodes: :cluster}}
+             })
     end
 
     @tag schedulers: [Scheduler]
     test "adding a unnamed job at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
-      job = Scheduler.new_job()
-      |> Job.set_schedule(spec)
-      |> Job.set_task(fun)
+
+      job =
+        Scheduler.new_job()
+        |> Job.set_schedule(spec)
+        |> Job.set_task(fun)
+
       :ok = Scheduler.add_job(job)
-      assert Enum.member? Scheduler.jobs, {job.name, job}
+      assert Enum.member?(Scheduler.jobs(), {job.name, job})
     end
   end
 
@@ -129,10 +147,13 @@ defmodule Quantum.SchedulerTest do
   test "finding a named job" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
-    job = Scheduler.new_job()
-    |> Job.set_name(:test_job)
-    |> Job.set_schedule(spec)
-    |> Job.set_task(fun)
+
+    job =
+      Scheduler.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+
     :ok = Scheduler.add_job(job)
     fjob = Scheduler.find_job(:test_job)
     assert fjob.name == :test_job
@@ -144,10 +165,12 @@ defmodule Quantum.SchedulerTest do
   test "deactivating a named job" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
-    job = Scheduler.new_job()
-    |> Job.set_name(:test_job)
-    |> Job.set_schedule(spec)
-    |> Job.set_task(fun)
+
+    job =
+      Scheduler.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
 
     :ok = Scheduler.add_job(job)
     :ok = Scheduler.deactivate_job(:test_job)
@@ -157,19 +180,20 @@ defmodule Quantum.SchedulerTest do
 
   @tag schedulers: [Scheduler]
   test "activating a named job" do
-      spec = ~e[* * * * *]
-      fun = fn -> :ok end
+    spec = ~e[* * * * *]
+    fun = fn -> :ok end
 
-      job = Scheduler.new_job()
+    job =
+      Scheduler.new_job()
       |> Job.set_name(:test_job)
       |> Job.set_state(:inactive)
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
 
-      :ok = Scheduler.add_job(job)
-      :ok = Scheduler.activate_job(:test_job)
-      ajob = Scheduler.find_job(:test_job)
-      assert ajob == %{job | state: :active}
+    :ok = Scheduler.add_job(job)
+    :ok = Scheduler.activate_job(:test_job)
+    ajob = Scheduler.find_job(:test_job)
+    assert ajob == %{job | state: :active}
   end
 
   @tag schedulers: [Scheduler]
@@ -177,14 +201,15 @@ defmodule Quantum.SchedulerTest do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
 
-    job = Scheduler.new_job()
-    |> Job.set_name(:test_job)
-    |> Job.set_schedule(spec)
-    |> Job.set_task(fun)
+    job =
+      Scheduler.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
 
     :ok = Scheduler.add_job(job)
     :ok = Scheduler.delete_job(:test_job)
-    assert !Enum.member? Scheduler.jobs, {:test_job, job}
+    assert !Enum.member?(Scheduler.jobs(), {:test_job, job})
   end
 
   @tag schedulers: [Scheduler]
@@ -193,27 +218,31 @@ defmodule Quantum.SchedulerTest do
       name = String.to_atom("test_job_" <> Integer.to_string(i))
       spec = ~e[* * * * *]
       fun = fn -> :ok end
-      job = Scheduler.new_job()
-      |> Job.set_name(name)
-      |> Job.set_schedule(spec)
-      |> Job.set_task(fun)
+
+      job =
+        Scheduler.new_job()
+        |> Job.set_name(name)
+        |> Job.set_schedule(spec)
+        |> Job.set_task(fun)
+
       :ok = Scheduler.add_job(job)
     end
-    assert Enum.count(Scheduler.jobs) == 3
-    Scheduler.delete_all_jobs
-    assert Scheduler.jobs == []
+
+    assert Enum.count(Scheduler.jobs()) == 3
+    Scheduler.delete_all_jobs()
+    assert Scheduler.jobs() == []
   end
 
   @tag schedulers: [ZeroTimeoutScheduler]
   test "timeout can be configured for genserver correctly" do
-    job = ZeroTimeoutScheduler.new_job()
-    |> Job.set_name(:tmpjob)
-    |> Job.set_schedule(~e[* */5 * * *])
-    |> Job.set_task(fn -> :ok end)
+    job =
+      ZeroTimeoutScheduler.new_job()
+      |> Job.set_name(:tmpjob)
+      |> Job.set_schedule(~e[* */5 * * *])
+      |> Job.set_task(fn -> :ok end)
 
     ZeroTimeoutScheduler.add_job(job)
 
-    assert {:timeout, _}
-      = catch_exit(ZeroTimeoutScheduler.find_job(:tmpjob))
+    assert {:timeout, _} = catch_exit(ZeroTimeoutScheduler.find_job(:tmpjob))
   end
 end

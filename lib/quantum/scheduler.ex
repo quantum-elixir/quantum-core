@@ -52,8 +52,8 @@ defmodule Quantum.Scheduler do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts, moduledoc: @moduledoc] do
       @moduledoc moduledoc
-      |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
-      |> String.replace(~r/:my_app/, Atom.to_string(Keyword.fetch!(opts, :otp_app)))
+                 |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
+                 |> String.replace(~r/:my_app/, Atom.to_string(Keyword.fetch!(opts, :otp_app)))
 
       @behaviour Quantum.Scheduler
 
@@ -75,23 +75,30 @@ defmodule Quantum.Scheduler do
       end
 
       def add_job(server \\ __job_broadcaster__(), job)
+
       def add_job(server, %Job{name: name} = job) do
         GenStage.cast(server, {:add, job})
       end
-      def add_job(server, {%Crontab.CronExpression{} = schedule, task}) when is_tuple(task) or is_function(task, 0) do
-        job = new_job()
-        |> Job.set_schedule(schedule)
-        |> Job.set_task(task)
+
+      def add_job(server, {%Crontab.CronExpression{} = schedule, task})
+          when is_tuple(task) or is_function(task, 0) do
+        job =
+          new_job()
+          |> Job.set_schedule(schedule)
+          |> Job.set_task(task)
+
         add_job(server, job)
       end
 
       def new_job(config \\ config()), do: Job.new(config)
 
-      def deactivate_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+      def deactivate_job(server \\ __job_broadcaster__(), name)
+          when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:change_state, name, :inactive})
       end
 
-      def activate_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+      def activate_job(server \\ __job_broadcaster__(), name)
+          when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:change_state, name, :active})
       end
 
@@ -99,7 +106,8 @@ defmodule Quantum.Scheduler do
         GenStage.call(server, {:find_job, name}, __timeout__())
       end
 
-      def delete_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+      def delete_job(server \\ __job_broadcaster__(), name)
+          when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:delete, name})
       end
 
@@ -119,7 +127,7 @@ defmodule Quantum.Scheduler do
       ]
 
       @doc false
-      @spec child_spec(Keyword.t) :: Supervisor.child_spec
+      @spec child_spec(Keyword.t()) :: Supervisor.child_spec()
       def child_spec(opts) do
         %{unquote_splicing(spec)}
       end
@@ -133,7 +141,7 @@ defmodule Quantum.Scheduler do
   @doc """
   Returns the configuration stored in the `:otp_app` environment.
   """
-  @callback config(Keyword.t) :: Keyword.t
+  @callback config(Keyword.t()) :: Keyword.t()
 
   @doc """
   Starts supervision and return `{:ok, pid}`
@@ -146,9 +154,10 @@ defmodule Quantum.Scheduler do
 
   See the configuration in the moduledoc for options.
   """
-  @callback start_link(opts :: Keyword.t) :: {:ok, pid} |
-                            {:error, {:already_started, pid}} |
-                            {:error, term}
+  @callback start_link(opts :: Keyword.t()) ::
+              {:ok, pid}
+              | {:error, {:already_started, pid}}
+              | {:error, term}
 
   @doc """
   A callback executed when the quantum starts.
@@ -158,50 +167,51 @@ defmodule Quantum.Scheduler do
 
   It must return the updated list of configuration
   """
-  @callback init(config :: Keyword.t) :: Keyword.t
+  @callback init(config :: Keyword.t()) :: Keyword.t()
 
   @doc """
   Shuts down the quantum represented by the given pid.
   """
-  @callback stop(server :: GenServer.server, timeout) :: :ok
+  @callback stop(server :: GenServer.server(), timeout) :: :ok
 
   @doc """
   Creates a new Job. The job can be added by calling `add_job/1`.
   """
-  @callback new_job(Keyword.t) :: Quantum.Job.t
+  @callback new_job(Keyword.t()) :: Quantum.Job.t()
 
   @doc """
   Adds a new job
   """
-  @callback add_job(GenStage.stage, Quantum.Job.t | {Crontab.CronExpression.t, Job.task}) :: :ok
+  @callback add_job(GenStage.stage(), Quantum.Job.t() | {Crontab.CronExpression.t(), Job.task()}) ::
+              :ok
 
   @doc """
   Deactivates a job by name
   """
-  @callback deactivate_job(GenStage.stage, atom) :: :ok
+  @callback deactivate_job(GenStage.stage(), atom) :: :ok
 
   @doc """
   Activates a job by name
   """
-  @callback activate_job(GenStage.stage, atom) :: :ok
+  @callback activate_job(GenStage.stage(), atom) :: :ok
 
   @doc """
   Resolves a job by name
   """
-  @callback find_job(GenStage.stage, atom) :: Quantum.Job.t | nil
+  @callback find_job(GenStage.stage(), atom) :: Quantum.Job.t() | nil
 
   @doc """
   Deletes a job by name
   """
-  @callback delete_job(GenStage.stage, atom) :: :ok
+  @callback delete_job(GenStage.stage(), atom) :: :ok
 
   @doc """
   Deletes all jobs
   """
-  @callback delete_all_jobs(GenStage.stage) :: :ok
+  @callback delete_all_jobs(GenStage.stage()) :: :ok
 
   @doc """
   Returns the list of currently defined jobs
   """
-  @callback jobs(GenStage.stage) :: [Quantum.Job.t]
+  @callback jobs(GenStage.stage()) :: [Quantum.Job.t()]
 end

@@ -17,55 +17,82 @@ defmodule Quantum.ExecutorTest do
   end
 
   setup do
-    {:ok, _task_supervisor} = start_supervised({Task.Supervisor, [name: Module.concat(__MODULE__, TaskSupervisor)]})
-    {:ok, task_registry} = start_supervised({TaskRegistry, Module.concat(__MODULE__, TaskRegistry)})
+    {:ok, _task_supervisor} =
+      start_supervised({Task.Supervisor, [name: Module.concat(__MODULE__, TaskSupervisor)]})
 
-    {:ok, %{task_supervisor: Module.concat(__MODULE__, TaskSupervisor), task_registry: task_registry}}
+    {:ok, task_registry} =
+      start_supervised({TaskRegistry, Module.concat(__MODULE__, TaskRegistry)})
+
+    {
+      :ok,
+      %{task_supervisor: Module.concat(__MODULE__, TaskSupervisor), task_registry: task_registry}
+    }
   end
 
   describe "start_link/3" do
-    test "executes given task using anonymous function", %{task_supervisor: task_supervisor, task_registry: task_registry} do
+    test "executes given task using anonymous function", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
       caller = self()
-      job = TestScheduler.new_job()
-      |> Job.set_task(fn -> send(caller, :executed) end)
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> send(caller, :executed) end)
 
       Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
       assert_receive :executed
     end
 
-    test "executes given task using function tuple", %{task_supervisor: task_supervisor, task_registry: task_registry} do
+    test "executes given task using function tuple", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
       caller = self()
-      job = TestScheduler.new_job()
-      |> Job.set_task({__MODULE__, :send, [caller]})
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task({__MODULE__, :send, [caller]})
 
       Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
       assert_receive :executed
     end
 
-    test "doesn't crash on invalid node", %{task_supervisor: task_supervisor, task_registry: task_registry} do
+    test "doesn't crash on invalid node", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
       caller = self()
       node = :"invalid-name@invalid-host"
-      job = TestScheduler.new_job()
-      |> Job.set_task(fn -> send(caller, :executed) end)
-      |> Job.set_run_strategy(%All{nodes: [node]})
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> send(caller, :executed) end)
+        |> Job.set_run_strategy(%All{nodes: [node]})
 
       assert capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+               Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-        refute_receive :executed
-      end) =~ "Node #{inspect node} is not running. Job #{inspect job.name} could not be executed."
+               refute_receive :executed
+             end) =~
+               "Node #{inspect(node)} is not running. Job #{inspect(job.name)} could not be executed."
     end
 
-    test "executes given task without overlap", %{task_supervisor: task_supervisor, task_registry: task_registry} do
+    test "executes given task without overlap", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
       caller = self()
-      job = TestScheduler.new_job()
-      |> Job.set_task(fn ->
-        Process.sleep(50)
-        send(caller, :executed)
-      end)
-      |> Job.set_overlap(false)
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn ->
+             Process.sleep(50)
+             send(caller, :executed)
+           end)
+        |> Job.set_overlap(false)
 
       Executor.start_link({task_supervisor, task_registry}, {:execute, job})
       Executor.start_link({task_supervisor, task_registry}, {:execute, job})
@@ -74,14 +101,19 @@ defmodule Quantum.ExecutorTest do
       refute_receive :executed
     end
 
-    test "releases lock on success", %{task_supervisor: task_supervisor, task_registry: task_registry} do
+    test "releases lock on success", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
       caller = self()
-      job = TestScheduler.new_job()
-      |> Job.set_task(fn ->
-        Process.sleep(50)
-        send(caller, :executed)
-      end)
-      |> Job.set_overlap(false)
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn ->
+             Process.sleep(50)
+             send(caller, :executed)
+           end)
+        |> Job.set_overlap(false)
 
       Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
@@ -96,17 +128,21 @@ defmodule Quantum.ExecutorTest do
       assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
     end
 
-    test "releases lock on error", %{task_supervisor: task_supervisor, task_registry: task_registry} do
-      job = TestScheduler.new_job()
-      |> Job.set_task(fn -> raise "failed" end)
-      |> Job.set_overlap(false)
+    test "releases lock on error", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry
+    } do
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> raise "failed" end)
+        |> Job.set_overlap(false)
 
       # Mute Error
       assert capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+               Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-        Process.sleep(50)
-      end)
+               Process.sleep(50)
+             end)
 
       assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
     end

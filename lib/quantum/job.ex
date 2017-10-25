@@ -22,23 +22,23 @@ defmodule Quantum.Job do
     :name,
     schedule: nil,
     task: nil,
-    state: :active,
+    state: :active
   ]
 
   @type state :: :active | :inactive
   @type task :: {atom, atom, [any]} | (() -> any)
-  @type timezone :: :utc | :local | String.t
-  @type schedule :: Crontab.CronExpression.t
+  @type timezone :: :utc | :local | String.t()
+  @type schedule :: Crontab.CronExpression.t()
 
   @type t :: %__MODULE__{
-    name: atom | Reference,
-    schedule: schedule | nil,
-    task: task | nil,
-    state: state,
-    run_strategy: Quantum.RunStrategy.NodeList,
-    overlap: boolean,
-    timezone: timezone
-  }
+          name: atom | Reference,
+          schedule: schedule | nil,
+          task: task | nil,
+          state: state,
+          run_strategy: Quantum.RunStrategy.NodeList,
+          overlap: boolean,
+          timezone: timezone
+        }
 
   @doc """
   Takes some config from a scheduler and returns a new job
@@ -49,21 +49,21 @@ defmodule Quantum.Job do
       ...> |> Quantum.Job.new
       %Quantum.Job{...}
   """
-  @spec new(config :: Keyword.t) :: t
+  @spec new(config :: Keyword.t()) :: t
   def new(config) do
     with {run_strategy_name, options} <- Keyword.fetch!(config, :run_strategy),
          run_strategy <- run_strategy_name.normalize_config!(options),
          name <- make_ref(),
          overlap when is_boolean(overlap) <- Keyword.fetch!(config, :overlap),
-         timezone when timezone == :utc or is_binary(timezone) <- Keyword.fetch!(config, :timezone),
-         schedule <- Keyword.get(config, :schedule)
-    do
+         timezone when timezone == :utc or is_binary(timezone) <-
+           Keyword.fetch!(config, :timezone),
+         schedule <- Keyword.get(config, :schedule) do
       %__MODULE__{
         name: name,
         overlap: Keyword.fetch!(config, :overlap),
         timezone: Keyword.fetch!(config, :timezone),
         run_strategy: run_strategy,
-        schedule: schedule,
+        schedule: schedule
       }
     end
   end
@@ -103,8 +103,9 @@ defmodule Quantum.Job do
       Crontab.CronExpression.Parser.parse!("*/7")
 
   """
-  @spec set_schedule(t, CronExpression.t) :: t
-  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule), do: %{job | schedule: schedule}
+  @spec set_schedule(t, CronExpression.t()) :: t
+  def set_schedule(%__MODULE__{} = job, %CronExpression{} = schedule),
+    do: %{job | schedule: schedule}
 
   @doc """
   Sets a jobs schedule.
@@ -124,7 +125,9 @@ defmodule Quantum.Job do
   """
   @spec set_task(t, task) :: t
   def set_task(%__MODULE__{} = job, {module, function, args} = task)
-  when is_atom(module) and is_atom(function) and is_list(args), do: Map.put(job, :task, task)
+      when is_atom(module) and is_atom(function) and is_list(args),
+      do: Map.put(job, :task, task)
+
   def set_task(%__MODULE__{} = job, task) when is_function(task, 0), do: Map.put(job, :task, task)
 
   @doc """
@@ -164,7 +167,8 @@ defmodule Quantum.Job do
 
   """
   @spec set_run_strategy(t, Quantum.RunStrategy.NodeList) :: t
-  def set_run_strategy(%__MODULE__{} = job, run_strategy), do: Map.put(job, :run_strategy, run_strategy)
+  def set_run_strategy(%__MODULE__{} = job, run_strategy),
+    do: Map.put(job, :run_strategy, run_strategy)
 
   @doc """
   Sets a jobs overlap.
@@ -183,7 +187,8 @@ defmodule Quantum.Job do
 
   """
   @spec set_overlap(t, boolean) :: t
-  def set_overlap(%__MODULE__{} = job, overlap?) when is_boolean(overlap?), do: Map.put(job, :overlap, overlap?)
+  def set_overlap(%__MODULE__{} = job, overlap?) when is_boolean(overlap?),
+    do: Map.put(job, :overlap, overlap?)
 
   @doc """
   Sets a jobs timezone.
@@ -201,6 +206,6 @@ defmodule Quantum.Job do
       "Europe/Zurich"
 
   """
-  @spec set_timezone(t, String.t | :utc | :local) :: t
+  @spec set_timezone(t, String.t() | :utc | :local) :: t
   def set_timezone(%__MODULE__{} = job, timezone), do: Map.put(job, :timezone, timezone)
 end
