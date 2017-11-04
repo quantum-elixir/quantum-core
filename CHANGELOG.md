@@ -6,14 +6,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
-## Fixed
+## 2.1.2 - 2017-11-04
+
+### Added
+- Distillery is not mentioned in list of package managers
+
+### Changed
+- Source is not formatted properly
+
+### Fixed
 - Removed unused Alias from `Quantum.Job`
+- Hot upgrade is not possible due to missing supervisor
 
 ## 2.1.1 - 2017-10-02
 
 Diff for [2.1.1]
 
-## Fixed
+### Fixed
 - Resolved some Dialyzer Warnings
 
 ## 2.1.0 - 2017-09-10
@@ -414,7 +423,8 @@ Diff for [1.9.1]
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.1...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/c-rack/quantum-elixir/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...v2.1.0
 [2.1.0-beta.1]: https://github.com/c-rack/quantum-elixir/compare/v2.0.4...v2.1.0-beta.1
