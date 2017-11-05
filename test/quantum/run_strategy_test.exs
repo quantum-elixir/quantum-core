@@ -11,21 +11,21 @@ defmodule Quantum.RunStrategyTest do
   end
 
   test "run strategy local" do
-    job = Scheduler.config(run_strategy: Quantum.RunStrategy.Local) |> Job.new()
+    job = Job.new(Scheduler.config(run_strategy: Quantum.RunStrategy.Local))
     assert %Job{} = job
     assert [_] = NodeList.nodes(job.run_strategy, job)
   end
 
   test "run strategy random" do
-    job =
-      Scheduler.config(run_strategy: {Quantum.RunStrategy.Random, [:node1, :node2]}) |> Job.new()
-
+    node_list = [:node1, :node2]
+    job = Job.new(Scheduler.config(run_strategy: {Quantum.RunStrategy.Random, node_list}))
     assert [node] = NodeList.nodes(job.run_strategy, job)
     assert Enum.member?([:node1, :node2], node)
   end
 
   test "run strategy all" do
-    job = Scheduler.config(run_strategy: {Quantum.RunStrategy.All, [:node1, :node2]}) |> Job.new()
+    node_list = [:node1, :node2]
+    job = Job.new(Scheduler.config(run_strategy: {Quantum.RunStrategy.All, node_list}))
     assert [_, _] = NodeList.nodes(job.run_strategy, job)
   end
 end
