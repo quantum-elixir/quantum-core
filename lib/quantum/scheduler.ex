@@ -4,7 +4,7 @@ defmodule Quantum.Scheduler do
 
   When used, the quantum scheduler expects the `:otp_app` as option.
   The `:otp_app` should point to an OTP application that has
-  the quantum rinner configuration. For example, the quantum scheduler:
+  the quantum runner configuration. For example, the quantum scheduler:
 
       defmodule MyApp.Scheduler do
         use Quantum.Scheduler, otp_app: :my_app
