@@ -6,8 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.1.3 - 2017-11-07
+
+Diff for [2.1.3]
+
 ### Fixed
 - Runtime Added Jobs are executed right away instead of waiting for the next job execution.
+- Fix Typo in Doc
 
 ## 2.1.2 - 2017-11-04
 
@@ -428,7 +433,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.2...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.3...HEAD
+[2.1.3]: https://github.com/c-rack/quantum-elixir/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/c-rack/quantum-elixir/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...v2.1.0
