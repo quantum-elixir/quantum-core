@@ -15,7 +15,14 @@ config :my_app, MyApp.Scheduler,
   ]
 ```
 
-The run strategy can be configured by providing a tuple of the strategy module name and it's options.
+The run strategy can be configured by providing a tuple of the strategy module name and it's options. If you choose `Local Node` strategy, the config should be:
+
+```elixir
+config :my_app, MyApp.Scheduler,
+  jobs: [
+    [schedule: "* * * * *", run_strategy: Quantum.RunStrategy.Local],
+  ]
+```
 
 ### Runtime
 
@@ -34,6 +41,12 @@ If you want to run a task on all nodes of either a list or in the whole cluster,
 `Quantum.RunStrategy.Random`
 
 If you want to run a task on any node of either a list or in the whole cluster, use this strategy.
+
+### Local Node
+
+`Quantum.RunStrategy.Local`
+
+If you want to run a task on local node, use this strategy.
 
 ## Custom Run Strategy
 
