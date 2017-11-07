@@ -13,7 +13,7 @@ defmodule Quantum.RunStrategyTest do
   test "run strategy local" do
     job = Job.new(Scheduler.config(run_strategy: Quantum.RunStrategy.Local))
     assert %Job{} = job
-    assert [:nonode@nohost] == NodeList.nodes(job.run_strategy, job)
+    assert [Node.self()] == NodeList.nodes(job.run_strategy, job)
   end
 
   test "run strategy random" do
