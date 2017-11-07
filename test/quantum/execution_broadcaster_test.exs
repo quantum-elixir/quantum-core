@@ -117,6 +117,21 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
       assert_receive {:received, {:execute, ^job}}, @max_timeout
     end
+
+    test "will recalculate execution timer when a new job is added", %{producer: producer} do
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[1 1 1 1 1])
+
+      job_new =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      TestProducer.send(producer, {:add, job})
+      TestProducer.send(producer, {:add, job_new})
+
+      assert_receive {:received, {:execute, ^job_new}}, @max_timeout
+    end
   end
 
   describe "remove" do

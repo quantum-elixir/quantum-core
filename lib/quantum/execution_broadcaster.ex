@@ -147,7 +147,10 @@ defmodule Quantum.ExecutionBroadcaster do
 
     timer =
       case NaiveDateTime.compare(run_date, NaiveDateTime.utc_now()) do
-        :gt ->
+        :eq ->
+          send(self(), :execute)
+          nil
+        _ ->
           monotonic_time =
             run_date
             |> DateTime.from_naive!("Etc/UTC")
@@ -155,10 +158,6 @@ defmodule Quantum.ExecutionBroadcaster do
             |> Kernel.-(System.time_offset(:millisecond))
 
           Process.send_after(self(), :execute, monotonic_time, abs: true)
-
-        _ ->
-          send(self(), :execute)
-          nil
       end
 
     Map.put(state, :timer, {timer, run_date})
@@ -168,12 +167,11 @@ defmodule Quantum.ExecutionBroadcaster do
     run_date = next_run_date(jobs)
 
     case NaiveDateTime.compare(run_date, old_date) do
-      :gt ->
+      :eq ->
+        state
+      _ ->
         Process.cancel_timer(timer)
         reset_timer(Map.put(state, :timer, nil))
-
-      _ ->
-        state
     end
   end
 
