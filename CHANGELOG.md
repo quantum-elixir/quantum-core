@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+### Fixed
+- Runtime Added Jobs are executed right away instead of waiting for the next job execution.
+
 ## 2.1.2 - 2017-11-04
 
 ### Added
