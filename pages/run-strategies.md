@@ -18,7 +18,10 @@ config :my_app, MyApp.Scheduler,
 The run strategy can be configured by providing a tuple of the strategy module name and it's options. If you choose `Local Node` strategy, the config should be:
 
 ```elixir
-[schedule: "* * * * *", run_strategy: Quantum.RunStrategy.Local],
+config :my_app, MyApp.Scheduler,
+  jobs: [
+    [schedule: "* * * * *", run_strategy: Quantum.RunStrategy.Local],
+  ]
 ```
 
 ### Runtime
