@@ -6,10 +6,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.1.3 - 2017-11-07
+
+Diff for [2.1.3]
+
 ### Fixed
 - Runtime Added Jobs are executed right away instead of waiting for the next job execution.
+- Fix Typo in Doc
 
 ## 2.1.2 - 2017-11-04
+
+Diff for [2.1.2]
 
 ### Added
 - Distillery is not mentioned in list of package managers
@@ -71,10 +78,10 @@ Diff for [2.0.3]
 
 ## 2.0.2 - 2017-08-23
 
-  Diff for [2.0.2]
+Diff for [2.0.2]
 
-  ### Fixed
-  - Updated Docs.
+### Fixed
+- Updated Docs.
 
 ## 2.0.1 - 2017-08-23
 
@@ -110,7 +117,7 @@ Diff for [1.9.1]
 
 ## 1.9.0 - 2017-02-07
 
- Diff for [1.9.0]
+Diff for [1.9.0]
 
 ### Removed
 - Three modules were removed and replaced by [crontab](https://hex.pm/packages/crontab).
@@ -131,7 +138,7 @@ Diff for [1.9.1]
 
 ## 1.8.1 - 2016-11-20
 
- Diff for [1.8.1]
+Diff for [1.8.1]
 
 ### Changed
 - Clarity on the table to not use full name of day ([Coburn Berry](https://github.com/crododile))
@@ -149,7 +156,7 @@ Diff for [1.9.1]
 
 ## 1.8.0 - 2016-09-19
 
- Diff for [1.8.0]
+Diff for [1.8.0]
 
 ### Changed
 - Requires Elixir >= 1.3
@@ -167,7 +174,7 @@ Diff for [1.9.1]
 
 ## 1.7.1 - 2016-03-24
 
- Diff for [1.7.1]
+Diff for [1.7.1]
 
 ### Added
 - Optional per-job timezone support
@@ -179,7 +186,7 @@ Diff for [1.9.1]
 
 ## 1.7.0 - 2016-03-09
 
- Diff for [1.7.0]
+Diff for [1.7.0]
 
 ### Added
 - ToC to README
@@ -202,7 +209,7 @@ Diff for [1.9.1]
 
 ## 1.6.1 - 2015-12-09
 
- Diff for [1.6.1]
+Diff for [1.6.1]
 
 ### Fixed
 - `@reboot` entries are throwing errors
@@ -216,7 +223,7 @@ Diff for [1.9.1]
 
 ## 1.6.0 - 2015-11-25
 
- Diff for [1.6.0]
+Diff for [1.6.0]
 
 ### Added
 - PID of last executed task to job struct
@@ -234,7 +241,7 @@ Diff for [1.9.1]
 
 ## 1.5.0 - 2015-09-24
 
- Diff for [1.5.0]
+Diff for [1.5.0]
 
 ### Added
 - Ability to run jobs on exact node ([Rodion Vshevtsov](https://github.com/alPacino))
@@ -249,7 +256,7 @@ Diff for [1.9.1]
 
 ## 1.4.0 - 2015-09-02
 
- Diff for [1.4.0]
+Diff for [1.4.0]
 
 ### Added
 - Named jobs and the ability to (de)activate them ([Rodion Vshevtsov](https://github.com/alPacino))
@@ -261,7 +268,7 @@ Diff for [1.9.1]
 
 ## 1.3.2 - 2015-08-22
 
- Diff for [1.3.2]
+Diff for [1.3.2]
 
 ### Added
 - Timezone option to README.
@@ -271,7 +278,7 @@ Diff for [1.9.1]
 
 ## 1.3.1 - 2015-07-27
 
- Diff for [1.3.1]
+Diff for [1.3.1]
 
 ### Added
 - Added contributors to changelog and project description
@@ -282,7 +289,7 @@ Diff for [1.9.1]
 
 ## 1.3.0 - 2015-07-15
 
- Diff for [1.3.0]
+Diff for [1.3.0]
 
 
 ### Added
@@ -292,7 +299,7 @@ Diff for [1.9.1]
 
 ## 1.2.4 - 2015-06-22
 
- Diff for [1.2.4]
+Diff for [1.2.4]
 
 ### Changed
 - Renamed parse/5 functions to do_parse/5 and made them private
@@ -309,7 +316,7 @@ Diff for [1.9.1]
 
 ## 1.2.3 - 2015-06-15
 
- Diff for [1.2.3]
+Diff for [1.2.3]
 
 ### Added
 - Support for `@reboot`
@@ -319,7 +326,7 @@ Diff for [1.9.1]
 
 ## 1.2.2 - 2015-06-15
 
- Diff for [1.2.2]
+Diff for [1.2.2]
 
 ### Added
 - Support for `@annually` and `@midnight`
@@ -335,7 +342,7 @@ Diff for [1.9.1]
 
 ## 1.2.1 - 2015-06-13
 
- Diff for [1.2.1]
+Diff for [1.2.1]
 
 ### Added
 - Test for handle_info(:tick_state)
@@ -359,7 +366,7 @@ Diff for [1.9.1]
 
 ## 1.2.0 - 2015-06-11
 
- Diff for [1.2.0]
+Diff for [1.2.0]
 
 ### Changed
 - Date is updated in state only if it changed
@@ -375,7 +382,7 @@ Diff for [1.9.1]
 
 ## 1.1.0 - 2015-05-28
 
- Diff for [1.1.0]
+Diff for [1.1.0]
 
 ### Added
 - Add ability to schedule jobs at runtime and ability to view jobs ([Dan Swain](https://github.com/dantswain))
@@ -385,21 +392,21 @@ Diff for [1.9.1]
 
 ## 1.0.4 - 2015-05-26
 
- Diff for [1.0.4]
+Diff for [1.0.4]
 
 ### Fixed
 - Written month and weekday names are not parsed
 
 ## 1.0.3 - 2015-05-01
 
- Diff for [1.0.3]
+Diff for [1.0.3]
 
 ### Fixed
 - Do not fire on first tick
 
 ## 1.0.2 - 2015-04-29
 
- Diff for [1.0.2]
+Diff for [1.0.2]
 
 ### Fixed
 - Special expressions are not correctly in all cases
@@ -409,7 +416,7 @@ Diff for [1.9.1]
 
 ## 1.0.1 - 2015-04-27
 
- Diff for [1.0.1]
+Diff for [1.0.1]
 
 ### Added
 - Configure cronjobs in config
@@ -420,13 +427,14 @@ Diff for [1.9.1]
 
 ## 1.0.0 - 2015-04-27
 
- Diff for [1.0.0]
+Diff for [1.0.0]
 
 ### Added
 - Initial commit
 
 
-[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.2...HEAD
+[unreleased]: https://github.com/c-rack/quantum-elixir/compare/v2.1.3...HEAD
+[2.1.3]: https://github.com/c-rack/quantum-elixir/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/c-rack/quantum-elixir/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/c-rack/quantum-elixir/compare/v2.1.0-beta.1...v2.1.0
