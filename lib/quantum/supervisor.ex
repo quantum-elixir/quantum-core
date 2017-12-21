@@ -2,6 +2,7 @@ defmodule Quantum.Supervisor do
   @moduledoc false
 
   use Supervisor
+  alias Quantum.TaskStagesSupervisor
 
   @doc """
   Starts the quantum supervisor.
@@ -20,30 +21,7 @@ defmodule Quantum.Supervisor do
 
     Supervisor.init(
       [
-        {Quantum.TaskRegistry, Keyword.fetch!(opts, :task_registry)},
-        {
-          Quantum.JobBroadcaster,
-          {
-            Keyword.fetch!(opts, :job_broadcaster),
-            Keyword.fetch!(opts, :jobs)
-          }
-        },
-        {
-          Quantum.ExecutionBroadcaster,
-          {
-            Keyword.fetch!(opts, :execution_broadcaster),
-            Keyword.fetch!(opts, :job_broadcaster)
-          }
-        },
-        {
-          Quantum.ExecutorSupervisor,
-          {
-            Keyword.fetch!(opts, :executor_supervisor),
-            Keyword.fetch!(opts, :execution_broadcaster),
-            Keyword.fetch!(opts, :task_supervisor),
-            Keyword.fetch!(opts, :task_registry)
-          }
-        },
+        {TaskStagesSupervisor, opts},
         {Task.Supervisor, [name: Keyword.get(opts, :task_supervisor)]}
       ],
       strategy: :rest_for_one
