@@ -29,32 +29,24 @@ defmodule Quantum do
       |> Keyword.merge(custom)
       |> Keyword.merge(otp_app: otp_app, quantum: quantum)
 
+    # Default Task Stages Supervisor Name
+    task_stages_supervisor =
+      if Keyword.fetch!(config, :global),
+        do: {:global, Module.concat(quantum, TaskStagesSupervisor)},
+        else: Module.concat(quantum, TaskStagesSupervisor)
+
     # Default Job Broadcaster Name
-    job_broadcaster =
-      if Keyword.fetch!(config, :global),
-        do: {:global, Module.concat(quantum, JobBroadcaster)},
-        else: Module.concat(quantum, JobBroadcaster)
-
-    execution_broadcaster =
-      if Keyword.fetch!(config, :global),
-        do: {:global, Module.concat(quantum, ExecutionBroadcaster)},
-        else: Module.concat(quantum, ExecutionBroadcaster)
-
-    executor_supervisor =
-      if Keyword.fetch!(config, :global),
-        do: {:global, Module.concat(quantum, ExecutorSupervisor)},
-        else: Module.concat(quantum, ExecutorSupervisor)
-
-    task_registry =
-      if Keyword.fetch!(config, :global),
-        do: {:global, Module.concat(quantum, TaskRegistry)},
-        else: Module.concat(quantum, TaskRegistry)
+    job_broadcaster = Module.concat(quantum, JobBroadcaster)
+    execution_broadcaster = Module.concat(quantum, ExecutionBroadcaster)
+    executor_supervisor = Module.concat(quantum, ExecutorSupervisor)
+    task_registry = Module.concat(quantum, TaskRegistry)
 
     # Default Task Supervisor Name
     task_supervisor = Module.concat(quantum, Task.Supervisor)
 
     config
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
+    |> Keyword.put_new(:task_stages_supervisor, task_stages_supervisor)
     |> Keyword.put_new(:job_broadcaster, job_broadcaster)
     |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)
