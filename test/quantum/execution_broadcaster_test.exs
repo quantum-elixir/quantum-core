@@ -40,11 +40,13 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[* * * * * #{NaiveDateTime.utc_now().year + 1}])
 
-      TestProducer.send(producer, {:add, reboot_job})
-      TestProducer.send(producer, {:add, non_reboot_job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, reboot_job})
+        TestProducer.send(producer, {:add, non_reboot_job})
 
-      assert_receive {:received, {:execute, ^reboot_job}}, @max_timeout
-      refute_receive {:received, {:execute, ^non_reboot_job}}, @max_timeout
+        assert_receive {:received, {:execute, ^reboot_job}}, @max_timeout
+        refute_receive {:received, {:execute, ^non_reboot_job}}, @max_timeout
+      end)
     end
 
     test "normal schedule triggers once per second", %{producer: producer} do
@@ -52,10 +54,12 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[*]e)
 
-      TestProducer.send(producer, {:add, job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
     end
 
     test "normal schedule in other timezone triggers once per second", %{producer: producer} do
@@ -64,10 +68,12 @@ defmodule Quantum.ExecutionBroadcasterTest do
         |> Job.set_schedule(~e[*]e)
         |> Job.set_timezone("Europe/Zurich")
 
-      TestProducer.send(producer, {:add, job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
     end
 
     test "impossible schedule will not create a crash", %{producer: producer} do
@@ -109,13 +115,15 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[*])
 
-      TestProducer.send(producer, {:add, job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
 
-      TestProducer.send(producer, {:add, job_new})
+        TestProducer.send(producer, {:add, job_new})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
     end
 
     test "will recalculate execution timer when a new job is added", %{producer: producer} do
@@ -127,10 +135,12 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[*]e)
 
-      TestProducer.send(producer, {:add, job})
-      TestProducer.send(producer, {:add, job_new})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
+        TestProducer.send(producer, {:add, job_new})
 
-      assert_receive {:received, {:execute, ^job_new}}, @max_timeout
+        assert_receive {:received, {:execute, ^job_new}}, @max_timeout
+      end)
     end
   end
 
@@ -140,13 +150,15 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[*]e)
 
-      TestProducer.send(producer, {:add, job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
 
-      TestProducer.send(producer, {:remove, job.name})
+        TestProducer.send(producer, {:remove, job.name})
 
-      refute_receive {:received, {:execute, ^job}}, @max_timeout
+        refute_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
     end
 
     test "remove inexistent will not crash", %{producer: producer} do
@@ -154,13 +166,15 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestScheduler.new_job()
         |> Job.set_schedule(~e[*]e)
 
-      TestProducer.send(producer, {:add, job})
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
 
-      TestProducer.send(producer, {:remove, make_ref()})
+        TestProducer.send(producer, {:remove, make_ref()})
 
-      assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
     end
   end
 end

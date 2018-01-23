@@ -51,6 +51,20 @@ defmodule YourApp.Application do
 end
 ```
 
+## Troubleshooting
+
+To see more transparently what `quantum` is doing, configure the `logger` to display `:debug` messages.
+
+```elixir
+config :logger,
+  level: :debug
+```
+
+If you encounter any problems with `quantum`, please search if there is already an
+  [open issue](https://github.com/c-rack/quantum-elixir/issues) addressing the problem.
+
+Otherwise feel free to [open an issue](https://github.com/c-rack/quantum-elixir/issues/new). Please include debug logs.
+
 ## Migrate to V2
 
 See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).

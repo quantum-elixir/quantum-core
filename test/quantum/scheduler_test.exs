@@ -6,8 +6,9 @@ defmodule Quantum.SchedulerTest do
   alias Quantum.Job
   alias Quantum.RunStrategy.Random
 
+  import ExUnit.CaptureLog
+
   import Crontab.CronExpression
-  # import ExUnit.CaptureLog
 
   defmodule Scheduler do
     @moduledoc false
@@ -83,11 +84,13 @@ defmodule Quantum.SchedulerTest do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end
 
-      :ok = Scheduler.add_job({spec, fun})
+      capture_log(fn ->
+        :ok = Scheduler.add_job({spec, fun})
 
-      assert Enum.any?(Scheduler.jobs(), fn {_, %Job{schedule: schedule, task: task}} ->
-               schedule == spec && task == fun
-             end)
+        assert Enum.any?(Scheduler.jobs(), fn {_, %Job{schedule: schedule, task: task}} ->
+                 schedule == spec && task == fun
+               end)
+       end)
     end
 
     @tag schedulers: [Scheduler]
@@ -101,12 +104,14 @@ defmodule Quantum.SchedulerTest do
         |> Job.set_schedule(spec)
         |> Job.set_task(fun)
 
-      :ok = Scheduler.add_job(job)
+      capture_log(fn ->
+        :ok = Scheduler.add_job(job)
 
-      assert Enum.member?(Scheduler.jobs(), {
-               :test_job,
-               %{job | run_strategy: %Random{nodes: :cluster}}
-             })
+        assert Enum.member?(Scheduler.jobs(), {
+                 :test_job,
+                 %{job | run_strategy: %Random{nodes: :cluster}}
+               })
+       end)
     end
 
     @tag schedulers: [Scheduler]
@@ -120,12 +125,14 @@ defmodule Quantum.SchedulerTest do
         |> Job.set_schedule(spec)
         |> Job.set_task(task)
 
-      :ok = Scheduler.add_job(job)
+      capture_log(fn ->
+        :ok = Scheduler.add_job(job)
 
-      assert Enum.member?(Scheduler.jobs(), {
-               :ticker,
-               %{job | run_strategy: %Random{nodes: :cluster}}
-             })
+        assert Enum.member?(Scheduler.jobs(), {
+                 :ticker,
+                 %{job | run_strategy: %Random{nodes: :cluster}}
+               })
+       end)
     end
 
     @tag schedulers: [Scheduler]
@@ -138,8 +145,10 @@ defmodule Quantum.SchedulerTest do
         |> Job.set_schedule(spec)
         |> Job.set_task(fun)
 
-      :ok = Scheduler.add_job(job)
-      assert Enum.member?(Scheduler.jobs(), {job.name, job})
+      capture_log(fn ->
+        :ok = Scheduler.add_job(job)
+        assert Enum.member?(Scheduler.jobs(), {job.name, job})
+      end)
     end
   end
 
@@ -154,11 +163,13 @@ defmodule Quantum.SchedulerTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
 
-    :ok = Scheduler.add_job(job)
-    fjob = Scheduler.find_job(:test_job)
-    assert fjob.name == :test_job
-    assert fjob.schedule == spec
-    assert fjob.run_strategy == %Random{nodes: :cluster}
+    capture_log(fn ->
+      :ok = Scheduler.add_job(job)
+      fjob = Scheduler.find_job(:test_job)
+      assert fjob.name == :test_job
+      assert fjob.schedule == spec
+      assert fjob.run_strategy == %Random{nodes: :cluster}
+    end)
   end
 
   @tag schedulers: [Scheduler]
@@ -172,10 +183,12 @@ defmodule Quantum.SchedulerTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
 
-    :ok = Scheduler.add_job(job)
-    :ok = Scheduler.deactivate_job(:test_job)
-    sjob = Scheduler.find_job(:test_job)
-    assert sjob == %{job | state: :inactive}
+    capture_log(fn ->
+      :ok = Scheduler.add_job(job)
+      :ok = Scheduler.deactivate_job(:test_job)
+      sjob = Scheduler.find_job(:test_job)
+      assert sjob == %{job | state: :inactive}
+    end)
   end
 
   @tag schedulers: [Scheduler]
@@ -190,10 +203,12 @@ defmodule Quantum.SchedulerTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
 
-    :ok = Scheduler.add_job(job)
-    :ok = Scheduler.activate_job(:test_job)
-    ajob = Scheduler.find_job(:test_job)
-    assert ajob == %{job | state: :active}
+    capture_log(fn ->
+      :ok = Scheduler.add_job(job)
+      :ok = Scheduler.activate_job(:test_job)
+      ajob = Scheduler.find_job(:test_job)
+      assert ajob == %{job | state: :active}
+    end)
   end
 
   @tag schedulers: [Scheduler]
@@ -207,30 +222,34 @@ defmodule Quantum.SchedulerTest do
       |> Job.set_schedule(spec)
       |> Job.set_task(fun)
 
-    :ok = Scheduler.add_job(job)
-    :ok = Scheduler.delete_job(:test_job)
-    assert !Enum.member?(Scheduler.jobs(), {:test_job, job})
+    capture_log(fn ->
+      :ok = Scheduler.add_job(job)
+      :ok = Scheduler.delete_job(:test_job)
+      assert !Enum.member?(Scheduler.jobs(), {:test_job, job})
+    end)
   end
 
   @tag schedulers: [Scheduler]
   test "deleting all jobs" do
-    for i <- 1..3 do
-      name = String.to_atom("test_job_" <> Integer.to_string(i))
-      spec = ~e[* * * * *]
-      fun = fn -> :ok end
+    capture_log(fn ->
+      for i <- 1..3 do
+        name = String.to_atom("test_job_" <> Integer.to_string(i))
+        spec = ~e[* * * * *]
+        fun = fn -> :ok end
 
-      job =
-        Scheduler.new_job()
-        |> Job.set_name(name)
-        |> Job.set_schedule(spec)
-        |> Job.set_task(fun)
+        job =
+          Scheduler.new_job()
+          |> Job.set_name(name)
+          |> Job.set_schedule(spec)
+          |> Job.set_task(fun)
 
-      :ok = Scheduler.add_job(job)
-    end
+        :ok = Scheduler.add_job(job)
+      end
 
-    assert Enum.count(Scheduler.jobs()) == 3
-    Scheduler.delete_all_jobs()
-    assert Scheduler.jobs() == []
+      assert Enum.count(Scheduler.jobs()) == 3
+      Scheduler.delete_all_jobs()
+      assert Scheduler.jobs() == []
+    end)
   end
 
   @tag schedulers: [ZeroTimeoutScheduler]
@@ -241,8 +260,13 @@ defmodule Quantum.SchedulerTest do
       |> Job.set_schedule(~e[* */5 * * *])
       |> Job.set_task(fn -> :ok end)
 
-    ZeroTimeoutScheduler.add_job(job)
+    capture_log(fn ->
+      ZeroTimeoutScheduler.add_job(job)
 
-    assert {:timeout, _} = catch_exit(ZeroTimeoutScheduler.find_job(:tmpjob))
+      assert {:timeout, _} = catch_exit(ZeroTimeoutScheduler.find_job(:tmpjob))
+
+      # Ensure that log message is contained
+      Process.sleep(100)
+    end)
   end
 end

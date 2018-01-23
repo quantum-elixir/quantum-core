@@ -7,6 +7,8 @@ defmodule Quantum.JobBroadcasterTest do
   alias Quantum.TestConsumer
   alias Quantum.Job
 
+  import ExUnit.CaptureLog
+
   doctest JobBroadcaster
 
   defmodule TestScheduler do
@@ -57,15 +59,19 @@ defmodule Quantum.JobBroadcasterTest do
 
   describe "add" do
     test "active", %{broadcaster: broadcaster, active_job: active_job} do
-      TestScheduler.add_job(broadcaster, active_job)
+      capture_log(fn ->
+        TestScheduler.add_job(broadcaster, active_job)
 
-      assert_receive {:received, {:add, ^active_job}}
+        assert_receive {:received, {:add, ^active_job}}
+      end)
     end
 
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
-      TestScheduler.add_job(broadcaster, inactive_job)
+      capture_log(fn ->
+        TestScheduler.add_job(broadcaster, inactive_job)
 
-      refute_receive {:received, {:add, _}}
+        refute_receive {:received, {:add, _}}
+      end)
     end
   end
 
@@ -74,22 +80,28 @@ defmodule Quantum.JobBroadcasterTest do
     test "active", %{broadcaster: broadcaster, active_job: active_job} do
       active_job_name = active_job.name
 
-      TestScheduler.delete_job(broadcaster, active_job.name)
+      capture_log(fn ->
+        TestScheduler.delete_job(broadcaster, active_job.name)
 
-      assert_receive {:received, {:remove, ^active_job_name}}
+        assert_receive {:received, {:remove, ^active_job_name}}
+      end)
     end
 
     test "missing", %{broadcaster: broadcaster} do
-      TestScheduler.delete_job(broadcaster, make_ref())
+      capture_log(fn ->
+        TestScheduler.delete_job(broadcaster, make_ref())
 
-      refute_receive {:received, {:remove, _}}
+        refute_receive {:received, {:remove, _}}
+      end)
     end
 
     @tag jobs: :inactive
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
-      TestScheduler.delete_job(broadcaster, inactive_job.name)
+      capture_log(fn ->
+        TestScheduler.delete_job(broadcaster, inactive_job.name)
 
-      refute_receive {:received, {:remove, _}}
+        refute_receive {:received, {:remove, _}}
+      end)
     end
   end
 
@@ -98,18 +110,22 @@ defmodule Quantum.JobBroadcasterTest do
     test "active => inactive", %{broadcaster: broadcaster, active_job: active_job} do
       active_job_name = active_job.name
 
-      TestScheduler.deactivate_job(broadcaster, active_job.name)
+      capture_log(fn ->
+        TestScheduler.deactivate_job(broadcaster, active_job.name)
 
-      assert_receive {:received, {:remove, ^active_job_name}}
+        assert_receive {:received, {:remove, ^active_job_name}}
+      end)
     end
 
     @tag jobs: :inactive
     test "inactive => active", %{broadcaster: broadcaster, inactive_job: inactive_job} do
-      TestScheduler.activate_job(broadcaster, inactive_job.name)
+      capture_log(fn ->
+        TestScheduler.activate_job(broadcaster, inactive_job.name)
 
-      active_job = Job.set_state(inactive_job, :active)
+        active_job = Job.set_state(inactive_job, :active)
 
-      assert_receive {:received, {:add, ^active_job}}
+        assert_receive {:received, {:add, ^active_job}}
+      end)
     end
 
     @tag jobs: :active
@@ -117,26 +133,32 @@ defmodule Quantum.JobBroadcasterTest do
       # Initial
       assert_receive {:received, {:add, ^active_job}}
 
-      TestScheduler.activate_job(broadcaster, active_job.name)
+      capture_log(fn ->
+        TestScheduler.activate_job(broadcaster, active_job.name)
 
-      refute_receive {:received, {:add, ^active_job}}
+        refute_receive {:received, {:add, ^active_job}}
+      end)
     end
 
     @tag jobs: :inactive
     test "inactive => inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
       inactive_job_name = inactive_job.name
 
-      TestScheduler.deactivate_job(broadcaster, inactive_job.name)
+      capture_log(fn ->
+        TestScheduler.deactivate_job(broadcaster, inactive_job.name)
 
-      refute_receive {:received, {:remove, ^inactive_job_name}}
+        refute_receive {:received, {:remove, ^inactive_job_name}}
+      end)
     end
 
     test "missing", %{broadcaster: broadcaster} do
-      TestScheduler.deactivate_job(broadcaster, make_ref())
-      TestScheduler.activate_job(broadcaster, make_ref())
+      capture_log(fn ->
+        TestScheduler.deactivate_job(broadcaster, make_ref())
+        TestScheduler.activate_job(broadcaster, make_ref())
 
-      refute_receive {:received, {:remove, _}}
-      refute_receive {:received, {:add, _}}
+        refute_receive {:received, {:remove, _}}
+        refute_receive {:received, {:add, _}}
+      end)
     end
   end
 
@@ -150,10 +172,12 @@ defmodule Quantum.JobBroadcasterTest do
       active_job_name = active_job.name
       inactive_job_name = inactive_job.name
 
-      TestScheduler.delete_all_jobs(broadcaster)
+      capture_log(fn ->
+        TestScheduler.delete_all_jobs(broadcaster)
 
-      refute_receive {:received, {:remove, ^inactive_job_name}}
-      assert_receive {:received, {:remove, ^active_job_name}}
+        refute_receive {:received, {:remove, ^inactive_job_name}}
+        assert_receive {:received, {:remove, ^active_job_name}}
+      end)
     end
   end
 

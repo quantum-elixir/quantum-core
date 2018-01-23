@@ -44,6 +44,12 @@ defmodule Quantum.ExecutionBroadcaster do
       |> Enum.filter(&add_reboot_event?/1)
       |> Enum.map(fn {:add, job} -> {:execute, job} end)
 
+    for {_, job} <- reboot_add_events do
+      Logger.debug(fn ->
+        "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{inspect(job.name)}"
+      end)
+    end
+
     state =
       events
       |> Enum.reject(&add_reboot_event?/1)
@@ -63,6 +69,14 @@ defmodule Quantum.ExecutionBroadcaster do
 
     state =
       jobs_to_execute
+      |> (fn jobs ->
+        for job <- jobs do
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Schedluling job for execution #{inspect(job.name)}"
+          end)
+        end
+        jobs
+      end).()
       |> Enum.reduce(state, &add_job_to_state/2)
       |> sort_state
       |> reset_timer
@@ -71,10 +85,18 @@ defmodule Quantum.ExecutionBroadcaster do
   end
 
   defp handle_event({:add, job}, state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+    end)
+
     add_job_to_state(job, state)
   end
 
   defp handle_event({:remove, name}, %{jobs: jobs} = state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Removing job #{inspect(name)}"
+    end)
+
     jobs =
       jobs
       |> Enum.map(fn {date, job_list} ->
