@@ -26,10 +26,14 @@ defmodule QuantumStartupTest do
 
       Application.put_env(:quantum_startup_test, QuantumStartupTest.Scheduler, jobs: test_jobs)
 
-      {:ok, _pid} = start_supervised(Scheduler)
+      capture_log(fn ->
+        {:ok, _pid} = start_supervised(Scheduler)
 
-      assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 3
-      assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
+        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 3
+        assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
+
+        :ok = stop_supervised(Scheduler)
+      end)
     end)
   end
 end

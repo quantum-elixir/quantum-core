@@ -40,9 +40,11 @@ defmodule Quantum.ExecutorTest do
         TestScheduler.new_job()
         |> Job.set_task(fn -> send(caller, :executed) end)
 
-      Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+      capture_log(fn ->
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-      assert_receive :executed
+        assert_receive :executed
+      end)
     end
 
     test "executes given task using function tuple", %{
@@ -55,9 +57,11 @@ defmodule Quantum.ExecutorTest do
         TestScheduler.new_job()
         |> Job.set_task({__MODULE__, :send, [caller]})
 
-      Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+      capture_log(fn ->
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-      assert_receive :executed
+        assert_receive :executed
+      end)
     end
 
     test "doesn't crash on invalid node", %{
@@ -94,11 +98,13 @@ defmodule Quantum.ExecutorTest do
            end)
         |> Job.set_overlap(false)
 
-      Executor.start_link({task_supervisor, task_registry}, {:execute, job})
-      Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+      capture_log(fn ->
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-      assert_receive :executed
-      refute_receive :executed
+        assert_receive :executed
+        refute_receive :executed
+      end)
     end
 
     test "releases lock on success", %{
@@ -115,17 +121,19 @@ defmodule Quantum.ExecutorTest do
            end)
         |> Job.set_overlap(false)
 
-      Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+      capture_log(fn ->
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-      # Wait until running
-      Process.sleep(25)
+        # Wait until running
+        Process.sleep(25)
 
-      assert :already_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
+        assert :already_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
 
-      assert_receive :executed
-      refute_receive :executed
+        assert_receive :executed
+        refute_receive :executed
 
-      assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
+        assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
+      end)
     end
 
     test "releases lock on error", %{
@@ -138,7 +146,7 @@ defmodule Quantum.ExecutorTest do
         |> Job.set_overlap(false)
 
       # Mute Error
-      assert capture_log(fn ->
+      capture_log(fn ->
                Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
                Process.sleep(50)

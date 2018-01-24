@@ -5,6 +5,8 @@ defmodule Quantum.JobBroadcaster do
 
   use GenStage
 
+  require Logger
+
   alias Quantum.{Job, Util}
 
   @doc """
@@ -51,14 +53,26 @@ defmodule Quantum.JobBroadcaster do
   end
 
   def handle_cast({:add, %Job{state: :active} = job}, state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+    end)
+
     {:noreply, [{:add, job}], put_in(state[:jobs][job.name], job)}
   end
 
   def handle_cast({:add, %Job{state: :inactive} = job}, state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+    end)
+
     {:noreply, [], put_in(state[:jobs][job.name], job)}
   end
 
   def handle_cast({:delete, name}, %{jobs: jobs} = state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
+    end)
+
     cond do
       !Map.has_key?(jobs, name) ->
         {:noreply, [], state}
@@ -72,6 +86,10 @@ defmodule Quantum.JobBroadcaster do
   end
 
   def handle_cast({:change_state, name, new_state}, %{jobs: jobs} = state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Change job state #{inspect(name)}"
+    end)
+
     job = Map.fetch!(jobs, name)
     old_state = job.state
 
@@ -93,6 +111,10 @@ defmodule Quantum.JobBroadcaster do
   end
 
   def handle_cast(:delete_all, %{jobs: jobs} = state) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
+    end)
+
     messages =
       jobs
       |> Enum.filter(fn

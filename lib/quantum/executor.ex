@@ -44,6 +44,10 @@ defmodule Quantum.Executor do
 
   # Execute task on all given nodes with checking for overlap
   defp execute(task_supervisor, task_registry, %Job{overlap: false} = job) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Start execution of job #{inspect(job.name)}"
+    end)
+
     # Find Nodes to run on
     # Mark Running and only continue with item if it worked
     # Check if Node is up and running
@@ -67,13 +71,27 @@ defmodule Quantum.Executor do
     :ok
   end
 
-  # Ececute the given function on a given node via tge task supervisor
+  # Ececute the given function on a given node via the task supervisor
   @spec run(Node.t(), Job.t(), GenServer.server()) :: {Node.t(), Task.t()}
   defp run(node, job, task_supervisor) do
+    Logger.debug(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job.name)} started on node #{inspect(node)}"
+    end)
+
     {
       node,
       Task.Supervisor.async_nolink({task_supervisor, node}, fn ->
-        execute_task(job.task)
+        Logger.debug(fn ->
+          "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job.name)}"
+        end)
+
+        result = execute_task(job.task)
+
+        Logger.debug(fn ->
+          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job.name)}, which yielded result: #{inspect(result)}"
+        end)
+
+        :ok
       end)
     }
   end
@@ -102,14 +120,12 @@ defmodule Quantum.Executor do
   end
 
   # Run function
-  @spec execute_task(Quantum.Job.task()) :: :ok
+  @spec execute_task(Quantum.Job.task()) :: any
   defp execute_task({mod, fun, args}) do
     :erlang.apply(mod, fun, args)
-    :ok
   end
 
   defp execute_task(fun) when is_function(fun, 0) do
     fun.()
-    :ok
   end
 end
