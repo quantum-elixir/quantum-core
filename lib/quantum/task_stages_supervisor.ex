@@ -11,7 +11,7 @@ defmodule Quantum.TaskStagesSupervisor do
   @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
     __MODULE__
-    |> Supervisor.start_link(opts, [name: Keyword.fetch!(opts, :task_stages_supervisor)])
+    |> Supervisor.start_link(opts, name: Keyword.fetch!(opts, :task_stages_supervisor))
     |> Util.start_or_link()
   end
 
@@ -50,7 +50,7 @@ defmodule Quantum.TaskStagesSupervisor do
             Keyword.fetch!(opts, :task_supervisor),
             Keyword.fetch!(opts, :task_registry)
           }
-        },
+        }
       ],
       strategy: :rest_for_one
     )

@@ -16,13 +16,12 @@ defmodule QuantumStartupTest do
   @tag :startup
   test "prevent duplicate job names on startup" do
     capture_log(fn ->
-      test_jobs =
-        [
-          {:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},
-          {:test_job, [schedule: ~e[2 * * * *], task: fn -> :ok end]},
-          {"3 * * * *", fn -> :ok end},
-          {"4 * * * *", fn -> :ok end}
-        ]
+      test_jobs = [
+        {:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},
+        {:test_job, [schedule: ~e[2 * * * *], task: fn -> :ok end]},
+        {"3 * * * *", fn -> :ok end},
+        {"4 * * * *", fn -> :ok end}
+      ]
 
       Application.put_env(:quantum_startup_test, QuantumStartupTest.Scheduler, jobs: test_jobs)
 
