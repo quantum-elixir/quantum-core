@@ -116,6 +116,7 @@ defmodule Quantum.ExecutorTest do
       job =
         TestScheduler.new_job()
         |> Job.set_task(fn ->
+          send(caller, :starting)
           Process.sleep(50)
           send(caller, :executed)
         end)
@@ -124,8 +125,7 @@ defmodule Quantum.ExecutorTest do
       capture_log(fn ->
         Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-        # Wait until running
-        Process.sleep(25)
+        assert_receive :starting
 
         assert :already_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
 
