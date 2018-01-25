@@ -111,6 +111,7 @@ defmodule Quantum.Normalizer do
   defp normalize_run_strategy(strategy) when is_atom(strategy) do
     strategy.normalize_config!(nil)
   end
+
   defp normalize_run_strategy({strategy, options}) when is_atom(strategy) do
     strategy.normalize_config!(options)
   end

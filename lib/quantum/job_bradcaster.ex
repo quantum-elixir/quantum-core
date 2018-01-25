@@ -118,9 +118,9 @@ defmodule Quantum.JobBroadcaster do
     messages =
       jobs
       |> Enum.filter(fn
-           {_name, %Job{state: :active}} -> true
-           {_name, _job} -> false
-         end)
+        {_name, %Job{state: :active}} -> true
+        {_name, _job} -> false
+      end)
       |> Enum.map(fn {name, _job} -> {:remove, name} end)
 
     {:noreply, messages, %{state | jobs: %{}}}

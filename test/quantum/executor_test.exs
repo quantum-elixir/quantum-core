@@ -93,9 +93,9 @@ defmodule Quantum.ExecutorTest do
       job =
         TestScheduler.new_job()
         |> Job.set_task(fn ->
-             Process.sleep(50)
-             send(caller, :executed)
-           end)
+          Process.sleep(50)
+          send(caller, :executed)
+        end)
         |> Job.set_overlap(false)
 
       capture_log(fn ->
@@ -116,9 +116,9 @@ defmodule Quantum.ExecutorTest do
       job =
         TestScheduler.new_job()
         |> Job.set_task(fn ->
-             Process.sleep(50)
-             send(caller, :executed)
-           end)
+          Process.sleep(50)
+          send(caller, :executed)
+        end)
         |> Job.set_overlap(false)
 
       capture_log(fn ->
@@ -147,10 +147,10 @@ defmodule Quantum.ExecutorTest do
 
       # Mute Error
       capture_log(fn ->
-               Executor.start_link({task_supervisor, task_registry}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry}, {:execute, job})
 
-               Process.sleep(50)
-             end)
+        Process.sleep(50)
+      end)
 
       assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
     end

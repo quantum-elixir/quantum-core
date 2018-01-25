@@ -12,9 +12,9 @@ defmodule Quantum.ExecutorSupervisor do
   def start_link(name, execution_broadcaster, task_supervisor, task_registry) do
     __MODULE__
     |> ConsumerSupervisor.start_link(
-         {execution_broadcaster, task_supervisor, task_registry},
-         name: name
-       )
+      {execution_broadcaster, task_supervisor, task_registry},
+      name: name
+    )
     |> Util.start_or_link()
   end
 
