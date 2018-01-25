@@ -3,24 +3,37 @@ sudo: false
 env:
   - MIX_ENV=test
 elixir:
-  - 1.5.1
+  - 1.5
+  - 1.6
 otp_release:
-  - 18.3
   - 19.3
   - 20.0
-before_script:
-  - mix compile
-  - travis_wait mix dialyzer --plt
-script:
-  - mix test
-  - mix credo --strict
-  - mix dialyzer --halt-exit-status
-after_success:
-  - "mix compile && mix coveralls.travis"
-after_script:
-  - MIX_ENV=docs mix deps.get
-  - MIX_ENV=docs mix inch.report
+scripts: mix coveralls.travis
 cache:
   directories:
     - ~/.mix
     - ~/.hex
+
+jobs:
+  include:
+    - stage: format
+      env:
+        - MIX_ENV=dev
+      script: mix format --check-formatted
+      elixir: 1.6
+    - stage: credo
+      env:
+        - MIX_ENV=dev
+      script: mix credo --strict
+      elixir: 1.6
+    - stage: dialyzer
+      env:
+        - MIX_ENV=dev
+      before_script: travis_wait mix dialyzer --plt
+      script: mix dialyzer --halt-exit-status
+      elixir: 1.6
+    - stage: inch
+      env:
+        - MIX_ENV=docs
+      script: mix inch.report
+      elixir: 1.6
