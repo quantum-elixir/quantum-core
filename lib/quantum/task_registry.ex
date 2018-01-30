@@ -55,6 +55,11 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
+  def init(args) do
+    {:ok, args}
+  end
+
+  @doc false
   def handle_call({:running, task, node}, _caller, state) do
     if Enum.member?(Map.get(state, task, []), node) do
       {:reply, :already_running, state}
