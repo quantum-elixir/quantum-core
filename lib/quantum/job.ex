@@ -56,6 +56,7 @@ defmodule Quantum.Job do
         {module, option} -> {module, option}
         module -> {module, nil}
       end
+
     with run_strategy <- run_strategy_name.normalize_config!(options),
          name <- make_ref(),
          overlap when is_boolean(overlap) <- Keyword.fetch!(config, :overlap),

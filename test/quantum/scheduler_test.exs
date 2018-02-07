@@ -90,7 +90,7 @@ defmodule Quantum.SchedulerTest do
         assert Enum.any?(Scheduler.jobs(), fn {_, %Job{schedule: schedule, task: task}} ->
                  schedule == spec && task == fun
                end)
-       end)
+      end)
     end
 
     @tag schedulers: [Scheduler]
@@ -111,7 +111,7 @@ defmodule Quantum.SchedulerTest do
                  :test_job,
                  %{job | run_strategy: %Random{nodes: :cluster}}
                })
-       end)
+      end)
     end
 
     @tag schedulers: [Scheduler]
@@ -132,7 +132,7 @@ defmodule Quantum.SchedulerTest do
                  :ticker,
                  %{job | run_strategy: %Random{nodes: :cluster}}
                })
-       end)
+      end)
     end
 
     @tag schedulers: [Scheduler]

@@ -102,7 +102,8 @@ defmodule Quantum.Scheduler do
         GenStage.cast(server, {:change_state, name, :active})
       end
 
-      def find_job(server \\ __job_broadcaster__(), name) when is_atom(name) or is_reference(name) do
+      def find_job(server \\ __job_broadcaster__(), name)
+          when is_atom(name) or is_reference(name) do
         GenStage.call(server, {:find_job, name}, __timeout__())
       end
 
