@@ -14,6 +14,11 @@ cache:
     - ~/.hex
 jobs:
   include:
+    - stage: format
+      env:
+        - MIX_ENV=dev
+      script: mix format --check-formatted
+      elixir: 1.6
     - stage: credo
       env:
         - MIX_ENV=dev

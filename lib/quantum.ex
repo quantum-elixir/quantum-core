@@ -73,16 +73,16 @@ defmodule Quantum do
   defp remove_jobs_with_duplicate_names(job_list, quantum) do
     job_list
     |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
-         if Enum.member?(Map.keys(acc), name) do
-           Logger.warn(
-             "Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name"
-           )
+      if Enum.member?(Map.keys(acc), name) do
+        Logger.warn(
+          "Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name"
+        )
 
-           acc
-         else
-           Map.put_new(acc, name, job)
-         end
-       end)
+        acc
+      else
+        Map.put_new(acc, name, job)
+      end
+    end)
     |> Map.values()
   end
 end

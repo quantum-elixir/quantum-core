@@ -46,7 +46,9 @@ defmodule Quantum.ExecutionBroadcaster do
 
     for {_, job} <- reboot_add_events do
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{inspect(job.name)}"
+        "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{
+          inspect(job.name)
+        }"
       end)
     end
 
@@ -70,13 +72,16 @@ defmodule Quantum.ExecutionBroadcaster do
     state =
       jobs_to_execute
       |> (fn jobs ->
-        for job <- jobs do
-          Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Schedluling job for execution #{inspect(job.name)}"
-          end)
-        end
-        jobs
-      end).()
+            for job <- jobs do
+              Logger.debug(fn ->
+                "[#{inspect(Node.self())}][#{__MODULE__}] Schedluling job for execution #{
+                  inspect(job.name)
+                }"
+              end)
+            end
+
+            jobs
+          end).()
       |> Enum.reduce(state, &add_job_to_state/2)
       |> sort_state
       |> reset_timer
@@ -100,12 +105,12 @@ defmodule Quantum.ExecutionBroadcaster do
     jobs =
       jobs
       |> Enum.map(fn {date, job_list} ->
-           {date, Enum.reject(job_list, &(&1.name == name))}
-         end)
+        {date, Enum.reject(job_list, &(&1.name == name))}
+      end)
       |> Enum.reject(fn
-           {_, []} -> true
-           {_, _} -> false
-         end)
+        {_, []} -> true
+        {_, _} -> false
+      end)
 
     %{state | jobs: jobs}
   end
@@ -144,13 +149,14 @@ defmodule Quantum.ExecutionBroadcaster do
   defp add_to_state(%{jobs: jobs} = state, date, job) do
     %{
       state
-      | jobs: case Enum.find_index(jobs, fn {run_date, _} -> run_date == date end) do
-          nil ->
-            [{date, [job]} | jobs]
+      | jobs:
+          case Enum.find_index(jobs, fn {run_date, _} -> run_date == date end) do
+            nil ->
+              [{date, [job]} | jobs]
 
-          index ->
-            List.update_at(jobs, index, fn {run_date, old} -> {run_date, [job | old]} end)
-        end
+            index ->
+              List.update_at(jobs, index, fn {run_date, old} -> {run_date, [job | old]} end)
+          end
     }
   end
 
@@ -172,6 +178,7 @@ defmodule Quantum.ExecutionBroadcaster do
         :eq ->
           send(self(), :execute)
           nil
+
         _ ->
           monotonic_time =
             run_date
@@ -191,6 +198,7 @@ defmodule Quantum.ExecutionBroadcaster do
     case NaiveDateTime.compare(run_date, old_date) do
       :eq ->
         state
+
       _ ->
         Process.cancel_timer(timer)
         reset_timer(Map.put(state, :timer, nil))

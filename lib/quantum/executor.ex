@@ -59,14 +59,14 @@ defmodule Quantum.Executor do
     |> Enum.filter(&check_node(&1, task_supervisor, job))
     |> Enum.map(&run(&1, job, task_supervisor))
     |> Enum.each(fn {node, %Task{ref: ref}} ->
-         receive do
-           {^ref, _} ->
-             TaskRegistry.mark_finished(task_registry, job.name, node)
+      receive do
+        {^ref, _} ->
+          TaskRegistry.mark_finished(task_registry, job.name, node)
 
-           {:DOWN, ^ref, _, _, _} ->
-             TaskRegistry.mark_finished(task_registry, job.name, node)
-         end
-       end)
+        {:DOWN, ^ref, _, _, _} ->
+          TaskRegistry.mark_finished(task_registry, job.name, node)
+      end
+    end)
 
     :ok
   end
@@ -75,7 +75,9 @@ defmodule Quantum.Executor do
   @spec run(Node.t(), Job.t(), GenServer.server()) :: {Node.t(), Task.t()}
   defp run(node, job, task_supervisor) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job.name)} started on node #{inspect(node)}"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job.name)} started on node #{
+        inspect(node)
+      }"
     end)
 
     {
@@ -88,7 +90,9 @@ defmodule Quantum.Executor do
         result = execute_task(job.task)
 
         Logger.debug(fn ->
-          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job.name)}, which yielded result: #{inspect(result)}"
+          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job.name)}, which yielded result: #{
+            inspect(result)
+          }"
         end)
 
         :ok
