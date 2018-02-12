@@ -20,7 +20,7 @@ defmodule Quantum.ExecutorSupervisor do
 
   def init({execution_broadcaster, task_supervisor, task_registry}) do
     ConsumerSupervisor.init(
-      [{Quantum.Executor, {task_supervisor, task_registry}}],
+      {Quantum.Executor, {task_supervisor, task_registry}},
       strategy: :one_for_one,
       subscribe_to: [{execution_broadcaster, max_demand: 50}]
     )
