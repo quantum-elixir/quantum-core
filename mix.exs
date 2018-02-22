@@ -71,7 +71,7 @@ defmodule Quantum.Mixfile do
 
   defp deps do
     [
-      {:timex, "~> 3.1.13", optional: true},
+      {:timex, "~> 3.1", optional: true},
       {:calendar, "~> 0.17", optional: true},
       {:crontab, "~> 1.1"},
       {:gen_stage, "~> 0.12"},
