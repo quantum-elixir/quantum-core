@@ -18,12 +18,24 @@ defmodule Quantum.ExecutorSupervisor do
     |> Util.start_or_link()
   end
 
-  def init({execution_broadcaster, task_supervisor, task_registry}) do
-    ConsumerSupervisor.init(
-      {Quantum.Executor, {task_supervisor, task_registry}},
-      strategy: :one_for_one,
-      subscribe_to: [{execution_broadcaster, max_demand: 50}]
-    )
+  # credo:disable-for-next-line Credo.Check.Design.TagTODO
+  # TODO: Remove when gen_stage:0.12 support is dropped
+  if Util.gen_stage_v12?() do
+    def init({execution_broadcaster, task_supervisor, task_registry}) do
+      ConsumerSupervisor.init(
+        {Quantum.Executor, {task_supervisor, task_registry}},
+        strategy: :one_for_one,
+        subscribe_to: [{execution_broadcaster, max_demand: 50}]
+      )
+    end
+  else
+    def init({execution_broadcaster, task_supervisor, task_registry}) do
+      ConsumerSupervisor.init(
+        [{Quantum.Executor, {task_supervisor, task_registry}}],
+        strategy: :one_for_one,
+        subscribe_to: [{execution_broadcaster, max_demand: 50}]
+      )
+    end
   end
 
   @doc false
