@@ -19,6 +19,25 @@ config :your_app, YourApp.Scheduler,
   ]
 ```
 
+## Persistent Storage
+
+Persistent storage can be used to track jobs and last execution times over restarts.
+
+**Note: If a storage is present, the jobs from the configuration will not be loaded to prevent conflicts.**
+
+```elixir
+config :your_app, YourApp.Scheduler,
+  storage: Quantum.Storage.Adapter.Implementation
+```
+
+### Storage Adapters
+
+Storage implementations must implement the `Quantum.Storage.Adapter` behaviour.
+
+The following adapters are supported:
+
+* TODO: Add Adapters
+
 ## Release managers
 (
 [conform](https://github.com/bitwalker/conform) /

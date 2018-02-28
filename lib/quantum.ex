@@ -8,6 +8,7 @@ defmodule Quantum do
   alias Quantum.Normalizer
   alias Quantum.Job
   alias Quantum.RunStrategy.Random
+  alias Quantum.Storage.Noop
 
   @defaults [
     global: false,
@@ -45,6 +46,7 @@ defmodule Quantum do
     task_supervisor = Module.concat(quantum, Task.Supervisor)
 
     config
+    |> Keyword.put_new(:quantum, quantum)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
     |> Keyword.put_new(:task_stages_supervisor, task_stages_supervisor)
     |> Keyword.put_new(:job_broadcaster, job_broadcaster)
@@ -52,6 +54,7 @@ defmodule Quantum do
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)
     |> Keyword.put_new(:task_registry, task_registry)
     |> Keyword.put_new(:task_supervisor, task_supervisor)
+    |> Keyword.put_new(:storage, Noop)
   end
 
   @doc """
