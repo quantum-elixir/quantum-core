@@ -7,7 +7,8 @@ defmodule Quantum.JobBroadcaster do
 
   require Logger
 
-  alias Quantum.{Job, Util}
+  alias Quantum.{Job, Util, Scheduler}
+  alias Quantum.Storage.Adapter
 
   @doc """
   Start Job Broadcaster
@@ -18,24 +19,52 @@ defmodule Quantum.JobBroadcaster do
    * `jobs` - Array of `Quantum.Job`
 
   """
-  @spec start_link(GenServer.server(), [Job.t()], boolean()) :: GenServer.on_start()
-  def start_link(name, jobs, debug_logging) do
+  @spec start_link(GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()) ::
+          GenServer.on_start()
+  def start_link(name, jobs, storage, scheduler, debug_logging) do
     __MODULE__
-    |> GenStage.start_link({jobs, debug_logging}, name: name)
+    |> GenStage.start_link({jobs, storage, scheduler, debug_logging}, name: name)
     |> Util.start_or_link()
   end
 
   @doc false
-  @spec child_spec({GenServer.server(), [Job.t()], boolean()}) :: Supervisor.child_spec()
-  def child_spec({name, jobs, debug_logging}) do
-    %{super([]) | start: {__MODULE__, :start_link, [name, jobs, debug_logging]}}
+  @spec child_spec({GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()}) ::
+          Supervisor.child_spec()
+  def child_spec({name, jobs, storage, scheduler, debug_logging}) do
+    %{
+      super([])
+      | start: {__MODULE__, :start_link, [name, jobs, storage, scheduler, debug_logging]}
+    }
   end
 
   @doc false
-  def init({jobs, debug_logging}) do
+  def init({jobs, storage, scheduler, debug_logging}) do
+    effective_jobs =
+      scheduler
+      |> storage.jobs()
+      |> case do
+        :not_applicable ->
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Config"
+            end)
+
+          jobs
+
+        storage_jobs when is_list(storage_jobs) ->
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Storage, skipping config"
+            end)
+
+          storage_jobs
+      end
+
     state = %{
-      jobs: Enum.into(jobs, %{}, fn %{name: name} = job -> {name, job} end),
-      buffer: for(%{state: :active} = job <- jobs, do: {:add, job}),
+      jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
+      buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
+      storage: storage,
+      scheduler: scheduler,
       debug_logging: debug_logging
     }
 
@@ -50,29 +79,39 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
-        %{jobs: jobs, debug_logging: debug_logging} = state
+        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+          state
       ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
       end)
+
+    :ok = storage.add_job(scheduler, job)
 
     {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
   def handle_cast(
         {:add, %Job{state: :inactive, name: job_name} = job},
-        %{jobs: jobs, debug_logging: debug_logging} = state
+        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+          state
       ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
       end)
 
+    :ok = storage.add_job(scheduler, job)
+
     {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
-  def handle_cast({:delete, name}, %{jobs: jobs, debug_logging: debug_logging} = state) do
+  def handle_cast(
+        {:delete, name},
+        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+          state
+      ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
@@ -80,9 +119,13 @@ defmodule Quantum.JobBroadcaster do
 
     case Map.fetch(jobs, name) do
       {:ok, %{state: :active}} ->
+        :ok = storage.delete_job(scheduler, name)
+
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
       {:ok, %{state: :inactive}} ->
+        :ok = storage.delete_job(scheduler, name)
+
         {:noreply, [], %{state | jobs: Map.delete(jobs, name)}}
 
       :error ->
@@ -92,7 +135,8 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:change_state, name, new_state},
-        %{jobs: jobs, debug_logging: debug_logging} = state
+        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+          state
       ) do
     debug_logging &&
       Logger.debug(fn ->
@@ -109,6 +153,8 @@ defmodule Quantum.JobBroadcaster do
       {:ok, job} ->
         jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
 
+        :ok = storage.update_job_state(scheduler, job.name, new_state)
+
         case new_state do
           :active ->
             {:noreply, [{:add, %{job | state: new_state}}], %{state | jobs: jobs}}
@@ -119,13 +165,19 @@ defmodule Quantum.JobBroadcaster do
     end
   end
 
-  def handle_cast(:delete_all, %{jobs: jobs, debug_logging: debug_logging} = state) do
+  def handle_cast(
+        :delete_all,
+        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+          state
+      ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
       end)
 
     messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
+
+    :ok = storage.purge(scheduler)
 
     {:noreply, messages, %{state | jobs: %{}}}
   end
