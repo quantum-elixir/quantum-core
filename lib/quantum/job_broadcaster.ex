@@ -34,7 +34,7 @@ defmodule Quantum.JobBroadcaster do
 
   @doc false
   def init({jobs, storage, scheduler}) do
-    buffer =
+    effective_jobs =
       scheduler
       |> storage.jobs()
       |> case do
@@ -52,12 +52,14 @@ defmodule Quantum.JobBroadcaster do
 
           storage_jobs
       end
+    buffer =
+      effective_jobs
       |> Enum.filter(&(&1.state == :active))
       |> Enum.map(fn job -> {:add, job} end)
 
     state =
       %{}
-      |> Map.put(:jobs, Enum.reduce(jobs, %{}, fn job, acc -> Map.put(acc, job.name, job) end))
+      |> Map.put(:jobs, Enum.reduce(effective_jobs, %{}, fn job, acc -> Map.put(acc, job.name, job) end))
       |> Map.put(:buffer, buffer)
       |> Map.put(:storage, storage)
       |> Map.put(:scheduler, scheduler)
