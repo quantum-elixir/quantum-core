@@ -74,7 +74,7 @@ defmodule Quantum.ExecutionBroadcaster do
       |> (fn jobs ->
             for job <- jobs do
               Logger.debug(fn ->
-                "[#{inspect(Node.self())}][#{__MODULE__}] Schedluling job for execution #{
+                "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for execution #{
                   inspect(job.name)
                 }"
               end)
