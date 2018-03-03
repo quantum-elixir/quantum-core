@@ -33,15 +33,10 @@ defmodule Quantum.JobBroadcaster do
 
   @doc false
   def init(jobs) do
-    buffer =
-      jobs
-      |> Enum.filter(&(&1.state == :active))
-      |> Enum.map(fn job -> {:add, job} end)
-
-    state =
-      %{}
-      |> Map.put(:jobs, Enum.reduce(jobs, %{}, fn job, acc -> Map.put(acc, job.name, job) end))
-      |> Map.put(:buffer, buffer)
+    state = %{
+      jobs: Enum.into(jobs, %{}, fn %{name: name} = job -> {name, job} end),
+      buffer: for(%{state: :active} = job <- jobs, do: {:add, job})
+    }
 
     {:producer, state}
   end
@@ -52,20 +47,20 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, to_send, %{state | buffer: remaining}}
   end
 
-  def handle_cast({:add, %Job{state: :active} = job}, state) do
+  def handle_cast({:add, %Job{state: :active, name: job_name} = job}, %{jobs: jobs} = state) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
     end)
 
-    {:noreply, [{:add, job}], put_in(state[:jobs][job.name], job)}
+    {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
-  def handle_cast({:add, %Job{state: :inactive} = job}, state) do
+  def handle_cast({:add, %Job{state: :inactive, name: job_name} = job}, %{jobs: jobs} = state) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
     end)
 
-    {:noreply, [], put_in(state[:jobs][job.name], job)}
+    {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
   def handle_cast({:delete, name}, %{jobs: jobs} = state) do
@@ -73,14 +68,11 @@ defmodule Quantum.JobBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
     end)
 
-    cond do
-      !Map.has_key?(jobs, name) ->
-        {:noreply, [], state}
-
-      Map.fetch!(jobs, name).state == :active ->
+    case Map.get(jobs, name) do
+      %{state: :active} ->
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
-      true ->
+      _ ->
         {:noreply, [], state}
     end
   end
@@ -90,24 +82,24 @@ defmodule Quantum.JobBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Change job state #{inspect(name)}"
     end)
 
-    job = Map.fetch!(jobs, name)
-    old_state = job.state
-
-    jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
-
-    case new_state do
-      ^old_state ->
+    case Map.fetch(jobs, name) do
+      :error ->
         {:noreply, [], state}
 
-      :active ->
-        {:noreply, [{:add, %{job | state: new_state}}], %{state | jobs: jobs}}
+      {:ok, %{state: ^new_state}} ->
+        {:noreply, [], state}
 
-      :inactive ->
-        {:noreply, [{:remove, job.name}], %{state | jobs: jobs}}
+      {:ok, job} ->
+        jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
+
+        case new_state do
+          :active ->
+            {:noreply, [{:add, %{job | state: new_state}}], %{state | jobs: jobs}}
+
+          :inactive ->
+            {:noreply, [{:remove, name}], %{state | jobs: jobs}}
+        end
     end
-  rescue
-    KeyError ->
-      {:noreply, [], state}
   end
 
   def handle_cast(:delete_all, %{jobs: jobs} = state) do
@@ -115,13 +107,7 @@ defmodule Quantum.JobBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
     end)
 
-    messages =
-      jobs
-      |> Enum.filter(fn
-        {_name, %Job{state: :active}} -> true
-        {_name, _job} -> false
-      end)
-      |> Enum.map(fn {name, _job} -> {:remove, name} end)
+    messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
 
     {:noreply, messages, %{state | jobs: %{}}}
   end
