@@ -68,11 +68,14 @@ defmodule Quantum.JobBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
     end)
 
-    case Map.get(jobs, name) do
-      %{state: :active} ->
+    case Map.fetch(jobs, name) do
+      {:ok, %{state: :active}} ->
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
-      _ ->
+      {:ok, %{state: :inactive}} ->
+        {:noreply, [], %{state | jobs: Map.delete(jobs, name)}}
+
+      :error ->
         {:noreply, [], state}
     end
   end
