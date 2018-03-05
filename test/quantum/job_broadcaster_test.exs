@@ -84,6 +84,10 @@ defmodule Quantum.JobBroadcasterTest do
         TestScheduler.delete_job(broadcaster, active_job.name)
 
         assert_receive {:received, {:remove, ^active_job_name}}
+
+        refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
+                 key == active_job_name
+               end)
       end)
     end
 
@@ -101,6 +105,10 @@ defmodule Quantum.JobBroadcasterTest do
         TestScheduler.delete_job(broadcaster, inactive_job.name)
 
         refute_receive {:received, {:remove, _}}
+
+        refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
+                 key == inactive_job.name
+               end)
       end)
     end
   end
