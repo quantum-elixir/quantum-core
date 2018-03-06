@@ -11,7 +11,7 @@ Diff for [unreleased]
 ### Fixed
 - Omit `gen_stage` warning on `~> 0.13`
 
-Diff for [2.2.4]
+Diff for [2.2.5]
 
 ## 2.2.4 - 2018-02-23
 
