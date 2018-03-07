@@ -30,11 +30,15 @@ defmodule Quantum.Executor do
 
   @spec execute(GenServer.server(), GenServer.server(), Job.t()) :: :ok
   # Execute task on all given nodes without checking for overlap
-  defp execute(task_supervisor, _task_registry, %Job{overlap: true} = job) do
+  defp execute(
+         task_supervisor,
+         _task_registry,
+         %Job{overlap: true, run_strategy: run_strategy} = job
+       ) do
     # Find Nodes to run on
     # Check if Node is up and running
     # Run Task
-    job.run_strategy
+    run_strategy
     |> NodeList.nodes(job)
     |> Enum.filter(&check_node(&1, task_supervisor, job))
     |> Enum.each(&run(&1, job, task_supervisor))
@@ -43,9 +47,13 @@ defmodule Quantum.Executor do
   end
 
   # Execute task on all given nodes with checking for overlap
-  defp execute(task_supervisor, task_registry, %Job{overlap: false} = job) do
+  defp execute(
+         task_supervisor,
+         task_registry,
+         %Job{overlap: false, run_strategy: run_strategy, name: job_name} = job
+       ) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Start execution of job #{inspect(job.name)}"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Start execution of job #{inspect(job_name)}"
     end)
 
     # Find Nodes to run on
@@ -53,18 +61,18 @@ defmodule Quantum.Executor do
     # Check if Node is up and running
     # Run Task
     # Mark Task as finished
-    job.run_strategy
+    run_strategy
     |> NodeList.nodes(job)
-    |> Enum.filter(&(TaskRegistry.mark_running(task_registry, job.name, &1) == :marked_running))
+    |> Enum.filter(&(TaskRegistry.mark_running(task_registry, job_name, &1) == :marked_running))
     |> Enum.filter(&check_node(&1, task_supervisor, job))
     |> Enum.map(&run(&1, job, task_supervisor))
     |> Enum.each(fn {node, %Task{ref: ref}} ->
       receive do
         {^ref, _} ->
-          TaskRegistry.mark_finished(task_registry, job.name, node)
+          TaskRegistry.mark_finished(task_registry, job_name, node)
 
         {:DOWN, ^ref, _, _, _} ->
-          TaskRegistry.mark_finished(task_registry, job.name, node)
+          TaskRegistry.mark_finished(task_registry, job_name, node)
       end
     end)
 
@@ -73,9 +81,9 @@ defmodule Quantum.Executor do
 
   # Ececute the given function on a given node via the task supervisor
   @spec run(Node.t(), Job.t(), GenServer.server()) :: {Node.t(), Task.t()}
-  defp run(node, job, task_supervisor) do
+  defp run(node, %{name: job_name, task: task}, task_supervisor) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job.name)} started on node #{
+      "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job_name)} started on node #{
         inspect(node)
       }"
     end)
@@ -84,13 +92,13 @@ defmodule Quantum.Executor do
       node,
       Task.Supervisor.async_nolink({task_supervisor, node}, fn ->
         Logger.debug(fn ->
-          "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job.name)}"
+          "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job_name)}"
         end)
 
-        result = execute_task(job.task)
+        result = execute_task(task)
 
         Logger.debug(fn ->
-          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job.name)}, which yielded result: #{
+          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job_name)}, which yielded result: #{
             inspect(result)
           }"
         end)
@@ -101,12 +109,12 @@ defmodule Quantum.Executor do
   end
 
   @spec check_node(Node.t(), GenServer.server(), Job.t()) :: boolean
-  defp check_node(node, task_supervisor, job) do
+  defp check_node(node, task_supervisor, %{name: job_name}) do
     if running_node?(node, task_supervisor) do
       true
     else
       Logger.warn(
-        "Node #{inspect(node)} is not running. Job #{inspect(job.name)} could not be executed."
+        "Node #{inspect(node)} is not running. Job #{inspect(job_name)} could not be executed."
       )
 
       false

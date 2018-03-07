@@ -9,6 +9,7 @@ defmodule Quantum.JobBroadcasterTest do
   alias Quantum.Storage.Test, as: TestStorage
 
   import ExUnit.CaptureLog
+  import Quantum.CaptureLogExtend
 
   doctest JobBroadcaster
 
@@ -45,10 +46,12 @@ defmodule Quantum.JobBroadcasterTest do
       if tags[:manual_dispatch] do
         nil
       else
-        # TODO: Quiet Log Messages
-
-        {:ok, broadcaster} =
-          start_supervised({JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler}})
+        {{:ok, broadcaster}, _} =
+          capture_log_with_return(fn ->
+            start_supervised(
+              {JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler}}
+            )
+          end)
 
         {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
@@ -133,6 +136,10 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:received, {:remove, ^active_job_name}}
 
         assert_receive {:delete_job, {TestScheduler, ^active_job_name}, _}
+
+        refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
+                 key == active_job_name
+               end)
       end)
     end
 
@@ -157,6 +164,10 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:received, {:remove, _}}
 
         assert_receive {:delete_job, {TestScheduler, ^inactive_job_name}, _}
+
+        refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
+                 key == inactive_job.name
+               end)
       end)
     end
   end

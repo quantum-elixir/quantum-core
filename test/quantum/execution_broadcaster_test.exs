@@ -5,6 +5,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
   import Crontab.CronExpression
   import ExUnit.CaptureLog
+  import Quantum.CaptureLogExtend
 
   alias Quantum.ExecutionBroadcaster
   alias Quantum.{TestConsumer, TestProducer}
@@ -30,13 +31,14 @@ defmodule Quantum.ExecutionBroadcasterTest do
     if tags[:manual_dispatch] do
       :ok
     else
-      # TODO: Mute log messages
       {:ok, producer} = start_supervised({TestProducer, []})
 
-      {:ok, broadcaster} =
-        start_supervised(
-          {ExecutionBroadcaster, {__MODULE__, producer, TestStorage, TestScheduler}}
-        )
+      {{:ok, broadcaster}, _} =
+        capture_log_with_return(fn ->
+          start_supervised(
+            {ExecutionBroadcaster, {__MODULE__, producer, TestStorage, TestScheduler}}
+          )
+        end)
 
       {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
@@ -116,14 +118,13 @@ defmodule Quantum.ExecutionBroadcasterTest do
           assert_receive {:received, {:execute, ^job}}, 100
         end
 
-        # Maybe one second elapsed in the test?
-        assert_receive {:received, {:execute, ^job}}, 1000
+        # Maybe a little time elapsed in the test?
+        for _ <- 0..2 do
+          assert_receive {:received, {:execute, ^job}}, 1010
+        end
 
         # Goes back to normal pace
-        # TODO: had to comment out the refute_receive line and add assert_receive line instead to make test pass.
-        # Not sure how the should be in a general case. Probably, should dig into the situation and rewrite this part pf the test.
-        assert_receive {:received, {:execute, ^job}}, 100
-        # refute_receive {:received, {:execute, ^job}}, 100
+        refute_receive {:received, {:execute, ^job}}, 100
       end)
     end
 

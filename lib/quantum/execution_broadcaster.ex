@@ -75,10 +75,10 @@ defmodule Quantum.ExecutionBroadcaster do
       |> Enum.filter(&add_reboot_event?/1)
       |> Enum.map(fn {:add, job} -> {:execute, job} end)
 
-    for {_, job} <- reboot_add_events do
+    for {_, %{name: job_name}} <- reboot_add_events do
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{
-          inspect(job.name)
+          inspect(job_name)
         }"
       end)
     end
@@ -112,10 +112,10 @@ defmodule Quantum.ExecutionBroadcaster do
     state =
       jobs_to_execute
       |> (fn jobs ->
-            for job <- jobs do
+            for %{name: job_name} <- jobs do
               Logger.debug(fn ->
-                "[#{inspect(Node.self())}][#{__MODULE__}] Schedluling job for execution #{
-                  inspect(job.name)
+                "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for execution #{
+                  inspect(job_name)
                 }"
               end)
             end
@@ -129,9 +129,9 @@ defmodule Quantum.ExecutionBroadcaster do
     {:noreply, Enum.map(jobs_to_execute, fn job -> {:execute, job} end), state}
   end
 
-  defp handle_event({:add, job}, state) do
+  defp handle_event({:add, %{name: job_name} = job}, state) do
     Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job.name)}"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
     end)
 
     add_job_to_state(job, state)
@@ -145,7 +145,7 @@ defmodule Quantum.ExecutionBroadcaster do
     jobs =
       jobs
       |> Enum.map(fn {date, job_list} ->
-        {date, Enum.reject(job_list, &(&1.name == name))}
+        {date, Enum.reject(job_list, &match?(%{name: ^name}, &1))}
       end)
       |> Enum.reject(fn
         {_, []} -> true
@@ -189,17 +189,27 @@ defmodule Quantum.ExecutionBroadcaster do
   end
 
   defp add_to_state(%{jobs: jobs} = state, date, job) do
-    %{
-      state
-      | jobs:
-          case Enum.find_index(jobs, fn {run_date, _} -> run_date == date end) do
-            nil ->
-              [{date, [job]} | jobs]
+    %{state | jobs: add_job_at_date(jobs, date, job)}
+  end
 
-            index ->
-              List.update_at(jobs, index, fn {run_date, old} -> {run_date, [job | old]} end)
-          end
-    }
+  defp add_job_at_date(jobs, date, job) do
+    case find_date_and_put_job(jobs, date, job) do
+      {:found, list} -> list
+      {:not_found, list} -> [{date, [job]} | list]
+    end
+  end
+
+  defp find_date_and_put_job([{date, jobs} | rest], date, job) do
+    {:found, [{date, [job | jobs]} | rest]}
+  end
+
+  defp find_date_and_put_job([], _, _) do
+    {:not_found, []}
+  end
+
+  defp find_date_and_put_job([head | rest], date, job) do
+    {state, new_rest} = find_date_and_put_job(rest, date, job)
+    {state, [head | new_rest]}
   end
 
   defp reset_timer(%{timer: nil, jobs: []} = state) do
