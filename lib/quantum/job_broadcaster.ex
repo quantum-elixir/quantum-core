@@ -34,8 +34,10 @@ defmodule Quantum.JobBroadcaster do
 
   @doc false
   def init({jobs, storage, scheduler}) do
-    jobs =
-      case storage.jobs(scheduler) do
+    effective_jobs =
+      scheduler
+      |> storage.jobs()
+      |> case do
         :not_applicable ->
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Config"
@@ -52,8 +54,8 @@ defmodule Quantum.JobBroadcaster do
       end
 
     state = %{
-      jobs: Enum.into(jobs, %{}, fn %{name: name} = job -> {name, job} end),
-      buffer: for(%{state: :active} = job <- jobs, do: {:add, job}),
+      jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
+      buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
       storage: storage,
       scheduler: scheduler
     }
