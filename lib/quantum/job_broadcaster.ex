@@ -52,17 +52,13 @@ defmodule Quantum.JobBroadcaster do
 
           storage_jobs
       end
-    buffer =
-      effective_jobs
-      |> Enum.filter(&(&1.state == :active))
-      |> Enum.map(fn job -> {:add, job} end)
 
-    state =
-      %{}
-      |> Map.put(:jobs, Enum.reduce(effective_jobs, %{}, fn job, acc -> Map.put(acc, job.name, job) end))
-      |> Map.put(:buffer, buffer)
-      |> Map.put(:storage, storage)
-      |> Map.put(:scheduler, scheduler)
+    state = %{
+      jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
+      buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
+      storage: storage,
+      scheduler: scheduler
+    }
 
     {:producer, state}
   end
@@ -156,8 +152,6 @@ defmodule Quantum.JobBroadcaster do
     end)
 
     messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
-
-    :ok = storage.purge(scheduler)
 
     :ok = storage.purge(scheduler)
 
