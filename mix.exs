@@ -81,7 +81,7 @@ defmodule Quantum.Mixfile do
       {:inch_ex, "~> 0.5", only: [:dev, :docs], runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
       {:credo, "~> 0.7", only: [:dev, :test], runtime: false},
-      {:persistent_ets, "~> 0.1.0", optional: true, runtime: false},
+      {:persistent_ets, "~> 0.1.0", optional: true, runtime: false}
     ]
   end
 end
