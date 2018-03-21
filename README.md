@@ -12,6 +12,9 @@
 > **This README follows master, which may not be the currently published version**. Here are the
 [docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
 
+> :warning: **If you're using a version below `v2.2.6`, please update immediately.** :warning:
+> See [Issue #321](https://github.com/c-rack/quantum-elixir/issues/321) for more details.
+
 ## Setup
 
 To use Quantum in your project, edit the `mix.exs` file and add Quantum to
