@@ -142,6 +142,26 @@ defmodule Quantum.ExecutionBroadcasterTest do
         assert_receive {:received, {:execute, ^job_new}}, @max_timeout
       end)
     end
+
+    test "DST creates no problems" do
+      state = %{jobs: [], time: ~N[2018-03-25 00:59:01], timer: nil}
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*])
+        |> Job.set_timezone("Europe/Zurich")
+
+      assert capture_log(fn ->
+               assert {:noreply, [],
+                       %{
+                         jobs: [
+                           {~N[2018-03-25 01:01:00], [^job]}
+                         ],
+                         time: ~N[2018-03-25 00:59:01],
+                         timer: {_, ~N[2018-03-25 01:01:00]}
+                       }} = ExecutionBroadcaster.handle_events([{:add, job}], self(), state)
+             end) =~ "Next execution time for job #{inspect(job.name)} is not a valid time."
+    end
   end
 
   describe "remove" do

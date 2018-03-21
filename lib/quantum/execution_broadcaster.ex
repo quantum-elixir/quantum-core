@@ -9,6 +9,12 @@ defmodule Quantum.ExecutionBroadcaster do
 
   alias Quantum.{Job, Util, DateLibrary}
   alias Crontab.{Scheduler, CronExpression}
+  alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
+
+  defmodule JobInPastError do
+    defexception message:
+                   "The job was scheduled in the past. This must not happen to prevent infinite loops!"
+  end
 
   @doc """
   Start Stage
@@ -119,34 +125,67 @@ defmodule Quantum.ExecutionBroadcaster do
          %Job{schedule: schedule, timezone: timezone, name: name} = job,
          %{time: time} = state
        ) do
-    case Scheduler.get_next_run_date(schedule, DateLibrary.to_tz!(time, timezone)) do
+    job
+    |> get_next_execution_time(time)
+    |> case do
       {:ok, date} ->
-        add_to_state(state, DateLibrary.to_utc!(date, timezone), job)
+        add_to_state(state, date, job)
 
-      _ ->
-        Logger.warn("""
-        Invalid Schedule #{inspect(schedule)} provided for job #{inspect(name)}.
-        No matching dates found. The job was removed.
-        """)
+      {:error, _} ->
+        Logger.warn(fn ->
+          """
+          Invalid Schedule #{inspect(schedule)} provided for job #{inspect(name)}.
+          No matching dates found. The job was removed.
+          """
+        end)
 
         state
     end
   rescue
-    error ->
+    e in InvalidTimezoneError ->
       Logger.error(
         "Invalid Timezone #{inspect(timezone)} provided for job #{inspect(name)}.",
         job: job,
-        error: error
+        error: e
       )
+  end
 
-      state
+  defp get_next_execution_time(
+         %Job{schedule: schedule, timezone: timezone, name: name} = job,
+         time
+       ) do
+    schedule
+    |> Scheduler.get_next_run_date(DateLibrary.to_tz!(time, timezone))
+    |> case do
+      {:ok, date} ->
+        {:ok, DateLibrary.to_utc!(date, timezone)}
+
+      {:error, _} = error ->
+        error
+    end
+  rescue
+    _ in InvalidDateTimeForTimezoneError ->
+      next_time = NaiveDateTime.add(time, 60, :second)
+
+      Logger.warn(fn ->
+        """
+        Next execution time for job #{inspect(name)} is not a valid time.
+        Retrying with #{inspect(next_time)}
+        """
+      end)
+
+      get_next_execution_time(job, next_time)
   end
 
   defp sort_state(%{jobs: jobs} = state) do
     %{state | jobs: Enum.sort_by(jobs, fn {date, _} -> NaiveDateTime.to_erl(date) end)}
   end
 
-  defp add_to_state(%{jobs: jobs} = state, date, job) do
+  defp add_to_state(%{jobs: jobs, time: time} = state, date, job) do
+    unless NaiveDateTime.compare(time, date) in [:lt, :eq] do
+      raise JobInPastError
+    end
+
     %{state | jobs: add_job_at_date(jobs, date, job)}
   end
 
@@ -185,18 +224,30 @@ defmodule Quantum.ExecutionBroadcaster do
 
     timer =
       case NaiveDateTime.compare(run_date, NaiveDateTime.utc_now()) do
-        :eq ->
-          send(self(), :execute)
-          nil
-
-        _ ->
+        :gt ->
           monotonic_time =
             run_date
             |> DateTime.from_naive!("Etc/UTC")
             |> DateTime.to_unix(:millisecond)
             |> Kernel.-(System.time_offset(:millisecond))
 
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting at #{
+              inspect(monotonic_time)
+            } (#{NaiveDateTime.to_iso8601(run_date)})"
+          end)
+
           Process.send_after(self(), :execute, monotonic_time, abs: true)
+
+        _ ->
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting ASAP (#{
+              NaiveDateTime.to_iso8601(run_date)
+            })"
+          end)
+
+          send(self(), :execute)
+          nil
       end
 
     Map.put(state, :timer, {timer, run_date})
