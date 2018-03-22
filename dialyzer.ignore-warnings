@@ -9,8 +9,4 @@ Unknown function 'Elixir.Quantum.RunStrategy.NodeList.PID':'__impl__'/1
 Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Port':'__impl__'/1
 Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Reference':'__impl__'/1
 Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Tuple':'__impl__'/1
-Unknown function 'Elixir.Calendar.DateTime':'shift_zone!'/2
-Unknown function 'Elixir.Timex.Timezone':convert/2
-Unknown function 'Elixir.Calendar.DateTime':from_naive/2
-Unknown function 'Elixir.Timex':to_datetime/2
 Overloaded contract for 'Elixir.Quantum.DateLibrary':'to_utc!'/2 has overlapping domains; such contracts are currently unsupported and are simply ignored
