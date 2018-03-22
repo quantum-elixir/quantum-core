@@ -19,7 +19,10 @@ defmodule Quantum.Mixfile do
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
       version: @version,
-      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]
+      dialyzer: [
+        ignore_warnings: "dialyzer.ignore-warnings",
+        plt_add_apps: [:timex, :calendar]
+      ]
     ]
   end
 
