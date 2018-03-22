@@ -4,16 +4,16 @@
 
 [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/quantum)
-[![Build Status](https://travis-ci.org/c-rack/quantum-elixir.svg?branch=master)](https://travis-ci.org/c-rack/quantum-elixir)
-[![Coverage Status](https://coveralls.io/repos/c-rack/quantum-elixir/badge.svg?branch=master)](https://coveralls.io/r/c-rack/quantum-elixir?branch=master)
-[![Inline docs](http://inch-ci.org/github/c-rack/quantum-elixir.svg)](http://inch-ci.org/github/c-rack/quantum-elixir)
+[![Build Status](https://travis-ci.org/quantum-elixir/quantum-core.svg?branch=master)](https://travis-ci.org/quantum-elixir/quantum-core)
+[![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
+[![Inline docs](http://inch-ci.org/github/quantum-elixir/quantum-core.svg)](http://inch-ci.org/github/quantum-elixir/quantum-core)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 
 > **This README follows master, which may not be the currently published version**. Here are the
 [docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
 
 > :warning: **If you're using a version below `v2.2.6`, please update immediately.** :warning:
-> See [Issue #321](https://github.com/c-rack/quantum-elixir/issues/321) for more details.
+> See [Issue #321](https://github.com/quantum-elixir/quantum-core/issues/321) for more details.
 
 ## Setup
 
@@ -64,9 +64,9 @@ config :logger,
 ```
 
 If you encounter any problems with `quantum`, please search if there is already an
-  [open issue](https://github.com/c-rack/quantum-elixir/issues) addressing the problem.
+  [open issue](https://github.com/quantum-elixir/quantum-core/issues) addressing the problem.
 
-Otherwise feel free to [open an issue](https://github.com/c-rack/quantum-elixir/issues/new). Please include debug logs.
+Otherwise feel free to [open an issue](https://github.com/quantum-elixir/quantum-core/issues/new). Please include debug logs.
 
 ## Migrate to V2
 
@@ -101,13 +101,13 @@ terms of this contract."
 
 ### tl;dr
 
-1. Check for [open issues](https://github.com/c-rack/quantum-elixir/issues) or [open a new issue](https://github.com/c-rack/quantum-elixir/issues/new) to start a discussion around [a problem](https://www.youtube.com/watch?v=_QF9sFJGJuc).
+1. Check for [open issues](https://github.com/quantum-elixir/quantum-core/issues) or [open a new issue](https://github.com/quantum-elixir/quantum-core/issues/new) to start a discussion around [a problem](https://www.youtube.com/watch?v=_QF9sFJGJuc).
 2. Issues SHALL be named as "Problem: _description of the problem_".
-3. Fork the [quantum-elixir repository on GitHub](https://github.com/c-rack/quantum-elixir) to start making your changes
+3. Fork the [quantum-elixir repository on GitHub](https://github.com/quantum-elixir/quantum-core) to start making your changes
 4. If possible, write a test which shows that the problem was solved.
 5. Send a pull request.
 6. Pull requests SHALL be named as "Solution: _description of your solution_"
-7. Your pull request is merged and you are added to the [list of contributors](https://github.com/c-rack/quantum-elixir/graphs/contributors)
+7. Your pull request is merged and you are added to the [list of contributors](https://github.com/quantum-elixir/quantum-core/graphs/contributors)
 
 ## License
 
