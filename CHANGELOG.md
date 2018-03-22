@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.2.7 - 2018-03-22
+
+### Changed
+- Moved the Repository into Organization & Correct all the URL's
+
+### Fixed
+- Fixed Dialyzer Warnings
+
+Diff for [2.2.7]
+
 ## 2.2.6 - 2018-03-21
 
 ### Fixed
@@ -485,7 +495,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...HEAD
+[2.2.7]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...v2.2.7
 [2.2.6]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.5...v2.2.6
 [2.2.5]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.4...v2.2.5
 [2.2.4]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.3...v2.2.4
