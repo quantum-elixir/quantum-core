@@ -63,7 +63,27 @@ defmodule Quantum.Scheduler do
         Quantum.scheduler_config(__MODULE__, @otp_app, custom)
       end
 
-      defp __job_broadcaster__, do: Keyword.fetch!(config(), :job_broadcaster)
+      defp __job_broadcaster__ do
+        configuration = config()
+        __job_broadcaster__(Keyword.fetch!(configuration, :task_stages_supervisor), configuration)
+      end
+
+      defp __job_broadcaster__({:global, task_stages_supervisor}, configuration) do
+        remote_node =
+          task_stages_supervisor
+          |> :global.whereis_name()
+          |> node()
+
+        case remote_node == node() do
+          true -> Keyword.fetch!(configuration, :job_broadcaster)
+          false -> {Keyword.fetch!(configuration, :job_broadcaster), remote_node}
+        end
+      end
+
+      defp __job_broadcaster__(_, configuration) do
+        Keyword.fetch!(configuration, :job_broadcaster)
+      end
+
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
       def start_link(opts \\ [name: __MODULE__]) do
