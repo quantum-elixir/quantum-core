@@ -16,7 +16,8 @@ defmodule Quantum do
     schedule: nil,
     overlap: true,
     timezone: :utc,
-    run_strategy: {Random, :cluster}
+    run_strategy: {Random, :cluster},
+    debug_logging: true
   ]
 
   @doc """

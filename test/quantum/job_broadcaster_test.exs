@@ -36,7 +36,7 @@ defmodule Quantum.JobBroadcasterTest do
           []
       end
 
-    {:ok, broadcaster} = start_supervised({JobBroadcaster, {__MODULE__, init_jobs}})
+    {:ok, broadcaster} = start_supervised({JobBroadcaster, {__MODULE__, init_jobs, true}})
     {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
     {
@@ -44,7 +44,8 @@ defmodule Quantum.JobBroadcasterTest do
       %{
         broadcaster: broadcaster,
         active_job: active_job,
-        inactive_job: inactive_job
+        inactive_job: inactive_job,
+        init_jobs: init_jobs
       }
     }
   end
@@ -59,11 +60,28 @@ defmodule Quantum.JobBroadcasterTest do
 
   describe "add" do
     test "active", %{broadcaster: broadcaster, active_job: active_job} do
-      capture_log(fn ->
-        TestScheduler.add_job(broadcaster, active_job)
+      assert capture_log(fn ->
+               TestScheduler.add_job(broadcaster, active_job)
 
-        assert_receive {:received, {:add, ^active_job}}
-      end)
+               assert_receive {:received, {:add, ^active_job}}
+             end) =~ "Adding job #Reference"
+    end
+
+    test "active (without debug-logging)", %{init_jobs: init_jobs, active_job: active_job} do
+      refute capture_log(fn ->
+               # Restart JobBroadcaster with debug-logging false
+               :ok = stop_supervised(JobBroadcaster)
+               :ok = stop_supervised(TestConsumer)
+
+               {:ok, broadcaster} =
+                 start_supervised({JobBroadcaster, {__MODULE__, init_jobs, false}})
+
+               {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
+
+               TestScheduler.add_job(broadcaster, active_job)
+
+               assert_receive {:received, {:add, ^active_job}}
+             end) =~ "Adding job #Reference"
     end
 
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do

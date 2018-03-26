@@ -63,6 +63,13 @@ config :logger,
   level: :debug
 ```
 
+If you want do use the logger in debug-level without the messages from quantum:
+
+```elixir
+config :your_app, YourApp.Scheduler,
+  debug_logging: false
+```
+
 If you encounter any problems with `quantum`, please search if there is already an
   [open issue](https://github.com/quantum-elixir/quantum-core/issues) addressing the problem.
 

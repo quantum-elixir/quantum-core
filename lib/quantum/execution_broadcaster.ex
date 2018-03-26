@@ -25,37 +25,38 @@ defmodule Quantum.ExecutionBroadcaster do
     * `job_broadcaster` - The name of the stage to listen to
 
   """
-  @spec start_link(GenServer.server(), GenServer.server()) :: GenServer.on_start()
-  def start_link(name, job_broadcaster) do
+  @spec start_link(GenServer.server(), GenServer.server(), boolean()) :: GenServer.on_start()
+  def start_link(name, job_broadcaster, debug_logging) do
     __MODULE__
-    |> GenStage.start_link(job_broadcaster, name: name)
+    |> GenStage.start_link({job_broadcaster, debug_logging}, name: name)
     |> Util.start_or_link()
   end
 
   @doc false
-  @spec child_spec({GenServer.server(), GenServer.server()}) :: Supervisor.child_spec()
-  def child_spec({name, job_broadcaster}) do
-    %{super([]) | start: {__MODULE__, :start_link, [name, job_broadcaster]}}
+  @spec child_spec({GenServer.server(), GenServer.server(), boolean()}) :: Supervisor.child_spec()
+  def child_spec({name, job_broadcaster, debug_logging}) do
+    %{super([]) | start: {__MODULE__, :start_link, [name, job_broadcaster, debug_logging]}}
   end
 
   @doc false
-  def init(job_broadcaster) do
-    state = %{jobs: [], time: NaiveDateTime.utc_now(), timer: nil}
+  def init({job_broadcaster, debug_logging}) do
+    state = %{jobs: [], time: NaiveDateTime.utc_now(), timer: nil, debug_logging: debug_logging}
     {:producer_consumer, state, subscribe_to: [job_broadcaster]}
   end
 
-  def handle_events(events, _, state) do
+  def handle_events(events, _, %{debug_logging: debug_logging} = state) do
     reboot_add_events =
       events
       |> Enum.filter(&add_reboot_event?/1)
       |> Enum.map(fn {:add, job} -> {:execute, job} end)
 
     for {_, %{name: job_name}} <- reboot_add_events do
-      Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{
-          inspect(job_name)
-        }"
-      end)
+      debug_logging &&
+        Logger.debug(fn ->
+          "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{
+            inspect(job_name)
+          }"
+        end)
     end
 
     state =
@@ -68,7 +69,10 @@ defmodule Quantum.ExecutionBroadcaster do
     {:noreply, reboot_add_events, state}
   end
 
-  def handle_info(:execute, %{jobs: [{time_to_execute, jobs_to_execute} | tail]} = state) do
+  def handle_info(
+        :execute,
+        %{jobs: [{time_to_execute, jobs_to_execute} | tail], debug_logging: debug_logging} = state
+      ) do
     state =
       state
       |> Map.put(:timer, nil)
@@ -79,11 +83,12 @@ defmodule Quantum.ExecutionBroadcaster do
       jobs_to_execute
       |> (fn jobs ->
             for %{name: job_name} <- jobs do
-              Logger.debug(fn ->
-                "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for execution #{
-                  inspect(job_name)
-                }"
-              end)
+              debug_logging &&
+                Logger.debug(fn ->
+                  "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for execution #{
+                    inspect(job_name)
+                  }"
+                end)
             end
 
             jobs
@@ -95,18 +100,20 @@ defmodule Quantum.ExecutionBroadcaster do
     {:noreply, Enum.map(jobs_to_execute, fn job -> {:execute, job} end), state}
   end
 
-  defp handle_event({:add, %{name: job_name} = job}, state) do
-    Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
-    end)
+  defp handle_event({:add, %{name: job_name} = job}, %{debug_logging: debug_logging} = state) do
+    debug_logging &&
+      Logger.debug(fn ->
+        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+      end)
 
     add_job_to_state(job, state)
   end
 
-  defp handle_event({:remove, name}, %{jobs: jobs} = state) do
-    Logger.debug(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Removing job #{inspect(name)}"
-    end)
+  defp handle_event({:remove, name}, %{jobs: jobs, debug_logging: debug_logging} = state) do
+    debug_logging &&
+      Logger.debug(fn ->
+        "[#{inspect(Node.self())}][#{__MODULE__}] Removing job #{inspect(name)}"
+      end)
 
     jobs =
       jobs
@@ -219,7 +226,7 @@ defmodule Quantum.ExecutionBroadcaster do
     Map.put(state, :timer, nil)
   end
 
-  defp reset_timer(%{timer: nil, jobs: jobs} = state) do
+  defp reset_timer(%{timer: nil, jobs: jobs, debug_logging: debug_logging} = state) do
     run_date = next_run_date(jobs)
 
     timer =
@@ -231,20 +238,22 @@ defmodule Quantum.ExecutionBroadcaster do
             |> DateTime.to_unix(:millisecond)
             |> Kernel.-(System.time_offset(:millisecond))
 
-          Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting at #{
-              inspect(monotonic_time)
-            } (#{NaiveDateTime.to_iso8601(run_date)})"
-          end)
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting at #{
+                inspect(monotonic_time)
+              } (#{NaiveDateTime.to_iso8601(run_date)})"
+            end)
 
           Process.send_after(self(), :execute, monotonic_time, abs: true)
 
         _ ->
-          Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting ASAP (#{
-              NaiveDateTime.to_iso8601(run_date)
-            })"
-          end)
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Continuing Execution Broadcasting ASAP (#{
+                NaiveDateTime.to_iso8601(run_date)
+              })"
+            end)
 
           send(self(), :execute)
           nil

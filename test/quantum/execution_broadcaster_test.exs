@@ -23,10 +23,10 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
   setup do
     {:ok, producer} = start_supervised({TestProducer, []})
-    {:ok, broadcaster} = start_supervised({ExecutionBroadcaster, {__MODULE__, producer}})
+    {:ok, broadcaster} = start_supervised({ExecutionBroadcaster, {__MODULE__, producer, true}})
     {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
-    {:ok, %{producer: producer, broadcaster: broadcaster}}
+    {:ok, %{producer: producer, broadcaster: broadcaster, debug_logging: true}}
   end
 
   describe "add" do
@@ -143,8 +143,8 @@ defmodule Quantum.ExecutionBroadcasterTest do
       end)
     end
 
-    test "DST creates no problems" do
-      state = %{jobs: [], time: ~N[2018-03-25 00:59:01], timer: nil}
+    test "DST creates no problems", %{debug_logging: debug_logging} do
+      state = %{jobs: [], time: ~N[2018-03-25 00:59:01], timer: nil, debug_logging: debug_logging}
 
       job =
         TestScheduler.new_job()
