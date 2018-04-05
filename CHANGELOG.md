@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+- Experimental Storage API
+
 Diff for [unreleased]
 
 ## 2.2.7 - 2018-03-22

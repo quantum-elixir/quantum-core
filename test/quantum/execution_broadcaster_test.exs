@@ -5,10 +5,12 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
   import Crontab.CronExpression
   import ExUnit.CaptureLog
+  import Quantum.CaptureLogExtend
 
   alias Quantum.ExecutionBroadcaster
   alias Quantum.{TestConsumer, TestProducer}
   alias Quantum.Job
+  alias Quantum.Storage.Test, as: TestStorage
 
   # Allow max 10% Latency
   @max_timeout 1_100
@@ -21,12 +23,27 @@ defmodule Quantum.ExecutionBroadcasterTest do
     use Quantum.Scheduler, otp_app: :execution_broadcaster_test
   end
 
-  setup do
-    {:ok, producer} = start_supervised({TestProducer, []})
-    {:ok, broadcaster} = start_supervised({ExecutionBroadcaster, {__MODULE__, producer, true}})
-    {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
+  setup tags do
+    if tags[:listen_storage] do
+      Process.put(:test_pid, self())
+    end
 
-    {:ok, %{producer: producer, broadcaster: broadcaster, debug_logging: true}}
+    if tags[:manual_dispatch] do
+      :ok
+    else
+      {:ok, producer} = start_supervised({TestProducer, []})
+
+      {{:ok, broadcaster}, _} =
+        capture_log_with_return(fn ->
+          start_supervised(
+            {ExecutionBroadcaster, {__MODULE__, producer, TestStorage, TestScheduler, true}}
+          )
+        end)
+
+      {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
+
+      {:ok, %{producer: producer, broadcaster: broadcaster, debug_logging: true}}
+    end
   end
 
   describe "add" do
@@ -58,6 +75,71 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:add, job})
 
         assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+      end)
+    end
+
+    @tag manual_dispatch: true, listen_storage: true
+    test "loads last execution time from storage" do
+      defmodule TestStorageWithLastExecutionTime do
+        @moduledoc false
+        use Quantum.Storage.Test
+
+        def last_execution_date(_),
+          do: NaiveDateTime.add(NaiveDateTime.utc_now(), -3_600, :second)
+      end
+
+      capture_log(fn ->
+        {:ok, producer} = start_supervised({TestProducer, []})
+
+        {:ok, broadcaster} =
+          start_supervised(
+            {ExecutionBroadcaster,
+             {__MODULE__, producer, TestStorageWithLastExecutionTime, TestScheduler, true}}
+          )
+
+        {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
+
+        job =
+          TestScheduler.new_job()
+          |> Job.set_schedule(~e[*]e)
+
+        TestProducer.send(producer, {:add, job})
+
+        assert_receive {:update_last_execution_date, {TestScheduler, date}, _}, @max_timeout
+
+        diff_seconds = NaiveDateTime.diff(NaiveDateTime.utc_now(), date, :second)
+
+        assert diff_seconds >= 3_600 - 1
+
+        assert_receive {:received, {:execute, ^job}}, @max_timeout
+        # Quickly executes until reached current time
+        for _ <- 0..diff_seconds do
+          assert_receive {:received, {:execute, ^job}}, 100
+        end
+
+        # Maybe a little time elapsed in the test?
+        for _ <- 0..2 do
+          assert_receive {:received, {:execute, ^job}}, 1010
+        end
+
+        # Goes back to normal pace
+        refute_receive {:received, {:execute, ^job}}, 100
+      end)
+    end
+
+    @tag listen_storage: true
+    test "saves new last execution time in storage", %{producer: producer} do
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      capture_log(fn ->
+        TestProducer.send(producer, {:add, job})
+
+        assert_receive {:update_last_execution_date, {TestScheduler, %NaiveDateTime{}}, _},
+                       @max_timeout
+
         assert_receive {:received, {:execute, ^job}}, @max_timeout
       end)
     end
