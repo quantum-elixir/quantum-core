@@ -54,6 +54,38 @@ defmodule Quantum.TaskRegistry do
     GenServer.cast(server, {:finished, task, node})
   end
 
+  @doc """
+  Query if a task with given name is running
+
+  ### Examples
+
+      iex> Quantum.TaskRegistry.is_running?(server, running_job.name)
+      true
+
+      iex> Quantum.TaskRegistry.is_running?(server, not_running_job.name)
+      false
+
+  """
+  def is_running?(server, task) do
+    GenServer.call(server, {:is_running?, task})
+  end
+
+  @doc """
+  Query if any tasks are running in the cluster
+
+  ### Examples
+
+      iex> Quantum.TaskRegistry.any_running?(server_with_running_tasks)
+      true
+
+      iex> Quantum.TaskRegistry.any_running?(server_without_running_tasks)
+      false
+
+  """
+  def any_running?(server) do
+    GenServer.call(server, :any_running?)
+  end
+
   @doc false
   def init(args) do
     {:ok, args}
@@ -65,6 +97,24 @@ defmodule Quantum.TaskRegistry do
       {:reply, :already_running, state}
     else
       {:reply, :marked_running, Map.update(state, task, [node], &[node | &1])}
+    end
+  end
+
+  @doc false
+  def handle_call({:is_running?, task}, _caller, state) do
+    if Enum.empty?(Map.get(state, task, [])) do
+      {:reply, false, state}
+    else
+      {:reply, true, state}
+    end
+  end
+
+  @doc false
+  def handle_call(:any_running?, _caller, state) do
+    if Enum.empty?(state) do
+      {:reply, false, state}
+    else
+      {:reply, true, state}
     end
   end
 
