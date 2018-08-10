@@ -65,23 +65,17 @@ defmodule Quantum.Scheduler do
 
       defp __job_broadcaster__ do
         configuration = config()
-        __job_broadcaster__(Keyword.fetch!(configuration, :task_stages_supervisor), configuration)
+
+        job_broadcaster =
+          configuration
+          |> Keyword.fetch!(:job_broadcaster)
+          |> Keyword.fetch!(:name)
+
+        __job_broadcaster__(job_broadcaster, configuration)
       end
 
-      defp __job_broadcaster__({:global, task_stages_supervisor}, configuration) do
-        remote_node =
-          task_stages_supervisor
-          |> :global.whereis_name()
-          |> node()
-
-        case remote_node == node() do
-          true -> Keyword.fetch!(configuration, :job_broadcaster)
-          false -> {Keyword.fetch!(configuration, :job_broadcaster), remote_node}
-        end
-      end
-
-      defp __job_broadcaster__(_, configuration) do
-        Keyword.fetch!(configuration, :job_broadcaster)
+      defp __job_broadcaster__(job_broadcaster, configuration) do
+        GenServer.whereis(job_broadcaster)
       end
 
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)

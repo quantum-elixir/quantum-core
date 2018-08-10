@@ -15,12 +15,11 @@ defmodule Quantum.ExecutorSupervisor do
           boolean()
         ) :: GenServer.on_start()
   def start_link(name, execution_broadcaster, task_supervisor, task_registry, debug_logging) do
-    __MODULE__
-    |> ConsumerSupervisor.start_link(
+    ConsumerSupervisor.start_link(
+      __MODULE__,
       {execution_broadcaster, task_supervisor, task_registry, debug_logging},
       name: name
     )
-    |> Util.start_or_link()
   end
 
   # credo:disable-for-next-line Credo.Check.Design.TagTODO
