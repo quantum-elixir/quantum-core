@@ -174,10 +174,9 @@ defmodule Quantum.TaskRegistry do
     |> Enum.into([])
     |> Kernel.++(Enum.into(state2, []))
     |> Enum.group_by(fn {job, _nodes_list} -> job end, fn {_job, nodes_list} -> nodes_list end)
-    |> Enum.map(fn {job, nodes_list_list} ->
+    |> Enum.into(%{}, fn {job, nodes_list_list} ->
       {job, List.flatten(nodes_list_list)}
     end)
-    |> Enum.into(%{})
   end
 
   def handle_info({:swarm, :die}, state) do

@@ -5,10 +5,7 @@ defmodule Quantum do
 
   require Logger
 
-  alias Quantum.Normalizer
-  alias Quantum.Job
-  alias Quantum.RunStrategy.Random
-  alias Quantum.Storage.Noop
+  alias Quantum.{Job, Normalizer, RunStrategy.Random, Storage.Noop}
 
   @defaults [
     global: false,

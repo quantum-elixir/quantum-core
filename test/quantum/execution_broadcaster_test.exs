@@ -7,10 +7,9 @@ defmodule Quantum.ExecutionBroadcasterTest do
   import ExUnit.CaptureLog
   import Quantum.CaptureLogExtend
 
-  alias Quantum.ExecutionBroadcaster
-  alias Quantum.{TestConsumer, TestProducer}
-  alias Quantum.Job
+  alias Quantum.{ExecutionBroadcaster, Job}
   alias Quantum.Storage.Test, as: TestStorage
+  alias Quantum.{TestConsumer, TestProducer}
 
   # Allow max 10% Latency
   @max_timeout 1_100

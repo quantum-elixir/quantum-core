@@ -7,12 +7,17 @@ defmodule Quantum.ExecutionBroadcaster do
 
   require Logger
 
-  alias Quantum.{Job, DateLibrary}
-  alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
-  alias Crontab.Scheduler, as: CrontabScheduler
+  alias Quantum.{
+    DateLibrary,
+    DateLibrary.InvalidDateTimeForTimezoneError,
+    DateLibrary.InvalidTimezoneError,
+    Job,
+    Scheduler,
+    Storage.Adapter
+  }
+
   alias Crontab.CronExpression
-  alias Quantum.Storage.Adapter
-  alias Quantum.Scheduler
+  alias Crontab.Scheduler, as: CrontabScheduler
 
   defmodule JobInPastError do
     defexception message:
