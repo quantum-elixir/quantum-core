@@ -30,6 +30,9 @@ defmodule Quantum.Supervisor do
     Supervisor.init(
       [
         {Task.Supervisor, [name: Keyword.get(opts, :task_supervisor)]},
+        {Quantum.ClusterTaskSupervisorRegistry,
+         task_supervisor: Keyword.get(opts, :task_supervisor),
+         name: Keyword.get(opts, :cluster_task_supervisor_registry)},
         {
           Quantum.TaskRegistry,
           task_registry_opts
@@ -61,6 +64,7 @@ defmodule Quantum.Supervisor do
             execution_broadcaster_name,
             Keyword.fetch!(opts, :task_supervisor),
             task_registry_name,
+            Keyword.get(opts, :cluster_task_supervisor_registry),
             Keyword.fetch!(opts, :debug_logging)
           }
         }

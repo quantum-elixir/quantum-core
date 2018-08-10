@@ -10,6 +10,7 @@ defmodule Quantum.Executor do
 
   alias Quantum.{Job, TaskRegistry}
   alias Quantum.RunStrategy.NodeList
+  alias Quantum.ClusterTaskSupervisorRegistry
 
   @doc """
   Start the Task
@@ -25,24 +26,52 @@ defmodule Quantum.Executor do
           {:ok, pid}
   def start_link({task_supervisor, task_registry, debug_logging}, {:execute, job}) do
     Task.start_link(fn ->
-      execute(task_supervisor, task_registry, debug_logging, job)
+      execute(task_supervisor, task_registry, nil, debug_logging, job)
     end)
   end
 
-  @spec execute(GenServer.server(), GenServer.server(), boolean(), Job.t()) :: :ok
+  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
+          {:ok, pid}
+  def start_link(
+        %{
+          task_supervisor: task_supervisor,
+          task_registry: task_registry,
+          debug_logging: debug_logging,
+          cluster_task_supervisor_registry: cluster_task_supervisor_registry
+        },
+        {:execute, job}
+      ) do
+    Task.start_link(fn ->
+      execute(
+        task_supervisor,
+        task_registry,
+        cluster_task_supervisor_registry,
+        debug_logging,
+        job
+      )
+    end)
+  end
+
+  @spec execute(
+          GenServer.server(),
+          GenServer.server(),
+          GenServer.server() | nil,
+          boolean(),
+          Job.t()
+        ) :: :ok
   # Execute task on all given nodes without checking for overlap
   defp execute(
          task_supervisor,
          _task_registry,
+         cluster_task_supervisor_registry,
          debug_logging,
          %Job{overlap: true, run_strategy: run_strategy} = job
        ) do
     # Find Nodes to run on
     # Check if Node is up and running
     # Run Task
-    run_strategy
-    |> NodeList.nodes(job)
-    |> Enum.filter(&check_node(&1, task_supervisor, job))
+    job
+    |> nodes(run_strategy, task_supervisor, cluster_task_supervisor_registry)
     |> Enum.each(&run(&1, job, task_supervisor, debug_logging))
 
     :ok
@@ -52,6 +81,7 @@ defmodule Quantum.Executor do
   defp execute(
          task_supervisor,
          task_registry,
+         cluster_task_supervisor_registry,
          debug_logging,
          %Job{overlap: false, run_strategy: run_strategy, name: job_name} = job
        ) do
@@ -65,10 +95,9 @@ defmodule Quantum.Executor do
     # Check if Node is up and running
     # Run Task
     # Mark Task as finished
-    run_strategy
-    |> NodeList.nodes(job)
+    job
+    |> nodes(run_strategy, task_supervisor, cluster_task_supervisor_registry)
     |> Enum.filter(&(TaskRegistry.mark_running(task_registry, job_name, &1) == :marked_running))
-    |> Enum.filter(&check_node(&1, task_supervisor, job))
     |> Enum.map(&run(&1, job, task_supervisor, debug_logging))
     |> Enum.each(fn {node, %Task{ref: ref}} ->
       receive do
@@ -81,6 +110,20 @@ defmodule Quantum.Executor do
     end)
 
     :ok
+  end
+
+  defp nodes(job, run_strategy, task_supervisor, nil) do
+    run_strategy
+    |> NodeList.nodes(job)
+    |> Enum.filter(&check_node(&1, task_supervisor, job))
+  end
+
+  defp nodes(job, run_strategy, task_supervisor, cluster_task_supervisor_registry) do
+    available_nodes = ClusterTaskSupervisorRegistry.nodes(cluster_task_supervisor_registry)
+    NodeList.nodes(run_strategy, job, available_nodes)
+  rescue
+    UndefinedFunctionError ->
+      nodes(job, run_strategy, task_supervisor, nil)
   end
 
   # Ececute the given function on a given node via the task supervisor

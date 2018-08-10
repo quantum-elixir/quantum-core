@@ -44,5 +44,18 @@ defmodule Quantum.RunStrategy.All do
     def nodes(%Quantum.RunStrategy.All{nodes: nodes}, _) do
       nodes
     end
+
+    @spec nodes(
+            run_strategy :: Quantum.RunStrategy.All.t(),
+            job :: Job.t(),
+            available_nodes :: [Node.t()]
+          ) :: [Node.t()]
+    def nodes(%Quantum.RunStrategy.All{nodes: :cluster}, _, available_nodes) do
+      available_nodes
+    end
+
+    def nodes(%Quantum.RunStrategy.All{nodes: nodes}, _, _) do
+      nodes
+    end
   end
 end
