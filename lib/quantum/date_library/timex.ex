@@ -22,8 +22,8 @@ if Code.ensure_compiled?(Timex) do
 
     @behaviour Quantum.DateLibrary
 
-    alias Timex.Timezone
     alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
+    alias Timex.Timezone
 
     @spec utc_to_tz!(NaiveDateTime.t(), String.t()) :: NaiveDateTime.t() | no_return
     def utc_to_tz!(date, tz) do

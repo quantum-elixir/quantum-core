@@ -4,10 +4,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+Diff for [unreleased]
+
+## 2.3.0 - 2018-08-10
+
 ### Added
 - Experimental Storage API
 
-Diff for [unreleased]
+### Fixed
+- Use Swarm for clustering to prevent broken cluster state
+- Better search for available nodes for run strategies
+
+Diff for [2.3.0]
 
 ## 2.2.7 - 2018-03-22
 
@@ -498,7 +506,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...v2.3.0
 [2.2.7]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...v2.2.7
 [2.2.6]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.5...v2.2.6
 [2.2.5]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.4...v2.2.5

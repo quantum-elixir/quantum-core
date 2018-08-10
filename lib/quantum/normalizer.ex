@@ -3,10 +3,13 @@ defmodule Quantum.Normalizer do
   Normalize Config values into a `Quantum.Job`.
   """
 
-  alias Quantum.Job
-  alias Crontab.CronExpression.Parser, as: CronExpressionParser
   alias Crontab.CronExpression
-  alias Quantum.RunStrategy.NodeList
+  alias Crontab.CronExpression.Parser, as: CronExpressionParser
+
+  alias Quantum.{
+    Job,
+    RunStrategy.NodeList
+  }
 
   @type config_short_notation :: {config_schedule, config_task}
   @type config_full_notation :: {config_name | nil, Keyword.t() | map}

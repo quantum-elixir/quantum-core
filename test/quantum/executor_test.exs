@@ -5,8 +5,9 @@ defmodule Quantum.ExecutorTest do
 
   import ExUnit.CaptureLog
 
-  alias Quantum.{Executor, Job, TaskRegistry}
+  alias Quantum.{Executor, Job}
   alias Quantum.RunStrategy.All
+  alias Quantum.TaskRegistry
 
   doctest Executor
 

@@ -3,10 +3,9 @@ defmodule Quantum.JobBroadcasterTest do
 
   use ExUnit.Case, async: true
 
-  alias Quantum.JobBroadcaster
-  alias Quantum.TestConsumer
-  alias Quantum.Job
+  alias Quantum.{Job, JobBroadcaster}
   alias Quantum.Storage.Test, as: TestStorage
+  alias Quantum.TestConsumer
 
   import ExUnit.CaptureLog
   import Quantum.CaptureLogExtend

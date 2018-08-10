@@ -8,9 +8,7 @@ defmodule Quantum.Executor do
 
   require Logger
 
-  alias Quantum.{Job, TaskRegistry}
-  alias Quantum.RunStrategy.NodeList
-  alias Quantum.ClusterTaskSupervisorRegistry
+  alias Quantum.{ClusterTaskSupervisorRegistry, Job, RunStrategy.NodeList, TaskRegistry}
 
   @doc """
   Start the Task
