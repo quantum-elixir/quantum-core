@@ -43,6 +43,7 @@ defmodule Quantum do
     task_registry = cluster_worker_config(Module.concat(quantum, TaskRegistry), global)
 
     # Default Task Supervisor Name
+    cluster_task_supervisor_registry = Module.concat(quantum, ClusterTaskSupervisorRegistry)
     task_supervisor = Module.concat(quantum, Task.Supervisor)
 
     config
@@ -53,6 +54,7 @@ defmodule Quantum do
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)
     |> Keyword.put_new(:task_registry, task_registry)
     |> Keyword.put_new(:task_supervisor, task_supervisor)
+    |> Keyword.put_new(:cluster_task_supervisor_registry, cluster_task_supervisor_registry)
     |> Keyword.put_new(:storage, Noop)
   end
 

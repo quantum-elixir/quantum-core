@@ -47,5 +47,18 @@ defmodule Quantum.RunStrategy.Random do
     def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, _job) do
       [Enum.random(nodes)]
     end
+
+    @spec nodes(
+            run_strategy :: Quantum.RunStrategy.Random.t(),
+            job :: Job.t(),
+            available_nodes :: [Node.t()]
+          ) :: [Node.t()]
+    def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, _, available_nodes) do
+      [Enum.random([available_nodes])]
+    end
+
+    def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, _, _) do
+      [Enum.random(nodes)]
+    end
   end
 end
