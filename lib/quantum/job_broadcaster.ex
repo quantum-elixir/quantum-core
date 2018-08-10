@@ -7,7 +7,7 @@ defmodule Quantum.JobBroadcaster do
 
   require Logger
 
-  alias Quantum.{Job, Util, Scheduler}
+  alias Quantum.{Job, Scheduler}
   alias Quantum.Storage.Adapter
 
   @doc """
@@ -22,20 +22,23 @@ defmodule Quantum.JobBroadcaster do
   @spec start_link(GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()) ::
           GenServer.on_start()
   def start_link(name, jobs, storage, scheduler, debug_logging) do
-    __MODULE__
-    |> GenStage.start_link({jobs, storage, scheduler, debug_logging}, name: name)
-    |> Util.start_or_link()
+    GenStage.start_link(__MODULE__, {jobs, storage, scheduler, debug_logging}, name: name)
   end
 
   @doc false
-  @spec child_spec({GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()}) ::
+  @spec child_spec({Keyword.t() | GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()}) ::
           Supervisor.child_spec()
-  def child_spec({name, jobs, storage, scheduler, debug_logging}) do
+  def child_spec({opts, jobs, storage, scheduler, debug_logging}) when is_list(opts) do
     %{
-      super([])
-      | start: {__MODULE__, :start_link, [name, jobs, storage, scheduler, debug_logging]}
+      super(opts)
+      | start:
+          {__MODULE__, :start_link,
+           [Keyword.fetch!(opts, :name), jobs, storage, scheduler, debug_logging]}
     }
   end
+
+  def child_spec({name, jobs, storage, scheduler, debug_logging}),
+    do: child_spec({[name: name], jobs, storage, scheduler, debug_logging})
 
   @doc false
   def init({jobs, storage, scheduler, debug_logging}) do
@@ -182,8 +185,50 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, messages, %{state | jobs: %{}}}
   end
 
+  def handle_cast(
+        {:swarm, :end_handoff, {handoff_jobs, handoff_buffer}},
+        %{
+          jobs: jobs,
+          buffer: buffer
+        } = state
+      ) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+    end)
+
+    new_jobs = Enum.into(handoff_jobs, jobs)
+    {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
+  end
+
+  def handle_cast(
+        {:swarm, :resolve_conflict, {handoff_jobs, handoff_buffer}},
+        %{
+          jobs: jobs,
+          buffer: buffer
+        } = state
+      ) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+    end)
+
+    new_jobs = Enum.into(handoff_jobs, jobs)
+    {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
+  end
+
   def handle_call(:jobs, _, %{jobs: jobs} = state), do: {:reply, Map.to_list(jobs), [], state}
 
   def handle_call({:find_job, name}, _, %{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
+
+  def handle_call({:swarm, :begin_handoff}, _from, %{jobs: jobs, buffer: buffer} = state) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
+    end)
+
+    {:reply, {:resume, {jobs, buffer}}, state}
+  end
+
+  def handle_info({:swarm, :die}, state) do
+    {:stop, :shutdown, state}
+  end
 end

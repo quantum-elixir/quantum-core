@@ -31,17 +31,16 @@ defmodule Quantum do
       |> Keyword.merge(custom)
       |> Keyword.merge(otp_app: otp_app, quantum: quantum)
 
-    # Default Task Stages Supervisor Name
-    task_stages_supervisor =
-      if Keyword.fetch!(config, :global),
-        do: {:global, Module.concat(quantum, TaskStagesSupervisor)},
-        else: Module.concat(quantum, TaskStagesSupervisor)
-
     # Default Job Broadcaster Name
-    job_broadcaster = Module.concat(quantum, JobBroadcaster)
-    execution_broadcaster = Module.concat(quantum, ExecutionBroadcaster)
+    global = Keyword.fetch!(config, :global)
+    job_broadcaster = cluster_worker_config(Module.concat(quantum, JobBroadcaster), global)
+
+    execution_broadcaster =
+      cluster_worker_config(Module.concat(quantum, ExecutionBroadcaster), global)
+
     executor_supervisor = Module.concat(quantum, ExecutorSupervisor)
-    task_registry = Module.concat(quantum, TaskRegistry)
+
+    task_registry = cluster_worker_config(Module.concat(quantum, TaskRegistry), global)
 
     # Default Task Supervisor Name
     task_supervisor = Module.concat(quantum, Task.Supervisor)
@@ -49,7 +48,6 @@ defmodule Quantum do
     config
     |> Keyword.put_new(:quantum, quantum)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
-    |> Keyword.put_new(:task_stages_supervisor, task_stages_supervisor)
     |> Keyword.put_new(:job_broadcaster, job_broadcaster)
     |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)
@@ -57,6 +55,11 @@ defmodule Quantum do
     |> Keyword.put_new(:task_supervisor, task_supervisor)
     |> Keyword.put_new(:storage, Noop)
   end
+
+  defp cluster_worker_config(module, false), do: [name: module, restart: :permanent]
+
+  defp cluster_worker_config(module, true),
+    do: [name: {:via, :swarm, module}, restart: :temporary]
 
   @doc """
   Retrieves the comprehensive runtime configuration.

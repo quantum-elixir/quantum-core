@@ -5,7 +5,7 @@ defmodule Quantum.TaskRegistry do
   """
   use GenServer
 
-  alias Quantum.Util
+  require Logger
 
   @doc """
   Start the registry
@@ -17,10 +17,23 @@ defmodule Quantum.TaskRegistry do
   """
   @spec start_link(GenServer.server()) :: GenServer.on_start()
   def start_link(name) do
-    __MODULE__
-    |> GenServer.start_link(%{}, name: name)
-    |> Util.start_or_link()
+    GenServer.start_link(__MODULE__, %{}, name: name)
   end
+
+  @doc false
+  @spec child_spec(Keyword.t() | GenServer.server()) :: Supervisor.child_spec()
+  def child_spec(opts) when is_list(opts) do
+    %{
+      super(opts)
+      | start: {
+          __MODULE__,
+          :start_link,
+          [Keyword.fetch!(opts, :name)]
+        }
+    }
+  end
+
+  def child_spec(name), do: child_spec(name: name)
 
   @doc """
   Mark a task as Running
@@ -118,6 +131,14 @@ defmodule Quantum.TaskRegistry do
     end
   end
 
+  def handle_call({:swarm, :begin_handoff}, _from, state) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
+    end)
+
+    {:reply, {:resume, state}, state}
+  end
+
   @doc false
   def handle_cast({:finished, task, node}, state) do
     state = Map.update(state, task, [], &(&1 -- [node]))
@@ -130,5 +151,36 @@ defmodule Quantum.TaskRegistry do
       end
 
     {:noreply, state}
+  end
+
+  def handle_cast({:swarm, :end_handoff, handoff_state}, state) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+    end)
+
+    {:noreply, merge_states(state, handoff_state)}
+  end
+
+  def handle_cast({:swarm, :resolve_conflict, handoff_state}, state) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+    end)
+
+    {:noreply, merge_states(state, handoff_state)}
+  end
+
+  defp merge_states(state1, state2) do
+    state1
+    |> Enum.into([])
+    |> Kernel.++(Enum.into(state2, []))
+    |> Enum.group_by(fn {job, _nodes_list} -> job end, fn {_job, nodes_list} -> nodes_list end)
+    |> Enum.map(fn {job, nodes_list_list} ->
+      {job, List.flatten(nodes_list_list)}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def handle_info({:swarm, :die}, state) do
+    {:stop, :shutdown, state}
   end
 end

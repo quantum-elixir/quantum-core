@@ -7,7 +7,7 @@ defmodule Quantum.ExecutionBroadcaster do
 
   require Logger
 
-  alias Quantum.{Job, Util, DateLibrary}
+  alias Quantum.{Job, DateLibrary}
   alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
   alias Crontab.Scheduler, as: CrontabScheduler
   alias Crontab.CronExpression
@@ -31,21 +31,34 @@ defmodule Quantum.ExecutionBroadcaster do
   @spec start_link(GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()) ::
           GenServer.on_start()
   def start_link(name, job_broadcaster, storage, scheduler, debug_logging) do
-    __MODULE__
-    |> GenStage.start_link({job_broadcaster, storage, scheduler, debug_logging}, name: name)
-    |> Util.start_or_link()
+    GenStage.start_link(
+      __MODULE__,
+      {job_broadcaster, storage, scheduler, debug_logging},
+      name: name
+    )
   end
 
   @doc false
-  @spec child_spec({GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()}) ::
-          Supervisor.child_spec()
-  def child_spec({name, job_broadcaster, storage, scheduler, debug_logging}) do
+  @spec child_spec(
+          {Keyword.t() | GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()}
+        ) :: Supervisor.child_spec()
+  def child_spec({opts, job_broadcaster, storage, scheduler, debug_logging}) when is_list(opts) do
     %{
-      super([])
+      super(opts)
       | start:
-          {__MODULE__, :start_link, [name, job_broadcaster, storage, scheduler, debug_logging]}
+          {__MODULE__, :start_link,
+           [
+             Keyword.fetch!(opts, :name),
+             job_broadcaster,
+             storage,
+             scheduler,
+             debug_logging
+           ]}
     }
   end
+
+  def child_spec({name, job_broadcaster, storage, scheduler, debug_logging}),
+    do: child_spec({[name: name], job_broadcaster, storage, scheduler, debug_logging})
 
   @doc false
   def init({job_broadcaster, storage, scheduler, debug_logging}) do
@@ -145,6 +158,11 @@ defmodule Quantum.ExecutionBroadcaster do
     {:noreply, Enum.map(jobs_to_execute, fn job -> {:execute, job} end), state}
   end
 
+  def handle_info({:swarm, :die}, %{timer: {timer, _}} = state) do
+    Process.cancel_timer(timer)
+    {:stop, :shutdown, %{state | timer: nil}}
+  end
+
   defp handle_event({:add, %{name: job_name} = job}, %{debug_logging: debug_logging} = state) do
     debug_logging &&
       Logger.debug(fn ->
@@ -173,6 +191,64 @@ defmodule Quantum.ExecutionBroadcaster do
     %{state | jobs: jobs}
     |> sort_state
     |> reset_timer
+  end
+
+  def handle_call(
+        {:swarm, :begin_handoff},
+        _from,
+        %{jobs: jobs, last_execution_date: last_execution_date} = state
+      ) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
+    end)
+
+    {:reply, {:resume, {jobs, last_execution_date}}, state}
+  end
+
+  def handle_cast(
+        {:swarm, :end_handoff, {handoff_jobs, handoff_last_execution_time}},
+        %{last_execution_date: last_execution_date} = state
+      ) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+    end)
+
+    earlier_last_execution_date =
+      if NaiveDateTime.compare(handoff_last_execution_time, last_execution_date) == :lt,
+        do: handoff_last_execution_time,
+        else: last_execution_date
+
+    intermediate_state = %{state | last_execution_date: earlier_last_execution_date}
+
+    new_state =
+      Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
+        add_job_to_state(job, acc_state)
+      end)
+
+    {:noreply, new_state}
+  end
+
+  def handle_cast(
+        {:swarm, :resolve_conflict, {handoff_jobs, handoff_last_execution_time}},
+        %{last_execution_date: last_execution_date} = state
+      ) do
+    Logger.info(fn ->
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+    end)
+
+    earlier_last_execution_date =
+      if NaiveDateTime.compare(handoff_last_execution_time, last_execution_date) == :lt,
+        do: handoff_last_execution_time,
+        else: last_execution_date
+
+    intermediate_state = %{state | last_execution_date: earlier_last_execution_date}
+
+    new_state =
+      Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
+        add_job_to_state(job, acc_state)
+      end)
+
+    {:noreply, new_state}
   end
 
   defp add_job_to_state(
