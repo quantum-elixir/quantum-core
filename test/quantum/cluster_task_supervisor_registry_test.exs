@@ -6,10 +6,10 @@ defmodule Quantum.ClusterTaskSupervisorRegistryTest do
   alias Quantum.ClusterTaskSupervisorRegistry
 
   test "should register name", %{test: test} do
-    task_supervisor_pid = start_supervised!({Task.Supervisor, name: test})
+    {:ok, task_supervisor_pid} = start_supervised({Task.Supervisor, name: test})
 
-    registry_pid =
-      start_supervised!(
+    {:ok, registry_pid} =
+      start_supervised(
         {ClusterTaskSupervisorRegistry,
          name: Module.concat([__MODULE__, test, Registry]),
          task_supervisor: test,
