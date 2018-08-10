@@ -28,7 +28,7 @@ defmodule Quantum.Job do
   @type name :: atom | reference()
   @type state :: :active | :inactive
   @type task :: {atom, atom, [any]} | (() -> any)
-  @type timezone :: :utc | :local | String.t()
+  @type timezone :: :utc | String.t()
   @type schedule :: Crontab.CronExpression.t()
 
   @type t :: %__MODULE__{
@@ -212,6 +212,6 @@ defmodule Quantum.Job do
       "Europe/Zurich"
 
   """
-  @spec set_timezone(t, String.t() | :utc | :local) :: t
+  @spec set_timezone(t, String.t() | :utc) :: t
   def set_timezone(%__MODULE__{} = job, timezone), do: Map.put(job, :timezone, timezone)
 end

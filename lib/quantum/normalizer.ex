@@ -119,9 +119,8 @@ defmodule Quantum.Normalizer do
     strategy.normalize_config!(options)
   end
 
-  @spec normalize_timezone(String.t() | :utc | :local) :: String.t() | :utc | :local
+  @spec normalize_timezone(String.t() | :utc) :: String.t() | :utc
   defp normalize_timezone(timezone) when is_binary(timezone), do: timezone
   defp normalize_timezone(:utc), do: :utc
-  defp normalize_timezone(:local), do: :local
   defp normalize_timezone(timezone), do: raise("Invalid timezone: #{inspect(timezone)}")
 end
