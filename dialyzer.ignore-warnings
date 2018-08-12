@@ -10,3 +10,15 @@ Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Port':'__impl__'/1
 Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Reference':'__impl__'/1
 Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Tuple':'__impl__'/1
 Overloaded contract for 'Elixir.Quantum.DateLibrary':'to_utc!'/2 has overlapping domains; such contracts are currently unsupported and are simply ignored
+lib/quantum/execution_broadcaster.ex:201: The inferred return type of handle_call/3 ({'reply',{'resume',{_,_}},#{'jobs':=_, 'last_execution_date':=_, _=>_}}) has nothing in common with {'noreply',[any()],_} | {'stop',_,_} | {'noreply',[any()],_,'hibernate'} | {'reply',_,[any()],_} | {'stop',_,_,_} | {'reply',_,[any()],_,'hibernate'}, which is the expected return type for the callback of the 'Elixir.GenStage' behaviour
+lib/quantum/execution_broadcaster.ex:213: The inferred return type of handle_cast/2 ({'noreply',_}) has nothing in common with {'noreply',[any()],_} | {'stop',_,_} | {'noreply',[any()],_,'hibernate'}, which is the expected return type for the callback of the 'Elixir.GenStage' behaviour
+lib/quantum/execution_broadcaster.ex:266: The pattern {'ok', Vdate@1} can never match the type {'error',<<_:368>>}
+lib/quantum/execution_broadcaster.ex:295: The pattern {'ok', Vdate@1} can never match the type {'error',<<_:368>>}
+lib/quantum/execution_broadcaster.ex:319: Function add_to_state/3 will never be called
+lib/quantum/execution_broadcaster.ex:327: Function add_job_at_date/3 will never be called
+lib/quantum/execution_broadcaster.ex:334: Function find_date_and_put_job/3 will never be called
+lib/quantum/executor.ex:23: Overloaded contract for 'Elixir.Quantum.Executor':start_link/2 has overlapping domains; such contracts are currently unsupported and are simply ignored
+lib/quantum/util.ex:22: Function 'gen_stage_v12?'/0 has no local return
+lib/quantum/util.ex:31: The call 'Elixir.Version':'match?'(binary(),<<_:64>>) will never return since it differs in the 1st argument from the success typing arguments: (#{'__struct__':='Elixir.Version', 'build':='nil' | binary(), 'major':=binary() | non_neg_integer(), 'minor':='nil' | non_neg_integer(), 'patch':='nil' | non_neg_integer(), 'pre':=[binary() | non_neg_integer()]},binary() | #{'__struct__':='Elixir.Version.Requirement', 'compiled':=boolean(), 'matchspec':=[{atom() | tuple(),[any()],[any()]}] | ets:comp_match_spec(), 'source':=_})
+lib/quantum/execution_broadcaster.ex:201: The inferred return type of handle_call/3 ({'reply',{'resume',{_,_}},#{'jobs':=_, 'last_execution_date':=_, _=>_}}) has nothing in common with {'noreply',[any()],_} | {'stop',_,_} | {'noreply',[any()],_,'hibernate'} | {'reply',_,[any()],_} | {'stop',_,_,_} | {'reply',_,[any()],_,'hibernate'}, which is the expected return type for the callback of 'Elixir.GenStage' behaviour
+lib/quantum/execution_broadcaster.ex:213: The inferred return type of handle_cast/2 ({'noreply',_}) has nothing in common with {'noreply',[any()],_} | {'stop',_,_} | {'noreply',[any()],_,'hibernate'}, which is the expected return type for the callback of 'Elixir.GenStage' behaviour
