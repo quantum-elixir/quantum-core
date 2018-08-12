@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.3.1 - 2018-08-13
+
+### Fixed
+- Fixed Regression in Run Strategy Random
+
+Diff for [2.3.1]
+
 ## 2.3.0 - 2018-08-10
 
 ### Added
@@ -506,7 +513,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...v2.3.0
 [2.2.7]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...v2.2.7
 [2.2.6]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.5...v2.2.6
