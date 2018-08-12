@@ -22,7 +22,7 @@ To use Quantum in your project, edit the `mix.exs` file and add Quantum to
 **1. the list of dependencies:**
 ```elixir
 defp deps do
-  [{:quantum, "~> 2.2"},
+  [{:quantum, "~> 2.3"},
    {:timex, "~> 3.0"}]
 end
 ```
