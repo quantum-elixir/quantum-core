@@ -5,7 +5,7 @@ defmodule Quantum.ExecutorTest do
 
   import ExUnit.CaptureLog
 
-  alias Quantum.{Executor, Job}
+  alias Quantum.{ExecutionBroadcaster.Event, Executor, Job}
   alias Quantum.RunStrategy.All
   alias Quantum.TaskRegistry
 
@@ -47,7 +47,7 @@ defmodule Quantum.ExecutorTest do
         |> Job.set_task(fn -> send(caller, :executed) end)
 
       capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
 
         assert_receive :executed
       end)
@@ -65,7 +65,7 @@ defmodule Quantum.ExecutorTest do
         |> Job.set_task({__MODULE__, :send, [caller]})
 
       capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
 
         assert_receive :executed
       end)
@@ -87,7 +87,7 @@ defmodule Quantum.ExecutorTest do
       assert capture_log(fn ->
                Executor.start_link(
                  {task_supervisor, task_registry, debug_logging},
-                 {:execute, job}
+                 %Event{job: job}
                )
 
                refute_receive :executed
@@ -111,8 +111,8 @@ defmodule Quantum.ExecutorTest do
         |> Job.set_overlap(false)
 
       capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
 
         assert_receive :executed
         refute_receive :executed
@@ -135,7 +135,7 @@ defmodule Quantum.ExecutorTest do
         |> Job.set_overlap(false)
 
       capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
 
         # Wait until running
         Process.sleep(25)
@@ -161,7 +161,7 @@ defmodule Quantum.ExecutorTest do
 
       # Mute Error
       capture_log(fn ->
-        Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
+        Executor.start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job})
 
         Process.sleep(50)
       end)

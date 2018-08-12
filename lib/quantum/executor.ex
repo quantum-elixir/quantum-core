@@ -8,7 +8,13 @@ defmodule Quantum.Executor do
 
   require Logger
 
-  alias Quantum.{ClusterTaskSupervisorRegistry, Job, RunStrategy.NodeList, TaskRegistry}
+  alias Quantum.{
+    ClusterTaskSupervisorRegistry,
+    ExecutionBroadcaster.Event,
+    Job,
+    RunStrategy.NodeList,
+    TaskRegistry
+  }
 
   @doc """
   Start the Task
@@ -17,19 +23,17 @@ defmodule Quantum.Executor do
 
     * `task_supervisor` - The supervisor that runs the task
     * `task_registry` - The registry that knows if a task is already running
-    * `message` - The Message to Execute (`{:execute, %Job{}}`)
+    * `message` - The Message to Execute (`%Event{job: %Job{}}`)
 
   """
-  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
-          {:ok, pid}
-  def start_link({task_supervisor, task_registry, debug_logging}, {:execute, job}) do
+  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, Event.t()) :: {:ok, pid}
+  def start_link({task_supervisor, task_registry, debug_logging}, %Event{job: job}) do
     Task.start_link(fn ->
       execute(task_supervisor, task_registry, nil, debug_logging, job)
     end)
   end
 
-  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
-          {:ok, pid}
+  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, Event.t()) :: {:ok, pid}
   def start_link(
         %{
           task_supervisor: task_supervisor,
@@ -37,7 +41,7 @@ defmodule Quantum.Executor do
           debug_logging: debug_logging,
           cluster_task_supervisor_registry: cluster_task_supervisor_registry
         },
-        {:execute, job}
+        %Event{job: job}
       ) do
     Task.start_link(fn ->
       execute(

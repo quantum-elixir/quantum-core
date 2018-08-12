@@ -30,7 +30,10 @@ defmodule Quantum do
 
     # Default Job Broadcaster Name
     global = Keyword.fetch!(config, :global)
+
     job_broadcaster = cluster_worker_config(Module.concat(quantum, JobBroadcaster), global)
+
+    clock_broadcaster = cluster_worker_config(Module.concat(quantum, ClockBroadcaster), global)
 
     execution_broadcaster =
       cluster_worker_config(Module.concat(quantum, ExecutionBroadcaster), global)
@@ -45,20 +48,32 @@ defmodule Quantum do
 
     config
     |> Keyword.put_new(:quantum, quantum)
+    |> Keyword.put_new(:scheduler, quantum)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
+    |> Keyword.put_new(:clock_broadcaster, clock_broadcaster)
+    |> Keyword.put_new(:clock_broadcaster_opts, supervisor_opts(clock_broadcaster, global))
     |> Keyword.put_new(:job_broadcaster, job_broadcaster)
+    |> Keyword.put_new(:job_broadcaster_opts, supervisor_opts(job_broadcaster, global))
     |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
+    |> Keyword.put_new(
+      :execution_broadcaster_opts,
+      supervisor_opts(execution_broadcaster, global)
+    )
     |> Keyword.put_new(:executor_supervisor, executor_supervisor)
     |> Keyword.put_new(:task_registry, task_registry)
+    |> Keyword.put_new(:task_registry_opts, supervisor_opts(task_registry, global))
     |> Keyword.put_new(:task_supervisor, task_supervisor)
     |> Keyword.put_new(:cluster_task_supervisor_registry, cluster_task_supervisor_registry)
     |> Keyword.put_new(:storage, Noop)
   end
 
-  defp cluster_worker_config(module, false), do: [name: module, restart: :permanent]
+  defp cluster_worker_config(module, false), do: module
 
   defp cluster_worker_config(module, true),
-    do: [name: {:via, :swarm, module}, restart: :temporary]
+    do: {:via, :swarm, module}
+
+  defp supervisor_opts(module, false), do: [name: module, restart: :permanent]
+  defp supervisor_opts(module, true), do: [name: module, restart: :temporary]
 
   @doc """
   Retrieves the comprehensive runtime configuration.
