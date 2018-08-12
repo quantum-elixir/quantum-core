@@ -54,7 +54,7 @@ defmodule Quantum.RunStrategy.Random do
             available_nodes :: [Node.t()]
           ) :: [Node.t()]
     def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, _, available_nodes) do
-      [Enum.random([available_nodes])]
+      [Enum.random(available_nodes)]
     end
 
     def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, _, _) do
