@@ -37,6 +37,13 @@ defmodule Quantum do
         do: {:via, :swarm, job_broadcaster_name},
         else: job_broadcaster_name
 
+    clock_broadcaster_name = Module.concat(quantum, ClockBroadcaster)
+
+    clock_broadcaster_reference =
+      if global,
+        do: {:via, :swarm, clock_broadcaster_name},
+        else: clock_broadcaster_name
+
     execution_broadcaster_name = Module.concat(quantum, ExecutionBroadcaster)
 
     execution_broadcaster_reference =
@@ -66,6 +73,8 @@ defmodule Quantum do
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
     |> Keyword.put_new(:job_broadcaster_name, job_broadcaster_name)
     |> Keyword.put_new(:job_broadcaster_reference, job_broadcaster_reference)
+    |> Keyword.put_new(:clock_broadcaster_name, clock_broadcaster_name)
+    |> Keyword.put_new(:clock_broadcaster_reference, clock_broadcaster_reference)
     |> Keyword.put_new(:execution_broadcaster_name, execution_broadcaster_name)
     |> Keyword.put_new(:execution_broadcaster_reference, execution_broadcaster_reference)
     |> Keyword.put_new(:executor_supervisor_name, executor_supervisor_name)
