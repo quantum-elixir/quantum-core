@@ -7,7 +7,13 @@ defmodule Quantum.Executor do
 
   require Logger
 
-  alias Quantum.{ClusterTaskSupervisorRegistry, Job, RunStrategy.NodeList, TaskRegistry}
+  alias Quantum.{
+    ClusterTaskSupervisorRegistry,
+    ExecutionBroadcaster.Event,
+    Job,
+    RunStrategy.NodeList,
+    TaskRegistry
+  }
 
   alias __MODULE__.StartOpts
 
@@ -18,28 +24,11 @@ defmodule Quantum.Executor do
 
     * `task_supervisor` - The supervisor that runs the task
     * `task_registry` - The registry that knows if a task is already running
-    * `message` - The Message to Execute (`{:execute, %Job{}}`)
+    * `message` - The Message to Execute (`%Event{job: %Job{}}`)
 
   """
-  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
-          {:ok, pid}
-  def start_link({task_supervisor, task_registry, debug_logging}, event),
-    do:
-      start_link(
-        %StartOpts{
-          task_supervisor_reference: task_supervisor,
-          cluster_task_supervisor_registry_reference: nil,
-          task_registry_reference: task_registry,
-          debug_logging: debug_logging
-        },
-        event
-      )
-
-  @spec start_link(StartOpts.t(), {:execute, Job.t()}) :: {:ok, pid}
-  def start_link(
-        opts,
-        {:execute, job}
-      ) do
+  @spec start_link(StartOpts.t(), Event.t()) :: {:ok, pid}
+  def start_link(opts, %Event{job: job}) do
     Task.start_link(fn ->
       execute(opts, job)
     end)

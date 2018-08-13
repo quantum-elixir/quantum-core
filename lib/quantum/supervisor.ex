@@ -8,6 +8,8 @@ defmodule Quantum.Supervisor do
   alias Quantum.ClusterTaskSupervisorRegistry.StartOpts,
     as: ClusterTaskSupervisorRegistryStartOpts
 
+  alias Quantum.ClockBroadcaster
+  alias Quantum.ClockBroadcaster.StartOpts, as: ClockBroadcasterStartOpts
   alias Quantum.ExecutionBroadcaster
   alias Quantum.ExecutionBroadcaster.StartOpts, as: ExecutionBroadcasterStartOpts
   alias Quantum.ExecutorSupervisor
@@ -35,6 +37,7 @@ defmodule Quantum.Supervisor do
 
     %{
       task_registry_name: task_registry_name,
+      clock_broadcaster_name: clock_broadcaster_name,
       job_broadcaster_name: job_broadcaster_name,
       execution_broadcaster_name: execution_broadcaster_name,
       cluster_task_supervisor_registry_name: cluster_task_supervisor_registry_name,
@@ -44,6 +47,16 @@ defmodule Quantum.Supervisor do
     } = opts
 
     task_registry_opts = %TaskRegistryStartOpts{name: task_registry_name}
+
+    clock_broadcaster_opts =
+      struct!(
+        ClockBroadcasterStartOpts,
+        opts
+        |> Map.take([:debug_logging])
+        |> Map.put(:name, clock_broadcaster_name)
+        # TODO: Load from Storage
+        |> Map.put(:start_time, NaiveDateTime.utc_now())
+      )
 
     job_broadcaster_opts =
       struct!(
@@ -65,7 +78,13 @@ defmodule Quantum.Supervisor do
       struct!(
         ExecutionBroadcasterStartOpts,
         opts
-        |> Map.take([:job_broadcaster_reference, :storage, :scheduler, :debug_logging])
+        |> Map.take([
+          :job_broadcaster_reference,
+          :clock_broadcaster_reference,
+          :storage,
+          :scheduler,
+          :debug_logging
+        ])
         |> Map.put(:name, execution_broadcaster_name)
       )
 
@@ -88,6 +107,9 @@ defmodule Quantum.Supervisor do
         %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(task_registry_opts)
         Swarm.register_name(task_registry_name, TaskRegistry, f, a, 15_000)
 
+        %{start: {ClockBroadcaster, f, a}} = ClockBroadcaster.child_spec(clock_broadcaster_opts)
+        Swarm.register_name(clock_broadcaster_name, ClockBroadcaster, f, a)
+
         %{start: {JobBroadcaster, f, a}} = JobBroadcaster.child_spec(job_broadcaster_opts)
         Swarm.register_name(job_broadcaster_name, JobBroadcaster, f, a)
 
@@ -105,6 +127,7 @@ defmodule Quantum.Supervisor do
         [
           {Task.Supervisor, [name: task_supervisor_name]},
           {ClusterTaskSupervisorRegistry, cluster_task_supervisor_registry_opts},
+          {ClockBroadcaster, clock_broadcaster_opts},
           {TaskRegistry, task_registry_opts},
           {JobBroadcaster, job_broadcaster_opts},
           {ExecutionBroadcaster, execution_broadcaster_opts},

@@ -10,12 +10,8 @@
 :0: Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Reference':'__impl__'/1
 :0: Unknown function 'Elixir.Quantum.RunStrategy.NodeList.Tuple':'__impl__'/1
 lib/quantum/date_library.ex:38: Overloaded contract for 'Elixir.Quantum.DateLibrary':'to_utc!'/2 has overlapping domains; such contracts are currently unsupported and are simply ignored
-lib/quantum/execution_broadcaster.ex:286: The pattern {'ok', Vdate@1} can never match the type {'error',<<_:368>>}
-lib/quantum/execution_broadcaster.ex:315: The pattern {'ok', Vdate@1} can never match the type {'error',<<_:368>>}
-lib/quantum/execution_broadcaster.ex:286: The pattern {'ok', _date@1} can never match the type {'error',<<_:368>>}
-lib/quantum/execution_broadcaster.ex:315: The pattern {'ok', _date@1} can never match the type {'error',<<_:368>>}
-lib/quantum/execution_broadcaster.ex:339: Function add_to_state/3 will never be called
-lib/quantum/execution_broadcaster.ex:347: Function add_job_at_date/3 will never be called
-lib/quantum/execution_broadcaster.ex:354: Function find_date_and_put_job/3 will never be called
-lib/quantum/util.ex:22: Function 'gen_stage_v12?'/0 has no local return
-lib/quantum/util.ex:31: The call 'Elixir.Version':'match?'(binary(),<<_:64>>) will never return since it differs in the 1st argument from the success typing arguments: (#{'__struct__':='Elixir.Version', 'build':='nil' | binary(), 'major':=binary() | non_neg_integer(), 'minor':='nil' | non_neg_integer(), 'patch':='nil' | non_neg_integer(), 'pre':=[binary() | non_neg_integer()]},binary() | #{'__struct__':='Elixir.Version.Requirement', 'compiled':=boolean(), 'matchspec':=[{atom() | tuple(),[any()],[any()]}] | ets:comp_match_spec(), 'source':=_})
+lib/quantum/execution_broadcaster.ex:241: The pattern {'ok', _date@1} can never match the type {'error',<<_:368>>}
+lib/quantum/execution_broadcaster.ex:270: The pattern {'ok', _date@1} can never match the type {'error',<<_:368>>}
+lib/quantum/execution_broadcaster.ex:298: Function add_to_state/4 will never be called
+lib/quantum/execution_broadcaster.ex:306: Function add_job_at_date/3 will never be called
+lib/quantum/execution_broadcaster.ex:313: Function find_date_and_put_job/3 will never be called
