@@ -28,37 +28,62 @@ defmodule Quantum do
       |> Keyword.merge(custom)
       |> Keyword.merge(otp_app: otp_app, quantum: quantum)
 
-    # Default Job Broadcaster Name
     global = Keyword.fetch!(config, :global)
-    job_broadcaster = cluster_worker_config(Module.concat(quantum, JobBroadcaster), global)
 
-    execution_broadcaster =
-      cluster_worker_config(Module.concat(quantum, ExecutionBroadcaster), global)
+    job_broadcaster_name = Module.concat(quantum, JobBroadcaster)
 
-    executor_supervisor = Module.concat(quantum, ExecutorSupervisor)
+    job_broadcaster_reference =
+      if global,
+        do: {:via, :swarm, job_broadcaster_name},
+        else: job_broadcaster_name
 
-    task_registry = cluster_worker_config(Module.concat(quantum, TaskRegistry), global)
+    execution_broadcaster_name = Module.concat(quantum, ExecutionBroadcaster)
 
-    # Default Task Supervisor Name
-    cluster_task_supervisor_registry = Module.concat(quantum, ClusterTaskSupervisorRegistry)
-    task_supervisor = Module.concat(quantum, Task.Supervisor)
+    execution_broadcaster_reference =
+      if global,
+        do: {:via, :swarm, execution_broadcaster_name},
+        else: execution_broadcaster_name
+
+    executor_supervisor_name = Module.concat(quantum, ExecutorSupervisor)
+    executor_supervisor_reference = executor_supervisor_name
+
+    task_registry_name = Module.concat(quantum, TaskRegistry)
+
+    task_registry_reference =
+      if global,
+        do: {:via, :swarm, task_registry_name},
+        else: task_registry_name
+
+    cluster_task_supervisor_registry_name = Module.concat(quantum, ClusterTaskSupervisorRegistry)
+    cluster_task_supervisor_registry_reference = cluster_task_supervisor_registry_name
+
+    task_supervisor_name = Module.concat(quantum, Task.Supervisor)
+    task_supervisor_reference = task_supervisor_name
 
     config
     |> Keyword.put_new(:quantum, quantum)
+    |> Keyword.put_new(:scheduler, quantum)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
-    |> Keyword.put_new(:job_broadcaster, job_broadcaster)
-    |> Keyword.put_new(:execution_broadcaster, execution_broadcaster)
-    |> Keyword.put_new(:executor_supervisor, executor_supervisor)
-    |> Keyword.put_new(:task_registry, task_registry)
-    |> Keyword.put_new(:task_supervisor, task_supervisor)
-    |> Keyword.put_new(:cluster_task_supervisor_registry, cluster_task_supervisor_registry)
+    |> Keyword.put_new(:job_broadcaster_name, job_broadcaster_name)
+    |> Keyword.put_new(:job_broadcaster_reference, job_broadcaster_reference)
+    |> Keyword.put_new(:execution_broadcaster_name, execution_broadcaster_name)
+    |> Keyword.put_new(:execution_broadcaster_reference, execution_broadcaster_reference)
+    |> Keyword.put_new(:executor_supervisor_name, executor_supervisor_name)
+    |> Keyword.put_new(:executor_supervisor_reference, executor_supervisor_reference)
+    |> Keyword.put_new(:task_registry_name, task_registry_name)
+    |> Keyword.put_new(:task_registry_reference, task_registry_reference)
+    |> Keyword.put_new(:task_supervisor_name, task_supervisor_name)
+    |> Keyword.put_new(:task_supervisor_reference, task_supervisor_reference)
+    |> Keyword.put_new(
+      :cluster_task_supervisor_registry_name,
+      cluster_task_supervisor_registry_name
+    )
+    |> Keyword.put_new(
+      :cluster_task_supervisor_registry_reference,
+      cluster_task_supervisor_registry_reference
+    )
     |> Keyword.put_new(:storage, Noop)
   end
-
-  defp cluster_worker_config(module, false), do: [name: module, restart: :permanent]
-
-  defp cluster_worker_config(module, true),
-    do: [name: {:via, :swarm, module}, restart: :temporary]
 
   @doc """
   Retrieves the comprehensive runtime configuration.

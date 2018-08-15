@@ -1,7 +1,6 @@
 defmodule Quantum.Executor do
   @moduledoc """
   Task to actually execute a Task
-
   """
 
   use Task
@@ -9,6 +8,8 @@ defmodule Quantum.Executor do
   require Logger
 
   alias Quantum.{ClusterTaskSupervisorRegistry, Job, RunStrategy.NodeList, TaskRegistry}
+
+  alias __MODULE__.StartOpts
 
   @doc """
   Start the Task
@@ -22,47 +23,40 @@ defmodule Quantum.Executor do
   """
   @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
           {:ok, pid}
-  def start_link({task_supervisor, task_registry, debug_logging}, {:execute, job}) do
-    Task.start_link(fn ->
-      execute(task_supervisor, task_registry, nil, debug_logging, job)
-    end)
-  end
-
-  @spec start_link({GenServer.server(), GenServer.server(), boolean()}, {:execute, Job.t()}) ::
-          {:ok, pid}
-  def start_link(
-        %{
-          task_supervisor: task_supervisor,
-          task_registry: task_registry,
-          debug_logging: debug_logging,
-          cluster_task_supervisor_registry: cluster_task_supervisor_registry
+  def start_link({task_supervisor, task_registry, debug_logging}, event),
+    do:
+      start_link(
+        %StartOpts{
+          task_supervisor_reference: task_supervisor,
+          cluster_task_supervisor_registry_reference: nil,
+          task_registry_reference: task_registry,
+          debug_logging: debug_logging
         },
+        event
+      )
+
+  @spec start_link(StartOpts.t(), {:execute, Job.t()}) :: {:ok, pid}
+  def start_link(
+        opts,
         {:execute, job}
       ) do
     Task.start_link(fn ->
-      execute(
-        task_supervisor,
-        task_registry,
-        cluster_task_supervisor_registry,
-        debug_logging,
-        job
-      )
+      execute(opts, job)
     end)
   end
 
   @spec execute(
-          GenServer.server(),
-          GenServer.server(),
-          GenServer.server() | nil,
-          boolean(),
+          StartOpts.t(),
           Job.t()
         ) :: :ok
   # Execute task on all given nodes without checking for overlap
   defp execute(
-         task_supervisor,
-         _task_registry,
-         cluster_task_supervisor_registry,
-         debug_logging,
+         %StartOpts{
+           task_supervisor_reference: task_supervisor,
+           task_registry_reference: _task_registry,
+           debug_logging: debug_logging,
+           cluster_task_supervisor_registry_reference: cluster_task_supervisor_registry
+         },
          %Job{overlap: true, run_strategy: run_strategy} = job
        ) do
     # Find Nodes to run on
@@ -77,10 +71,12 @@ defmodule Quantum.Executor do
 
   # Execute task on all given nodes with checking for overlap
   defp execute(
-         task_supervisor,
-         task_registry,
-         cluster_task_supervisor_registry,
-         debug_logging,
+         %StartOpts{
+           task_supervisor_reference: task_supervisor,
+           task_registry_reference: task_registry,
+           debug_logging: debug_logging,
+           cluster_task_supervisor_registry_reference: cluster_task_supervisor_registry
+         },
          %Job{overlap: false, run_strategy: run_strategy, name: job_name} = job
        ) do
     debug_logging &&

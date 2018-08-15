@@ -19,6 +19,10 @@ defmodule Quantum.ExecutionBroadcaster do
   alias Crontab.CronExpression
   alias Crontab.Scheduler, as: CrontabScheduler
 
+  alias __MODULE__.{InitOpts, StartOpts, State}
+
+  @type event :: {:add, Job.t()} | {:execute, Job.t()}
+
   defmodule JobInPastError do
     defexception message:
                    "The job was scheduled in the past. This must not happen to prevent infinite loops!"
@@ -26,47 +30,55 @@ defmodule Quantum.ExecutionBroadcaster do
 
   @doc """
   Start Stage
-
-  ### Arguments
-
-    * `name` - The name of the stage
-    * `job_broadcaster` - The name of the stage to listen to
-
   """
-  @spec start_link(GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()) ::
-          GenServer.on_start()
-  def start_link(name, job_broadcaster, storage, scheduler, debug_logging) do
+  @spec start_link(StartOpts.t()) :: GenServer.on_start()
+  def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
       __MODULE__,
-      {job_broadcaster, storage, scheduler, debug_logging},
+      struct!(
+        InitOpts,
+        Map.take(opts, [:job_broadcaster_reference, :storage, :scheduler, :debug_logging])
+      ),
       name: name
     )
   end
 
+  @spec start_link(GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()) ::
+          GenServer.on_start()
+  def start_link(name, job_broadcaster, storage, scheduler, debug_logging),
+    do:
+      start_link(%StartOpts{
+        name: name,
+        job_broadcaster_reference: job_broadcaster,
+        storage: storage,
+        scheduler: scheduler,
+        debug_logging: debug_logging
+      })
+
   @doc false
-  @spec child_spec(
-          {Keyword.t() | GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()}
-        ) :: Supervisor.child_spec()
-  def child_spec({opts, job_broadcaster, storage, scheduler, debug_logging}) when is_list(opts) do
-    %{
-      super(opts)
-      | start:
-          {__MODULE__, :start_link,
-           [
-             Keyword.fetch!(opts, :name),
-             job_broadcaster,
-             storage,
-             scheduler,
-             debug_logging
-           ]}
-    }
-  end
+  @spec child_spec(StartOpts.t()) :: Supervisor.child_spec()
+  def child_spec(%StartOpts{} = opts), do: super(opts)
+
+  @spec child_spec({GenServer.server(), GenServer.server(), Adapter, Scheduler, boolean()}) ::
+          Supervisor.child_spec()
 
   def child_spec({name, job_broadcaster, storage, scheduler, debug_logging}),
-    do: child_spec({[name: name], job_broadcaster, storage, scheduler, debug_logging})
+    do:
+      child_spec(%StartOpts{
+        name: name,
+        job_broadcaster_reference: job_broadcaster,
+        storage: storage,
+        scheduler: scheduler,
+        debug_logging: debug_logging
+      })
 
   @doc false
-  def init({job_broadcaster, storage, scheduler, debug_logging}) do
+  def init(%InitOpts{
+        job_broadcaster_reference: job_broadcaster,
+        storage: storage,
+        scheduler: scheduler,
+        debug_logging: debug_logging
+      }) do
     last_execution_date =
       case storage.last_execution_date(scheduler) do
         %NaiveDateTime{} = date ->
@@ -88,19 +100,18 @@ defmodule Quantum.ExecutionBroadcaster do
           NaiveDateTime.utc_now()
       end
 
-    state = %{
-      jobs: [],
-      time: last_execution_date,
-      timer: nil,
-      storage: storage,
-      scheduler: scheduler,
-      debug_logging: debug_logging
-    }
-
-    {:producer_consumer, state, subscribe_to: [job_broadcaster]}
+    {:producer_consumer,
+     %State{
+       jobs: [],
+       time: last_execution_date,
+       timer: nil,
+       storage: storage,
+       scheduler: scheduler,
+       debug_logging: debug_logging
+     }, subscribe_to: [job_broadcaster]}
   end
 
-  def handle_events(events, _, %{debug_logging: debug_logging} = state) do
+  def handle_events(events, _, %State{debug_logging: debug_logging} = state) do
     reboot_add_events =
       events
       |> Enum.filter(&add_reboot_event?/1)
@@ -127,7 +138,7 @@ defmodule Quantum.ExecutionBroadcaster do
 
   def handle_info(
         :execute,
-        %{
+        %State{
           jobs: [{time_to_execute, jobs_to_execute} | tail],
           storage: storage,
           scheduler: scheduler,
@@ -136,11 +147,12 @@ defmodule Quantum.ExecutionBroadcaster do
       ) do
     :ok = storage.update_last_execution_date(scheduler, time_to_execute)
 
-    state =
+    state = %{
       state
-      |> Map.put(:timer, nil)
-      |> Map.put(:jobs, tail)
-      |> Map.put(:time, NaiveDateTime.add(time_to_execute, 1, :second))
+      | timer: nil,
+        jobs: tail,
+        time: NaiveDateTime.add(time_to_execute, 1, :second)
+    }
 
     state =
       jobs_to_execute
@@ -163,12 +175,12 @@ defmodule Quantum.ExecutionBroadcaster do
     {:noreply, Enum.map(jobs_to_execute, fn job -> {:execute, job} end), state}
   end
 
-  def handle_info({:swarm, :die}, %{timer: {timer, _}} = state) do
+  def handle_info({:swarm, :die}, %State{timer: {timer, _}} = state) do
     Process.cancel_timer(timer)
     {:stop, :shutdown, %{state | timer: nil}}
   end
 
-  defp handle_event({:add, %{name: job_name} = job}, %{debug_logging: debug_logging} = state) do
+  defp handle_event({:add, %{name: job_name} = job}, %State{debug_logging: debug_logging} = state) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
@@ -177,7 +189,7 @@ defmodule Quantum.ExecutionBroadcaster do
     add_job_to_state(job, state)
   end
 
-  defp handle_event({:remove, name}, %{jobs: jobs, debug_logging: debug_logging} = state) do
+  defp handle_event({:remove, name}, %State{jobs: jobs, debug_logging: debug_logging} = state) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Removing job #{inspect(name)}"
@@ -201,18 +213,18 @@ defmodule Quantum.ExecutionBroadcaster do
   def handle_call(
         {:swarm, :begin_handoff},
         _from,
-        %{jobs: jobs, last_execution_date: last_execution_date} = state
+        %State{jobs: jobs, time: last_execution_date} = state
       ) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
     end)
 
-    {:reply, {:resume, {jobs, last_execution_date}}, state}
+    {:reply, {:resume, {jobs, last_execution_date}}, [], state}
   end
 
   def handle_cast(
         {:swarm, :end_handoff, {handoff_jobs, handoff_last_execution_time}},
-        %{last_execution_date: last_execution_date} = state
+        %State{time: last_execution_date} = state
       ) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
@@ -223,19 +235,19 @@ defmodule Quantum.ExecutionBroadcaster do
         do: handoff_last_execution_time,
         else: last_execution_date
 
-    intermediate_state = %{state | last_execution_date: earlier_last_execution_date}
+    intermediate_state = %{state | time: earlier_last_execution_date}
 
     new_state =
       Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
         add_job_to_state(job, acc_state)
       end)
 
-    {:noreply, new_state}
+    {:noreply, [], new_state}
   end
 
   def handle_cast(
         {:swarm, :resolve_conflict, {handoff_jobs, handoff_last_execution_time}},
-        %{last_execution_date: last_execution_date} = state
+        %State{time: last_execution_date} = state
       ) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
@@ -246,19 +258,19 @@ defmodule Quantum.ExecutionBroadcaster do
         do: handoff_last_execution_time,
         else: last_execution_date
 
-    intermediate_state = %{state | last_execution_date: earlier_last_execution_date}
+    intermediate_state = %{state | time: earlier_last_execution_date}
 
     new_state =
       Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
         add_job_to_state(job, acc_state)
       end)
 
-    {:noreply, new_state}
+    {:noreply, [], new_state}
   end
 
   defp add_job_to_state(
          %Job{schedule: schedule, timezone: timezone, name: name} = job,
-         %{time: time} = state
+         %State{time: time} = state
        ) do
     job
     |> get_next_execution_time(time)
@@ -312,11 +324,11 @@ defmodule Quantum.ExecutionBroadcaster do
       get_next_execution_time(job, next_time)
   end
 
-  defp sort_state(%{jobs: jobs} = state) do
+  defp sort_state(%State{jobs: jobs} = state) do
     %{state | jobs: Enum.sort_by(jobs, fn {date, _} -> NaiveDateTime.to_erl(date) end)}
   end
 
-  defp add_to_state(%{jobs: jobs, time: time} = state, date, job) do
+  defp add_to_state(%State{jobs: jobs, time: time} = state, date, job) do
     unless NaiveDateTime.compare(time, date) in [:lt, :eq] do
       raise JobInPastError
     end
@@ -344,17 +356,17 @@ defmodule Quantum.ExecutionBroadcaster do
     {state, [head | new_rest]}
   end
 
-  defp reset_timer(%{timer: nil, jobs: []} = state) do
+  defp reset_timer(%State{timer: nil, jobs: []} = state) do
     state
   end
 
-  defp reset_timer(%{timer: {timer, _}, jobs: []} = state) do
+  defp reset_timer(%State{timer: {timer, _}, jobs: []} = state) do
     Process.cancel_timer(timer)
 
     Map.put(state, :timer, nil)
   end
 
-  defp reset_timer(%{timer: nil, jobs: jobs, debug_logging: debug_logging} = state) do
+  defp reset_timer(%State{timer: nil, jobs: jobs, debug_logging: debug_logging} = state) do
     run_date = next_run_date(jobs)
 
     timer =
@@ -387,10 +399,10 @@ defmodule Quantum.ExecutionBroadcaster do
           nil
       end
 
-    Map.put(state, :timer, {timer, run_date})
+    %{state | timer: {timer, run_date}}
   end
 
-  defp reset_timer(%{timer: {timer, old_date}, jobs: jobs} = state) do
+  defp reset_timer(%State{timer: {timer, old_date}, jobs: jobs} = state) do
     run_date = next_run_date(jobs)
 
     case NaiveDateTime.compare(run_date, old_date) do

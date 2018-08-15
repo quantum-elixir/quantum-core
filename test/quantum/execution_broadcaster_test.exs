@@ -7,7 +7,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
   import ExUnit.CaptureLog
   import Quantum.CaptureLogExtend
 
-  alias Quantum.{ExecutionBroadcaster, Job}
+  alias Quantum.{ExecutionBroadcaster, ExecutionBroadcaster.State, Job}
   alias Quantum.Storage.Test, as: TestStorage
   alias Quantum.{TestConsumer, TestProducer}
 
@@ -225,7 +225,14 @@ defmodule Quantum.ExecutionBroadcasterTest do
     end
 
     test "DST creates no problems", %{debug_logging: debug_logging} do
-      state = %{jobs: [], time: ~N[2018-03-25 00:59:01], timer: nil, debug_logging: debug_logging}
+      state = %State{
+        jobs: [],
+        time: ~N[2018-03-25 00:59:01],
+        timer: nil,
+        debug_logging: debug_logging,
+        storage: TestStorage,
+        scheduler: TestScheduler
+      }
 
       job =
         TestScheduler.new_job()

@@ -9,39 +9,57 @@ defmodule Quantum.JobBroadcaster do
 
   alias Quantum.{Job, Scheduler}
   alias Quantum.Storage.Adapter
+  alias __MODULE__.{InitOpts, StartOpts, State}
+
+  @type event :: {:add, Job.t()} | {:remove, Job.t()}
 
   @doc """
   Start Job Broadcaster
-
-  ### Arguments
-
-   * `name` - Name of the GenStage
-   * `jobs` - Array of `Quantum.Job`
-
   """
+  @spec start_link(StartOpts.t()) :: GenServer.on_start()
+  def start_link(%StartOpts{name: name} = opts) do
+    GenStage.start_link(
+      __MODULE__,
+      struct!(InitOpts, Map.take(opts, [:jobs, :storage, :scheduler, :debug_logging])),
+      name: name
+    )
+  end
+
   @spec start_link(GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()) ::
           GenServer.on_start()
   def start_link(name, jobs, storage, scheduler, debug_logging) do
-    GenStage.start_link(__MODULE__, {jobs, storage, scheduler, debug_logging}, name: name)
+    start_link(%StartOpts{
+      name: name,
+      jobs: jobs,
+      storage: storage,
+      scheduler: scheduler,
+      debug_logging: debug_logging
+    })
   end
 
   @doc false
+  @spec child_spec(StartOpts.t()) :: Supervisor.child_spec()
+  def child_spec(%StartOpts{} = opts), do: super(opts)
+
   @spec child_spec({Keyword.t() | GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()}) ::
           Supervisor.child_spec()
-  def child_spec({opts, jobs, storage, scheduler, debug_logging}) when is_list(opts) do
-    %{
-      super(opts)
-      | start:
-          {__MODULE__, :start_link,
-           [Keyword.fetch!(opts, :name), jobs, storage, scheduler, debug_logging]}
-    }
-  end
-
   def child_spec({name, jobs, storage, scheduler, debug_logging}),
-    do: child_spec({[name: name], jobs, storage, scheduler, debug_logging})
+    do:
+      child_spec(%StartOpts{
+        name: name,
+        jobs: jobs,
+        storage: storage,
+        scheduler: scheduler,
+        debug_logging: debug_logging
+      })
 
   @doc false
-  def init({jobs, storage, scheduler, debug_logging}) do
+  def init(%InitOpts{
+        jobs: jobs,
+        storage: storage,
+        scheduler: scheduler,
+        debug_logging: debug_logging
+      }) do
     effective_jobs =
       scheduler
       |> storage.jobs()
@@ -63,18 +81,17 @@ defmodule Quantum.JobBroadcaster do
           storage_jobs
       end
 
-    state = %{
-      jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
-      buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
-      storage: storage,
-      scheduler: scheduler,
-      debug_logging: debug_logging
-    }
-
-    {:producer, state}
+    {:producer,
+     %State{
+       jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
+       buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
+       storage: storage,
+       scheduler: scheduler,
+       debug_logging: debug_logging
+     }}
   end
 
-  def handle_demand(demand, %{buffer: buffer} = state) do
+  def handle_demand(demand, %State{buffer: buffer} = state) do
     {to_send, remaining} = Enum.split(buffer, demand)
 
     {:noreply, to_send, %{state | buffer: remaining}}
@@ -82,7 +99,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
-        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
           state
       ) do
     debug_logging &&
@@ -97,7 +114,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:add, %Job{state: :inactive, name: job_name} = job},
-        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
           state
       ) do
     debug_logging &&
@@ -112,7 +129,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:delete, name},
-        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
           state
       ) do
     debug_logging &&
@@ -138,7 +155,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:change_state, name, new_state},
-        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
           state
       ) do
     debug_logging &&
@@ -170,7 +187,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         :delete_all,
-        %{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
+        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
           state
       ) do
     debug_logging &&
@@ -187,7 +204,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:swarm, :end_handoff, {handoff_jobs, handoff_buffer}},
-        %{
+        %State{
           jobs: jobs,
           buffer: buffer
         } = state
@@ -202,7 +219,7 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:swarm, :resolve_conflict, {handoff_jobs, handoff_buffer}},
-        %{
+        %State{
           jobs: jobs,
           buffer: buffer
         } = state
@@ -215,12 +232,13 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
   end
 
-  def handle_call(:jobs, _, %{jobs: jobs} = state), do: {:reply, Map.to_list(jobs), [], state}
+  def handle_call(:jobs, _, %State{jobs: jobs} = state),
+    do: {:reply, Map.to_list(jobs), [], state}
 
-  def handle_call({:find_job, name}, _, %{jobs: jobs} = state),
+  def handle_call({:find_job, name}, _, %State{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
 
-  def handle_call({:swarm, :begin_handoff}, _from, %{jobs: jobs, buffer: buffer} = state) do
+  def handle_call({:swarm, :begin_handoff}, _from, %State{jobs: jobs, buffer: buffer} = state) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
     end)

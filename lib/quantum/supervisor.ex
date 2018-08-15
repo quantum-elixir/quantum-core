@@ -3,6 +3,20 @@ defmodule Quantum.Supervisor do
 
   use Supervisor
 
+  alias Quantum.ClusterTaskSupervisorRegistry
+
+  alias Quantum.ClusterTaskSupervisorRegistry.StartOpts,
+    as: ClusterTaskSupervisorRegistryStartOpts
+
+  alias Quantum.ExecutionBroadcaster
+  alias Quantum.ExecutionBroadcaster.StartOpts, as: ExecutionBroadcasterStartOpts
+  alias Quantum.ExecutorSupervisor
+  alias Quantum.ExecutorSupervisor.StartOpts, as: ExecutorSupervisorStartOpts
+  alias Quantum.JobBroadcaster
+  alias Quantum.JobBroadcaster.StartOpts, as: JobBroadcasterStartOpts
+  alias Quantum.TaskRegistry
+  alias Quantum.TaskRegistry.StartOpts, as: TaskRegistryStartOpts
+
   @doc """
   Starts the quantum supervisor.
   """
@@ -17,58 +31,89 @@ defmodule Quantum.Supervisor do
   def init({quantum, otp_app, opts}) do
     opts = Quantum.runtime_config(quantum, otp_app, opts)
     opts = quantum_init(quantum, opts)
+    opts = Enum.into(opts, %{})
 
-    task_registry_opts = Keyword.fetch!(opts, :task_registry)
-    task_registry_name = Keyword.fetch!(task_registry_opts, :name)
+    %{
+      task_registry_name: task_registry_name,
+      job_broadcaster_name: job_broadcaster_name,
+      execution_broadcaster_name: execution_broadcaster_name,
+      cluster_task_supervisor_registry_name: cluster_task_supervisor_registry_name,
+      task_supervisor_name: task_supervisor_name,
+      executor_supervisor_name: executor_supervisor_name,
+      global: global
+    } = opts
 
-    job_broadcaster_opts = Keyword.fetch!(opts, :job_broadcaster)
-    job_broadcaster_name = Keyword.fetch!(job_broadcaster_opts, :name)
+    task_registry_opts = %TaskRegistryStartOpts{name: task_registry_name}
 
-    execution_broadcaster_opts = Keyword.fetch!(opts, :execution_broadcaster)
-    execution_broadcaster_name = Keyword.fetch!(execution_broadcaster_opts, :name)
+    job_broadcaster_opts =
+      struct!(
+        JobBroadcasterStartOpts,
+        opts
+        |> Map.take([:jobs, :storage, :scheduler, :debug_logging])
+        |> Map.put(:name, job_broadcaster_name)
+      )
+
+    cluster_task_supervisor_registry_opts =
+      struct!(
+        ClusterTaskSupervisorRegistryStartOpts,
+        opts
+        |> Map.take([:task_supervisor_reference])
+        |> Map.put(:name, cluster_task_supervisor_registry_name)
+      )
+
+    execution_broadcaster_opts =
+      struct!(
+        ExecutionBroadcasterStartOpts,
+        opts
+        |> Map.take([:job_broadcaster_reference, :storage, :scheduler, :debug_logging])
+        |> Map.put(:name, execution_broadcaster_name)
+      )
+
+    executor_supervisor_opts =
+      struct!(
+        ExecutorSupervisorStartOpts,
+        opts
+        |> Map.take([
+          :execution_broadcaster_reference,
+          :task_supervisor_reference,
+          :task_registry_reference,
+          :cluster_task_supervisor_registry_reference,
+          :debug_logging
+        ])
+        |> Map.put(:name, executor_supervisor_name)
+      )
+
+    workers =
+      if global do
+        %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(task_registry_opts)
+        Swarm.register_name(task_registry_name, TaskRegistry, f, a, 15_000)
+
+        %{start: {JobBroadcaster, f, a}} = JobBroadcaster.child_spec(job_broadcaster_opts)
+        Swarm.register_name(job_broadcaster_name, JobBroadcaster, f, a)
+
+        %{start: {ExecutionBroadcaster, f, a}} =
+          ExecutionBroadcaster.child_spec(execution_broadcaster_opts)
+
+        Swarm.register_name(execution_broadcaster_name, ExecutionBroadcaster, f, a)
+
+        [
+          {Task.Supervisor, [name: task_supervisor_name]},
+          {ClusterTaskSupervisorRegistry, cluster_task_supervisor_registry_opts},
+          {ExecutorSupervisor, executor_supervisor_opts}
+        ]
+      else
+        [
+          {Task.Supervisor, [name: task_supervisor_name]},
+          {ClusterTaskSupervisorRegistry, cluster_task_supervisor_registry_opts},
+          {TaskRegistry, task_registry_opts},
+          {JobBroadcaster, job_broadcaster_opts},
+          {ExecutionBroadcaster, execution_broadcaster_opts},
+          {ExecutorSupervisor, executor_supervisor_opts}
+        ]
+      end
 
     Supervisor.init(
-      [
-        {Task.Supervisor, [name: Keyword.get(opts, :task_supervisor)]},
-        {Quantum.ClusterTaskSupervisorRegistry,
-         task_supervisor: Keyword.get(opts, :task_supervisor),
-         name: Keyword.get(opts, :cluster_task_supervisor_registry)},
-        {
-          Quantum.TaskRegistry,
-          task_registry_opts
-        },
-        {
-          Quantum.JobBroadcaster,
-          {
-            job_broadcaster_opts,
-            Keyword.fetch!(opts, :jobs),
-            Keyword.fetch!(opts, :storage),
-            Keyword.fetch!(opts, :quantum),
-            Keyword.fetch!(opts, :debug_logging)
-          }
-        },
-        {
-          Quantum.ExecutionBroadcaster,
-          {
-            execution_broadcaster_opts,
-            job_broadcaster_name,
-            Keyword.fetch!(opts, :storage),
-            Keyword.fetch!(opts, :quantum),
-            Keyword.fetch!(opts, :debug_logging)
-          }
-        },
-        {
-          Quantum.ExecutorSupervisor,
-          {
-            Keyword.fetch!(opts, :executor_supervisor),
-            execution_broadcaster_name,
-            Keyword.fetch!(opts, :task_supervisor),
-            task_registry_name,
-            Keyword.get(opts, :cluster_task_supervisor_registry),
-            Keyword.fetch!(opts, :debug_logging)
-          }
-        }
-      ],
+      workers,
       strategy: :rest_for_one
     )
   end

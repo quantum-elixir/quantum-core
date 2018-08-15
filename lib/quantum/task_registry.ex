@@ -7,33 +7,21 @@ defmodule Quantum.TaskRegistry do
 
   require Logger
 
+  alias __MODULE__.{InitOpts, StartOpts, State}
+
   @doc """
   Start the registry
-
-  ### Options
-
-    * `name` - Name of the registry
-
   """
+
+  @spec start_link(StartOpts.t()) :: GenServer.on_start()
+  def start_link(%StartOpts{name: name}) do
+    GenServer.start_link(__MODULE__, %InitOpts{}, name: name)
+  end
+
   @spec start_link(GenServer.server()) :: GenServer.on_start()
   def start_link(name) do
-    GenServer.start_link(__MODULE__, %{}, name: name)
+    start_link(%StartOpts{name: name})
   end
-
-  @doc false
-  @spec child_spec(Keyword.t() | GenServer.server()) :: Supervisor.child_spec()
-  def child_spec(opts) when is_list(opts) do
-    %{
-      super(opts)
-      | start: {
-          __MODULE__,
-          :start_link,
-          [Keyword.fetch!(opts, :name)]
-        }
-    }
-  end
-
-  def child_spec(name), do: child_spec(name: name)
 
   @doc """
   Mark a task as Running
@@ -100,31 +88,37 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
-  def init(args) do
-    {:ok, args}
+  def init(%InitOpts{}) do
+    {:ok, %State{running_tasks: %{}}}
   end
 
   @doc false
-  def handle_call({:running, task, node}, _caller, state) do
-    if Enum.member?(Map.get(state, task, []), node) do
+  def handle_call({:running, task, node}, _caller, %State{running_tasks: running_tasks} = state) do
+    if Enum.member?(Map.get(running_tasks, task, []), node) do
       {:reply, :already_running, state}
     else
-      {:reply, :marked_running, Map.update(state, task, [node], &[node | &1])}
+      {:reply, :marked_running,
+       %{state | running_tasks: Map.update(running_tasks, task, [node], &[node | &1])}}
     end
   end
 
   @doc false
-  def handle_call({:is_running?, task}, _caller, state) do
-    if Enum.empty?(Map.get(state, task, [])) do
-      {:reply, false, state}
-    else
-      {:reply, true, state}
+  def handle_call({:is_running?, task}, _caller, %State{running_tasks: running_tasks} = state) do
+    case running_tasks do
+      %{^task => [_ | _]} ->
+        {:reply, true, state}
+
+      %{^task => []} ->
+        {:reply, false, state}
+
+      %{} ->
+        {:reply, false, state}
     end
   end
 
   @doc false
-  def handle_call(:any_running?, _caller, state) do
-    if Enum.empty?(state) do
+  def handle_call(:any_running?, _caller, %State{running_tasks: running_tasks} = state) do
+    if Enum.empty?(running_tasks) do
       {:reply, false, state}
     else
       {:reply, true, state}
@@ -140,33 +134,41 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
-  def handle_cast({:finished, task, node}, state) do
-    state = Map.update(state, task, [], &(&1 -- [node]))
+  def handle_cast({:finished, task, node}, %State{running_tasks: running_tasks} = state) do
+    running_tasks =
+      running_tasks
+      |> Map.update(task, [], &(&1 -- [node]))
+      |> case do
+        %{^task => []} = still_running_tasks ->
+          Map.delete(still_running_tasks, task)
 
-    state =
-      if Enum.empty?(Map.fetch!(state, task)) do
-        Map.delete(state, task)
-      else
-        state
+        still_running_tasks ->
+          still_running_tasks
       end
 
-    {:noreply, state}
+    {:noreply, %{state | running_tasks: running_tasks}}
   end
 
-  def handle_cast({:swarm, :end_handoff, handoff_state}, state) do
+  def handle_cast(
+        {:swarm, :end_handoff, %State{running_tasks: handoff_tasks}},
+        %State{running_tasks: running_tasks} = state
+      ) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
     end)
 
-    {:noreply, merge_states(state, handoff_state)}
+    {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}
   end
 
-  def handle_cast({:swarm, :resolve_conflict, handoff_state}, state) do
+  def handle_cast(
+        {:swarm, :resolve_conflict, %State{running_tasks: handoff_tasks}},
+        %State{running_tasks: running_tasks} = state
+      ) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
     end)
 
-    {:noreply, merge_states(state, handoff_state)}
+    {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}
   end
 
   defp merge_states(state1, state2) do

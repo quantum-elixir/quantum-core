@@ -4,6 +4,7 @@ defmodule Quantum.ClusterTaskSupervisorRegistryTest do
   use ExUnit.Case
 
   alias Quantum.ClusterTaskSupervisorRegistry
+  alias Quantum.ClusterTaskSupervisorRegistry.StartOpts
 
   test "should register name", %{test: test} do
     {:ok, task_supervisor_pid} = start_supervised({Task.Supervisor, name: test})
@@ -11,9 +12,11 @@ defmodule Quantum.ClusterTaskSupervisorRegistryTest do
     {:ok, registry_pid} =
       start_supervised(
         {ClusterTaskSupervisorRegistry,
-         name: Module.concat([__MODULE__, test, Registry]),
-         task_supervisor: test,
-         group_name: Module.concat([__MODULE__, test, Group])}
+         %StartOpts{
+           name: Module.concat([__MODULE__, test, Registry]),
+           task_supervisor_reference: test,
+           group_name: Module.concat([__MODULE__, test, Group])
+         }}
       )
 
     Process.sleep(5_000)
@@ -35,11 +38,11 @@ defmodule Quantum.ClusterTaskSupervisorRegistryTest do
 
       send(
         test_pid,
-        ClusterTaskSupervisorRegistry.start_link(
+        ClusterTaskSupervisorRegistry.start_link(%StartOpts{
           name: Module.concat([__MODULE__, test, Registry]),
-          task_supervisor: test,
+          task_supervisor_reference: test,
           group_name: Module.concat([__MODULE__, test, Group])
-        )
+        })
       )
     end)
 
