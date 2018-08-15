@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+### Fixed
+- Global Clustering Worker Start
+
 ## 2.3.1 - 2018-08-13
 
 ### Fixed

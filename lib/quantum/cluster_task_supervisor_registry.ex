@@ -4,23 +4,26 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
 
   use GenServer
 
-  @doc false
-  def start_link(opts) do
-    name = Keyword.get(opts, :name, __MODULE__)
+  alias __MODULE__.{InitOpts, StartOpts, State}
 
+  @doc false
+  @spec start_link(StartOpts.t()) :: GenServer.on_start()
+  def start_link(%StartOpts{name: name} = opts) do
     GenServer.start_link(
       __MODULE__,
-      {
-        Keyword.fetch!(opts, :task_supervisor),
-        Keyword.get(opts, :group_name, Module.concat(name, Group))
-      },
+      struct!(
+        InitOpts,
+        opts
+        |> Map.take([:task_supervisor_reference, :group_name])
+        |> Map.put_new(:group_name, Module.concat(name, Group))
+      ),
       name: name
     )
   end
 
   @doc false
   @impl true
-  def init({task_supervisor, group_name}) do
+  def init(%InitOpts{task_supervisor_reference: task_supervisor, group_name: group_name}) do
     task_supervisor_pid = GenServer.whereis(task_supervisor)
 
     monitor_ref = Process.monitor(task_supervisor_pid)
@@ -35,12 +38,16 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
     :ok = Swarm.join(group_name, task_supervisor_pid)
 
     {:ok,
-     %{group_name: group_name, task_supervisor_pid: task_supervisor_pid, monitor_ref: monitor_ref}}
+     %State{
+       group_name: group_name,
+       task_supervisor_pid: task_supervisor_pid,
+       monitor_ref: monitor_ref
+     }}
   end
 
   @doc false
   @impl true
-  def handle_call(:pids, _from, %{group_name: group_name} = state) do
+  def handle_call(:pids, _from, %State{group_name: group_name} = state) do
     {:reply, Swarm.members(group_name), state}
   end
 
@@ -48,7 +55,7 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
   @impl true
   def handle_info(
         {:DOWN, monitor_ref, :process, task_supervisor_pid, _reason},
-        %{
+        %State{
           group_name: group_name,
           task_supervisor_pid: task_supervisor_pid,
           monitor_ref: monitor_ref

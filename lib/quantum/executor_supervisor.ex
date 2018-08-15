@@ -5,7 +5,10 @@ defmodule Quantum.ExecutorSupervisor do
 
   use ConsumerSupervisor
 
+  alias Quantum.Executor.StartOpts, as: ExecutorStartOpts
   alias Quantum.Util
+
+  alias __MODULE__.{InitOpts, StartOpts}
 
   @spec start_link(
           GenServer.server(),
@@ -14,39 +17,32 @@ defmodule Quantum.ExecutorSupervisor do
           GenServer.server(),
           boolean()
         ) :: GenServer.on_start()
-  def start_link(name, execution_broadcaster, task_supervisor, task_registry, debug_logging) do
-    ConsumerSupervisor.start_link(
-      __MODULE__,
-      %{
-        execution_broadcaster: execution_broadcaster,
-        task_supervisor: task_supervisor,
-        task_registry: task_registry,
-        cluster_task_supervisor_registry: nil,
+  def start_link(name, execution_broadcaster, task_supervisor, task_registry, debug_logging),
+    do:
+      start_link(%StartOpts{
+        name: name,
+        execution_broadcaster_reference: execution_broadcaster,
+        task_supervisor_reference: task_supervisor,
+        task_registry_reference: task_registry,
+        cluster_task_supervisor_registry_reference: nil,
         debug_logging: debug_logging
-      },
-      name: name
-    )
-  end
+      })
 
-  @spec start_link(%{
-          name: GenServer.server(),
-          execution_broadcaster: GenServer.server(),
-          task_supervisor: GenServer.server(),
-          task_registry: GenServer.server(),
-          cluster_task_supervisor_registry: nil | GenServer.server(),
-          debug_logging: boolean()
-        }) :: GenServer.on_start()
-  def start_link(opts) do
+  @spec start_link(StartOpts.t()) :: GenServer.on_start()
+  def start_link(%StartOpts{name: name} = opts) do
     ConsumerSupervisor.start_link(
       __MODULE__,
-      Map.take(opts, [
-        :execution_broadcaster,
-        :task_supervisor,
-        :task_registry,
-        :cluster_task_supervisor_registry,
-        :debug_logging
-      ]),
-      name: Map.fetch!(opts, :name)
+      struct!(
+        InitOpts,
+        Map.take(opts, [
+          :execution_broadcaster_reference,
+          :task_supervisor_reference,
+          :task_registry_reference,
+          :cluster_task_supervisor_registry_reference,
+          :debug_logging
+        ])
+      ),
+      name: name
     )
   end
 
@@ -54,17 +50,17 @@ defmodule Quantum.ExecutorSupervisor do
   # TODO: Remove when gen_stage:0.12 support is dropped
   if Util.gen_stage_v12?() do
     def init(
-          %{
+          %InitOpts{
             execution_broadcaster: execution_broadcaster
           } = opts
         ) do
       ConsumerSupervisor.init(
         {Quantum.Executor,
          Map.take(opts, [
-           :task_supervisor,
-           :task_registry,
+           :task_supervisor_reference,
+           :task_registry_reference,
            :debug_logging,
-           :cluster_task_supervisor_registry
+           :cluster_task_supervisor_registry_reference
          ])},
         strategy: :one_for_one,
         subscribe_to: [{execution_broadcaster, max_demand: 50}]
@@ -72,20 +68,23 @@ defmodule Quantum.ExecutorSupervisor do
     end
   else
     def init(
-          %{
-            execution_broadcaster: execution_broadcaster
+          %InitOpts{
+            execution_broadcaster_reference: execution_broadcaster
           } = opts
         ) do
+      executor_opts =
+        struct!(
+          ExecutorStartOpts,
+          Map.take(opts, [
+            :task_supervisor_reference,
+            :task_registry_reference,
+            :debug_logging,
+            :cluster_task_supervisor_registry_reference
+          ])
+        )
+
       ConsumerSupervisor.init(
-        [
-          {Quantum.Executor,
-           Map.take(opts, [
-             :task_supervisor,
-             :task_registry,
-             :debug_logging,
-             :cluster_task_supervisor_registry
-           ])}
-        ],
+        [{Quantum.Executor, executor_opts}],
         strategy: :one_for_one,
         subscribe_to: [{execution_broadcaster, max_demand: 50}]
       )
@@ -93,49 +92,24 @@ defmodule Quantum.ExecutorSupervisor do
   end
 
   @doc false
-  @spec child_spec(
-          {
-            GenServer.server(),
-            GenServer.server(),
-            GenServer.server(),
-            GenServer.server(),
-            boolean()
-          }
-          | {
-              GenServer.server(),
-              GenServer.server(),
-              GenServer.server(),
-              GenServer.server(),
-              GenServer.server(),
-              boolean()
-            }
-        ) :: Supervisor.child_spec()
+  @spec child_spec({
+          GenServer.server(),
+          GenServer.server(),
+          GenServer.server(),
+          GenServer.server(),
+          boolean()
+        }) :: Supervisor.child_spec()
   def child_spec({name, execution_broadcaster, task_supervisor, task_registry, debug_logging}),
     do:
-      child_spec(
-        {name, execution_broadcaster, task_supervisor, task_registry, nil, debug_logging}
-      )
+      child_spec(%StartOpts{
+        name: name,
+        execution_broadcaster_reference: execution_broadcaster,
+        task_supervisor_reference: task_supervisor,
+        task_registry_reference: task_registry,
+        cluster_task_supervisor_registry_reference: nil,
+        debug_logging: debug_logging
+      })
 
-  def child_spec(
-        {name, execution_broadcaster, task_supervisor, task_registry,
-         cluster_task_supervisor_registry, debug_logging}
-      ) do
-    %{
-      super([])
-      | start: {
-          __MODULE__,
-          :start_link,
-          [
-            %{
-              name: name,
-              execution_broadcaster: execution_broadcaster,
-              task_supervisor: task_supervisor,
-              task_registry: task_registry,
-              cluster_task_supervisor_registry: cluster_task_supervisor_registry,
-              debug_logging: debug_logging
-            }
-          ]
-        }
-    }
-  end
+  @spec child_spec(StartOpts.t()) :: Supervisor.child_spec()
+  def child_spec(%StartOpts{} = opts), do: super(opts)
 end
