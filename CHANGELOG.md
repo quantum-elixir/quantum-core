@@ -6,8 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.3.2 - 2018-08-21
+
 ### Fixed
 - Global Clustering Worker Start
+
+Diff for [2.3.2]
 
 ## 2.3.1 - 2018-08-13
 
@@ -516,7 +520,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...HEAD
+[2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...v2.3.0
 [2.2.7]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...v2.2.7
