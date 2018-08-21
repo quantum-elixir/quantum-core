@@ -1,7 +1,6 @@
 defmodule Quantum.JobBroadcaster do
-  @moduledoc """
-  This Module is here to broadcast added / removed tabs into the execution pipeline.
-  """
+  @moduledoc false
+  # This Module is here to broadcast added / removed tabs into the execution pipeline.
 
   use GenStage
 
@@ -12,9 +11,8 @@ defmodule Quantum.JobBroadcaster do
 
   @type event :: {:add, Job.t()} | {:remove, Job.t()}
 
-  @doc """
-  Start Job Broadcaster
-  """
+  @doc false
+  # Start Job Broadcaster
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
@@ -62,12 +60,14 @@ defmodule Quantum.JobBroadcaster do
      }}
   end
 
+  @doc false
   def handle_demand(demand, %State{buffer: buffer} = state) do
     {to_send, remaining} = Enum.split(buffer, demand)
 
     {:noreply, to_send, %{state | buffer: remaining}}
   end
 
+  @doc false
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -83,6 +83,7 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
+  @doc false
   def handle_cast(
         {:add, %Job{state: :inactive, name: job_name} = job},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -98,6 +99,7 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
+  @doc false
   def handle_cast(
         {:delete, name},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -124,6 +126,7 @@ defmodule Quantum.JobBroadcaster do
     end
   end
 
+  @doc false
   def handle_cast(
         {:change_state, name, new_state},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -156,6 +159,7 @@ defmodule Quantum.JobBroadcaster do
     end
   end
 
+  @doc false
   def handle_cast(
         :delete_all,
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -173,6 +177,7 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, messages, %{state | jobs: %{}}}
   end
 
+  @doc false
   def handle_cast(
         {:swarm, :end_handoff, {handoff_jobs, handoff_buffer}},
         %State{
@@ -188,6 +193,7 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
   end
 
+  @doc false
   def handle_cast(
         {:swarm, :resolve_conflict, {handoff_jobs, handoff_buffer}},
         %State{
@@ -203,12 +209,15 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
   end
 
+  @doc false
   def handle_call(:jobs, _, %State{jobs: jobs} = state),
     do: {:reply, Map.to_list(jobs), [], state}
 
+  @doc false
   def handle_call({:find_job, name}, _, %State{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
 
+  @doc false
   def handle_call({:swarm, :begin_handoff}, _from, %State{jobs: jobs, buffer: buffer} = state) do
     Logger.info(fn ->
       "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
@@ -217,6 +226,7 @@ defmodule Quantum.JobBroadcaster do
     {:reply, {:resume, {jobs, buffer}}, state}
   end
 
+  @doc false
   def handle_info({:swarm, :die}, state) do
     {:stop, :shutdown, state}
   end
