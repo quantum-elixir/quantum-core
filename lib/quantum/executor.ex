@@ -34,10 +34,7 @@ defmodule Quantum.Executor do
     end)
   end
 
-  @spec execute(
-          StartOpts.t(),
-          Job.t()
-        ) :: :ok
+  @spec execute(StartOpts.t(), Job.t()) :: :ok
   # Execute task on all given nodes without checking for overlap
   defp execute(
          %StartOpts{

@@ -3,7 +3,7 @@ defmodule Quantum.JobBroadcasterTest do
 
   use ExUnit.Case, async: true
 
-  alias Quantum.{HandoffHelper, Job, JobBroadcaster}
+  alias Quantum.{HandoffHelper, Job, JobBroadcaster, JobBroadcaster.StartOpts}
   alias Quantum.Storage.Test, as: TestStorage
   alias Quantum.TestConsumer
 
@@ -48,7 +48,14 @@ defmodule Quantum.JobBroadcasterTest do
         {{:ok, broadcaster}, _} =
           capture_log_with_return(fn ->
             start_supervised(
-              {JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler, true}}
+              {JobBroadcaster,
+               %StartOpts{
+                 name: __MODULE__,
+                 jobs: init_jobs,
+                 storage: TestStorage,
+                 scheduler: TestScheduler,
+                 debug_logging: true
+               }}
             )
           end)
 
@@ -59,12 +66,10 @@ defmodule Quantum.JobBroadcasterTest do
 
     {
       :ok,
-      %{
-        broadcaster: broadcaster,
-        active_job: active_job,
-        inactive_job: inactive_job,
-        init_jobs: init_jobs
-      }
+      broadcaster: broadcaster,
+      active_job: active_job,
+      inactive_job: inactive_job,
+      init_jobs: init_jobs
     }
   end
 
@@ -91,7 +96,16 @@ defmodule Quantum.JobBroadcasterTest do
         end
 
         {:ok, broadcaster} =
-          start_supervised({JobBroadcaster, {__MODULE__, [], FullStorage, TestScheduler, true}})
+          start_supervised(
+            {JobBroadcaster,
+             %StartOpts{
+               name: __MODULE__,
+               jobs: [],
+               storage: FullStorage,
+               scheduler: TestScheduler,
+               debug_logging: true
+             }}
+          )
 
         {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
@@ -121,7 +135,14 @@ defmodule Quantum.JobBroadcasterTest do
 
                {:ok, broadcaster} =
                  start_supervised(
-                   {JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler, false}}
+                   {JobBroadcaster,
+                    %StartOpts{
+                      name: __MODULE__,
+                      jobs: init_jobs,
+                      storage: TestStorage,
+                      scheduler: TestScheduler,
+                      debug_logging: false
+                    }}
                  )
 
                {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
@@ -311,18 +332,26 @@ defmodule Quantum.JobBroadcasterTest do
       job_name = job.name
 
       %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(
-          {Module.concat(__MODULE__, Old), [job], TestStorage, TestScheduler, true}
-        )
+        JobBroadcaster.child_spec(%StartOpts{
+          name: Module.concat(__MODULE__, Old),
+          jobs: [job],
+          storage: TestStorage,
+          scheduler: TestScheduler,
+          debug_logging: true
+        })
 
       {:ok, old_job_broadcaster} = apply(JobBroadcaster, f, a)
 
       {:ok, _old_consumer} = TestConsumer.start_link(old_job_broadcaster, self())
 
       %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(
-          {Module.concat(__MODULE__, New), [], TestStorage, TestScheduler, true}
-        )
+        JobBroadcaster.child_spec(%StartOpts{
+          name: Module.concat(__MODULE__, New),
+          jobs: [],
+          storage: TestStorage,
+          scheduler: TestScheduler,
+          debug_logging: true
+        })
 
       {:ok, new_job_broadcaster} = apply(JobBroadcaster, f, a)
 
@@ -347,18 +376,26 @@ defmodule Quantum.JobBroadcasterTest do
       job_2_name = job_2.name
 
       %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(
-          {Module.concat(__MODULE__, Old), [job_1], TestStorage, TestScheduler, true}
-        )
+        JobBroadcaster.child_spec(%StartOpts{
+          name: Module.concat(__MODULE__, Old),
+          jobs: [job_1],
+          storage: TestStorage,
+          scheduler: TestScheduler,
+          debug_logging: true
+        })
 
       {:ok, old_job_broadcaster} = apply(JobBroadcaster, f, a)
 
       {:ok, _old_consumer} = TestConsumer.start_link(old_job_broadcaster, self())
 
       %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(
-          {Module.concat(__MODULE__, New), [job_2], TestStorage, TestScheduler, true}
-        )
+        JobBroadcaster.child_spec(%StartOpts{
+          name: Module.concat(__MODULE__, New),
+          jobs: [job_2],
+          storage: TestStorage,
+          scheduler: TestScheduler,
+          debug_logging: true
+        })
 
       {:ok, new_job_broadcaster} = apply(JobBroadcaster, f, a)
 
