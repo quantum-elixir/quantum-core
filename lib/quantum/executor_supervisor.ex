@@ -1,7 +1,6 @@
 defmodule Quantum.ExecutorSupervisor do
-  @moduledoc """
-  This `ConsumerSupervisor` is responsible to start a job for every execute event.
-  """
+  @moduledoc false
+  # This `ConsumerSupervisor` is responsible to start a job for every execute event.
 
   use ConsumerSupervisor
 
@@ -9,6 +8,7 @@ defmodule Quantum.ExecutorSupervisor do
 
   alias __MODULE__.{InitOpts, StartOpts}
 
+  @doc false
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     ConsumerSupervisor.start_link(
@@ -27,6 +27,7 @@ defmodule Quantum.ExecutorSupervisor do
     )
   end
 
+  @doc false
   def init(
         %InitOpts{
           execution_broadcaster_reference: execution_broadcaster
@@ -49,7 +50,4 @@ defmodule Quantum.ExecutorSupervisor do
       subscribe_to: [{execution_broadcaster, max_demand: 50}]
     )
   end
-
-  @spec child_spec(StartOpts.t()) :: Supervisor.child_spec()
-  def child_spec(%StartOpts{} = opts), do: super(opts)
 end

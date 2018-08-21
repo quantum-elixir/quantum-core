@@ -1,7 +1,6 @@
 defmodule Quantum.Executor do
-  @moduledoc """
-  Task to actually execute a Task
-  """
+  @moduledoc false
+  # Task to actually execute a Task
 
   use Task
 
@@ -17,16 +16,7 @@ defmodule Quantum.Executor do
 
   alias __MODULE__.StartOpts
 
-  @doc """
-  Start the Task
-
-  ### Arguments
-
-    * `task_supervisor` - The supervisor that runs the task
-    * `task_registry` - The registry that knows if a task is already running
-    * `message` - The Message to Execute (`%Event{job: %Job{}}`)
-
-  """
+  @doc false
   @spec start_link(StartOpts.t(), Event.t()) :: {:ok, pid}
   def start_link(opts, %Event{job: job}) do
     Task.start_link(fn ->
