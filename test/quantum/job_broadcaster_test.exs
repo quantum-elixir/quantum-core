@@ -3,7 +3,7 @@ defmodule Quantum.JobBroadcasterTest do
 
   use ExUnit.Case, async: true
 
-  alias Quantum.{Job, JobBroadcaster}
+  alias Quantum.{Job, JobBroadcaster, JobBroadcaster.StartOpts}
   alias Quantum.Storage.Test, as: TestStorage
   alias Quantum.TestConsumer
 
@@ -48,7 +48,14 @@ defmodule Quantum.JobBroadcasterTest do
         {{:ok, broadcaster}, _} =
           capture_log_with_return(fn ->
             start_supervised(
-              {JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler, true}}
+              {JobBroadcaster,
+               %StartOpts{
+                 name: __MODULE__,
+                 jobs: init_jobs,
+                 storage: TestStorage,
+                 scheduler: TestScheduler,
+                 debug_logging: true
+               }}
             )
           end)
 
@@ -59,12 +66,10 @@ defmodule Quantum.JobBroadcasterTest do
 
     {
       :ok,
-      %{
-        broadcaster: broadcaster,
-        active_job: active_job,
-        inactive_job: inactive_job,
-        init_jobs: init_jobs
-      }
+      broadcaster: broadcaster,
+      active_job: active_job,
+      inactive_job: inactive_job,
+      init_jobs: init_jobs
     }
   end
 
@@ -91,7 +96,16 @@ defmodule Quantum.JobBroadcasterTest do
         end
 
         {:ok, broadcaster} =
-          start_supervised({JobBroadcaster, {__MODULE__, [], FullStorage, TestScheduler, true}})
+          start_supervised(
+            {JobBroadcaster,
+             %StartOpts{
+               name: __MODULE__,
+               jobs: [],
+               storage: FullStorage,
+               scheduler: TestScheduler,
+               debug_logging: true
+             }}
+          )
 
         {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})
 
@@ -121,7 +135,14 @@ defmodule Quantum.JobBroadcasterTest do
 
                {:ok, broadcaster} =
                  start_supervised(
-                   {JobBroadcaster, {__MODULE__, init_jobs, TestStorage, TestScheduler, false}}
+                   {JobBroadcaster,
+                    %StartOpts{
+                      name: __MODULE__,
+                      jobs: init_jobs,
+                      storage: TestStorage,
+                      scheduler: TestScheduler,
+                      debug_logging: false
+                    }}
                  )
 
                {:ok, _consumer} = start_supervised({TestConsumer, [broadcaster, self()]})

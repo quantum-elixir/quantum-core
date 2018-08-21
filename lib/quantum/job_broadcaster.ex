@@ -7,8 +7,7 @@ defmodule Quantum.JobBroadcaster do
 
   require Logger
 
-  alias Quantum.{Job, Scheduler}
-  alias Quantum.Storage.Adapter
+  alias Quantum.Job
   alias __MODULE__.{InitOpts, StartOpts, State}
 
   @type event :: {:add, Job.t()} | {:remove, Job.t()}
@@ -24,34 +23,6 @@ defmodule Quantum.JobBroadcaster do
       name: name
     )
   end
-
-  @spec start_link(GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()) ::
-          GenServer.on_start()
-  def start_link(name, jobs, storage, scheduler, debug_logging) do
-    start_link(%StartOpts{
-      name: name,
-      jobs: jobs,
-      storage: storage,
-      scheduler: scheduler,
-      debug_logging: debug_logging
-    })
-  end
-
-  @doc false
-  @spec child_spec(StartOpts.t()) :: Supervisor.child_spec()
-  def child_spec(%StartOpts{} = opts), do: super(opts)
-
-  @spec child_spec({Keyword.t() | GenServer.server(), [Job.t()], Adapter, Scheduler, boolean()}) ::
-          Supervisor.child_spec()
-  def child_spec({name, jobs, storage, scheduler, debug_logging}),
-    do:
-      child_spec(%StartOpts{
-        name: name,
-        jobs: jobs,
-        storage: storage,
-        scheduler: scheduler,
-        debug_logging: debug_logging
-      })
 
   @doc false
   def init(%InitOpts{
