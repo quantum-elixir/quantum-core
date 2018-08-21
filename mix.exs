@@ -80,7 +80,7 @@ defmodule Quantum.Mixfile do
       {:gen_stage, "~> 0.14"},
       {:swarm, "~> 3.3"},
       {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
-      {:ex_doc, "~> 0.13", only: [:dev, :docs], runtime: false},
+      {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
