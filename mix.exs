@@ -61,7 +61,7 @@ defmodule Quantum.Mixfile do
       extras: [
         "README.md",
         "CHANGELOG.md",
-        "MIGRATE-V2.md",
+        "MIGRATE-V3.md",
         "pages/supervision-tree.md",
         "pages/configuration.md",
         "pages/runtime.md",
