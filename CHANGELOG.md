@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+- Fix & Test Swarm Handoff & Conflict Resolution
+
 Diff for [unreleased]
 
 ## 2.3.2 - 2018-08-21

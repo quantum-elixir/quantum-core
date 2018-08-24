@@ -7,12 +7,15 @@ defmodule Quantum.ExecutionBroadcasterTest do
   import ExUnit.CaptureLog
   import Quantum.CaptureLogExtend
 
-  alias Quantum.{ExecutionBroadcaster, ExecutionBroadcaster.State, Job}
+  alias Quantum.{ExecutionBroadcaster, ExecutionBroadcaster.State, HandoffHelper, Job}
   alias Quantum.Storage.Test, as: TestStorage
   alias Quantum.{TestConsumer, TestProducer}
 
   # Allow max 10% Latency
   @max_timeout 1_100
+
+  # Timeout until first event arrives
+  @init_timeout 15_000
 
   doctest ExecutionBroadcaster
 
@@ -85,7 +88,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         use Quantum.Storage.Test
 
         def last_execution_date(_),
-          do: NaiveDateTime.add(NaiveDateTime.utc_now(), -3_600, :second)
+          do: NaiveDateTime.add(NaiveDateTime.utc_now(), -50, :second)
       end
 
       capture_log(fn ->
@@ -109,12 +112,13 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
         diff_seconds = NaiveDateTime.diff(NaiveDateTime.utc_now(), date, :second)
 
-        assert diff_seconds >= 3_600 - 1
+        assert diff_seconds >= 50 - 1
 
-        assert_receive {:received, {:execute, ^job}}, @max_timeout
+        assert_receive {:received, {:execute, ^job}}, @init_timeout
+
         # Quickly executes until reached current time
-        for _ <- 0..diff_seconds do
-          assert_receive {:received, {:execute, ^job}}, 100
+        for i <- 0..(diff_seconds - 2) do
+          assert_receive {:received, {:execute, ^job}}, 500, "Fast execution #{i} not received"
         end
 
         # Maybe a little time elapsed in the test?
@@ -123,7 +127,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         end
 
         # Goes back to normal pace
-        refute_receive {:received, {:execute, ^job}}, 100
+        refute_receive {:received, {:execute, ^job}}, 900
       end)
     end
 
@@ -283,6 +287,135 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
         assert_receive {:received, {:execute, ^job}}, @max_timeout
       end)
+    end
+  end
+
+  describe "swarm/handoff" do
+    @tag manual_dispatch: true
+    test "works" do
+      Process.flag(:trap_exit, true)
+
+      {:ok, producer} = TestProducer.start_link()
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, Old), producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, old_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _old_consumer} = TestConsumer.start_link(old_broadcaster, self())
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      TestProducer.send(producer, {:add, job})
+
+      assert_receive {:received, {:execute, ^job}}, @max_timeout
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, New), producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, new_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _new_consumer} = TestConsumer.start_link(new_broadcaster, self())
+
+      HandoffHelper.initiate_handoff(old_broadcaster, new_broadcaster)
+
+      assert_receive {:EXIT, ^old_broadcaster, :shutdown}
+
+      assert_receive {:received, {:execute, ^job}}, @max_timeout
+    end
+
+    @tag manual_dispatch: true
+    test "works empty" do
+      Process.flag(:trap_exit, true)
+
+      {:ok, producer} = TestProducer.start_link()
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, Old), producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, old_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _old_consumer} = TestConsumer.start_link(old_broadcaster, self())
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, New), producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, new_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _new_consumer} = TestConsumer.start_link(new_broadcaster, self())
+
+      HandoffHelper.initiate_handoff(old_broadcaster, new_broadcaster)
+
+      assert_receive {:EXIT, ^old_broadcaster, :shutdown}
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      TestProducer.send(producer, {:add, job})
+
+      assert_receive {:received, {:execute, ^job}}, @init_timeout
+    end
+  end
+
+  describe "swarm/resolve_conflict" do
+    @tag manual_dispatch: true
+    test "works" do
+      Process.flag(:trap_exit, true)
+
+      {:ok, old_producer} = TestProducer.start_link()
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, Old), old_producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, old_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _old_consumer} = TestConsumer.start_link(old_broadcaster, self())
+
+      {:ok, new_producer} = TestProducer.start_link()
+
+      %{start: {ExecutionBroadcaster, f, a}} =
+        ExecutionBroadcaster.child_spec(
+          {Module.concat(__MODULE__, New), new_producer, TestStorage, TestScheduler, true}
+        )
+
+      {:ok, new_broadcaster} = apply(ExecutionBroadcaster, f, a)
+
+      {:ok, _new_consumer} = TestConsumer.start_link(new_broadcaster, self())
+
+      old_job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      TestProducer.send(old_producer, {:add, old_job})
+
+      new_job =
+        TestScheduler.new_job()
+        |> Job.set_schedule(~e[*]e)
+
+      TestProducer.send(new_producer, {:add, new_job})
+
+      assert_receive {:received, {:execute, ^old_job}}, @max_timeout
+      assert_receive {:received, {:execute, ^new_job}}, @max_timeout
+
+      HandoffHelper.resolve_conflict(old_broadcaster, new_broadcaster)
+
+      assert_receive {:EXIT, ^old_broadcaster, :shutdown}
+
+      assert_receive {:received, {:execute, ^old_job}}, @max_timeout
+      assert_receive {:received, {:execute, ^new_job}}, @max_timeout
     end
   end
 end

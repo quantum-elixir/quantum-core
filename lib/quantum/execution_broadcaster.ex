@@ -180,6 +180,10 @@ defmodule Quantum.ExecutionBroadcaster do
     {:stop, :shutdown, %{state | timer: nil}}
   end
 
+  def handle_info({:swarm, :die}, %State{timer: nil} = state) do
+    {:stop, :shutdown, state}
+  end
+
   defp handle_event({:add, %{name: job_name} = job}, %State{debug_logging: debug_logging} = state) do
     debug_logging &&
       Logger.debug(fn ->
@@ -219,6 +223,8 @@ defmodule Quantum.ExecutionBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
     end)
 
+    jobs = Enum.flat_map(jobs, fn {_time, jobs} -> jobs end)
+
     {:reply, {:resume, {jobs, last_execution_date}}, [], state}
   end
 
@@ -238,9 +244,10 @@ defmodule Quantum.ExecutionBroadcaster do
     intermediate_state = %{state | time: earlier_last_execution_date}
 
     new_state =
-      Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
-        add_job_to_state(job, acc_state)
-      end)
+      handoff_jobs
+      |> Enum.reduce(intermediate_state, &add_job_to_state/2)
+      |> sort_state
+      |> reset_timer
 
     {:noreply, [], new_state}
   end
@@ -261,9 +268,10 @@ defmodule Quantum.ExecutionBroadcaster do
     intermediate_state = %{state | time: earlier_last_execution_date}
 
     new_state =
-      Enum.reduce(handoff_jobs, intermediate_state, fn job, acc_state ->
-        add_job_to_state(job, acc_state)
-      end)
+      handoff_jobs
+      |> Enum.reduce(intermediate_state, &add_job_to_state/2)
+      |> sort_state
+      |> reset_timer
 
     {:noreply, [], new_state}
   end
