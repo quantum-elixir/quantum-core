@@ -214,7 +214,7 @@ defmodule Quantum.JobBroadcaster do
     end)
 
     new_jobs = Enum.into(handoff_jobs, jobs)
-    {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
+    {:noreply, [], %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
   end
 
   def handle_cast(
@@ -229,7 +229,7 @@ defmodule Quantum.JobBroadcaster do
     end)
 
     new_jobs = Enum.into(handoff_jobs, jobs)
-    {:noreply, %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
+    {:noreply, [], %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
   end
 
   def handle_call(:jobs, _, %State{jobs: jobs} = state),
@@ -243,7 +243,7 @@ defmodule Quantum.JobBroadcaster do
       "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
     end)
 
-    {:reply, {:resume, {jobs, buffer}}, state}
+    {:reply, {:resume, {jobs, buffer}}, [], state}
   end
 
   def handle_info({:swarm, :die}, state) do

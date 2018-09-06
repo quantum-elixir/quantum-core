@@ -1,4 +1,4 @@
 Application.ensure_all_started(:timex)
 Application.ensure_all_started(:quantum)
 
-ExUnit.start()
+ExUnit.start(capture_log: true)

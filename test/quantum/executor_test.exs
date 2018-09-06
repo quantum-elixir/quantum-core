@@ -163,7 +163,7 @@ defmodule Quantum.ExecutorTest do
       capture_log(fn ->
         Executor.start_link({task_supervisor, task_registry, debug_logging}, {:execute, job})
 
-        Process.sleep(50)
+        Process.sleep(150)
       end)
 
       assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())

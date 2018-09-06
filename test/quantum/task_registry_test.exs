@@ -3,7 +3,7 @@ defmodule Quantum.TaskRegistryTest do
 
   use ExUnit.Case, async: true
 
-  alias Quantum.TaskRegistry
+  alias Quantum.{HandoffHelper, TaskRegistry}
 
   doctest TaskRegistry,
     except: [mark_running: 3, mark_finished: 3, is_running?: 2, any_running?: 1]
@@ -72,6 +72,60 @@ defmodule Quantum.TaskRegistryTest do
       TaskRegistry.mark_running(registry, task, self())
 
       assert true == TaskRegistry.any_running?(registry)
+    end
+  end
+
+  describe "swarm/handoff" do
+    test "works" do
+      Process.flag(:trap_exit, true)
+
+      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, Old))
+
+      {:ok, old_task_registry} = apply(TaskRegistry, f, a)
+
+      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, New))
+
+      {:ok, new_task_registry} = apply(TaskRegistry, f, a)
+
+      task_1 = make_ref()
+      task_2 = make_ref()
+
+      TaskRegistry.mark_running(old_task_registry, task_1, self())
+      TaskRegistry.mark_running(new_task_registry, task_2, self())
+
+      HandoffHelper.initiate_handoff(old_task_registry, new_task_registry)
+
+      assert TaskRegistry.is_running?(new_task_registry, task_1)
+      assert TaskRegistry.is_running?(new_task_registry, task_2)
+
+      assert_receive {:EXIT, ^old_task_registry, :shutdown}
+    end
+  end
+
+  describe "swarm/resolve_conflict" do
+    test "works" do
+      Process.flag(:trap_exit, true)
+
+      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, Old))
+
+      {:ok, old_task_registry} = apply(TaskRegistry, f, a)
+
+      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, New))
+
+      {:ok, new_task_registry} = apply(TaskRegistry, f, a)
+
+      task_1 = make_ref()
+      task_2 = make_ref()
+
+      TaskRegistry.mark_running(old_task_registry, task_1, self())
+      TaskRegistry.mark_running(new_task_registry, task_2, self())
+
+      HandoffHelper.resolve_conflict(old_task_registry, new_task_registry)
+
+      assert TaskRegistry.is_running?(new_task_registry, task_1)
+      assert TaskRegistry.is_running?(new_task_registry, task_2)
+
+      assert_receive {:EXIT, ^old_task_registry, :shutdown}
     end
   end
 end
