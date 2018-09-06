@@ -4,10 +4,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+Diff for [unreleased]
+
+## 2.3.3 - 2018-09-06
+
 ### Fixed
 - Fix & Test Swarm Handoff & Conflict Resolution
+- Fix Compilation Error
+- Fix Executor Stat Options for GenStage ~> 0.12.0
 
-Diff for [unreleased]
+Diff for [2.3.3]
 
 ## 2.3.2 - 2018-08-21
 
@@ -523,8 +529,9 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...HEAD
-[2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...v2.3.2
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...HEAD
+[2.3.3]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...v2.3.3
+[2.3.2]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.7...v2.3.0
 [2.2.7]: https://github.com/quantum-elixir/quantum-core/compare/v2.2.6...v2.2.7
