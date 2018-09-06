@@ -51,7 +51,7 @@ defmodule Quantum.ExecutorSupervisor do
   if Util.gen_stage_v12?() do
     def init(
           %InitOpts{
-            execution_broadcaster: execution_broadcaster
+            execution_broadcaster_reference: execution_broadcaster
           } = opts
         ) do
       ConsumerSupervisor.init(
