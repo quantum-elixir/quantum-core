@@ -4,12 +4,13 @@ defmodule Quantum.TaskRegistryTest do
   use ExUnit.Case, async: true
 
   alias Quantum.{HandoffHelper, TaskRegistry}
+  alias Quantum.TaskRegistry.StartOpts
 
   doctest TaskRegistry,
     except: [mark_running: 3, mark_finished: 3, is_running?: 2, any_running?: 1]
 
   setup do
-    {:ok, registry} = start_supervised({TaskRegistry, __MODULE__})
+    {:ok, registry} = start_supervised({TaskRegistry, %StartOpts{name: __MODULE__}})
 
     {:ok, %{registry: registry}}
   end
@@ -79,11 +80,13 @@ defmodule Quantum.TaskRegistryTest do
     test "works" do
       Process.flag(:trap_exit, true)
 
-      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, Old))
+      %{start: {TaskRegistry, f, a}} =
+        TaskRegistry.child_spec(%StartOpts{name: Module.concat(__MODULE__, Old)})
 
       {:ok, old_task_registry} = apply(TaskRegistry, f, a)
 
-      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, New))
+      %{start: {TaskRegistry, f, a}} =
+        TaskRegistry.child_spec(%StartOpts{name: Module.concat(__MODULE__, New)})
 
       {:ok, new_task_registry} = apply(TaskRegistry, f, a)
 
@@ -106,11 +109,13 @@ defmodule Quantum.TaskRegistryTest do
     test "works" do
       Process.flag(:trap_exit, true)
 
-      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, Old))
+      %{start: {TaskRegistry, f, a}} =
+        TaskRegistry.child_spec(%StartOpts{name: Module.concat(__MODULE__, Old)})
 
       {:ok, old_task_registry} = apply(TaskRegistry, f, a)
 
-      %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(Module.concat(__MODULE__, New))
+      %{start: {TaskRegistry, f, a}} =
+        TaskRegistry.child_spec(%StartOpts{name: Module.concat(__MODULE__, New)})
 
       {:ok, new_task_registry} = apply(TaskRegistry, f, a)
 
