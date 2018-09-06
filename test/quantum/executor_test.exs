@@ -8,6 +8,7 @@ defmodule Quantum.ExecutorTest do
   alias Quantum.{ExecutionBroadcaster.Event, Executor, Executor.StartOpts, Job}
   alias Quantum.RunStrategy.All
   alias Quantum.TaskRegistry
+  alias Quantum.TaskRegistry.StartOpts, as: TaskRegistryStartOpts
 
   doctest Executor
 
@@ -22,7 +23,9 @@ defmodule Quantum.ExecutorTest do
       start_supervised({Task.Supervisor, [name: Module.concat(__MODULE__, TaskSupervisor)]})
 
     {:ok, task_registry} =
-      start_supervised({TaskRegistry, Module.concat(__MODULE__, TaskRegistry)})
+      start_supervised(
+        {TaskRegistry, %TaskRegistryStartOpts{name: Module.concat(__MODULE__, TaskRegistry)}}
+      )
 
     {
       :ok,
