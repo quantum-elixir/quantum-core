@@ -57,7 +57,7 @@ defmodule Quantum.Supervisor do
       struct!(
         ClusterTaskSupervisorRegistryStartOpts,
         opts
-        |> Map.take([:task_supervisor_reference])
+        |> Map.take([:task_supervisor_reference, :global])
         |> Map.put(:name, cluster_task_supervisor_registry_name)
       )
 
