@@ -42,6 +42,13 @@ if Code.ensure_compiled?(Timex) do
       date
       |> Timex.to_datetime(tz)
       |> Timezone.convert("Etc/UTC")
+      |> case do
+        {:error, :invalid_date} ->
+          raise InvalidDateTimeForTimezoneError
+
+        %DateTime{} = date ->
+          date
+      end
       |> DateTime.to_naive()
       |> check_same(date, tz)
     end
