@@ -14,7 +14,7 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
       struct!(
         InitOpts,
         opts
-        |> Map.take([:task_supervisor_reference, :group_name])
+        |> Map.take([:task_supervisor_reference, :group_name, :global])
         |> Map.put_new(:group_name, Module.concat(name, Group))
       ),
       name: name
@@ -23,7 +23,11 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
 
   @doc false
   @impl true
-  def init(%InitOpts{task_supervisor_reference: task_supervisor, group_name: group_name}) do
+  def init(%InitOpts{
+        task_supervisor_reference: task_supervisor,
+        group_name: group_name,
+        global: true
+      }) do
     task_supervisor_pid = GenServer.whereis(task_supervisor)
 
     monitor_ref = Process.monitor(task_supervisor_pid)
@@ -41,14 +45,41 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
      %State{
        group_name: group_name,
        task_supervisor_pid: task_supervisor_pid,
-       monitor_ref: monitor_ref
+       monitor_ref: monitor_ref,
+       global: true
+     }}
+  end
+
+  def init(%InitOpts{
+        task_supervisor_reference: task_supervisor,
+        group_name: group_name,
+        global: false
+      }) do
+    task_supervisor_pid = GenServer.whereis(task_supervisor)
+
+    monitor_ref = Process.monitor(task_supervisor_pid)
+
+    {:ok,
+     %State{
+       group_name: group_name,
+       task_supervisor_pid: task_supervisor_pid,
+       monitor_ref: monitor_ref,
+       global: false
      }}
   end
 
   @doc false
   @impl true
-  def handle_call(:pids, _from, %State{group_name: group_name} = state) do
+  def handle_call(:pids, _from, %State{group_name: group_name, global: true} = state) do
     {:reply, Swarm.members(group_name), state}
+  end
+
+  def handle_call(
+        :pids,
+        _from,
+        %State{task_supervisor_pid: task_supervisor_pid, global: false} = state
+      ) do
+    {:reply, [task_supervisor_pid], state}
   end
 
   @doc false
@@ -58,10 +89,22 @@ defmodule Quantum.ClusterTaskSupervisorRegistry do
         %State{
           group_name: group_name,
           task_supervisor_pid: task_supervisor_pid,
-          monitor_ref: monitor_ref
+          monitor_ref: monitor_ref,
+          global: true
         } = state
       ) do
     Swarm.leave(group_name, task_supervisor_pid)
+    {:stop, :terminate, state}
+  end
+
+  def handle_info(
+        {:DOWN, monitor_ref, :process, task_supervisor_pid, _reason},
+        %State{
+          task_supervisor_pid: task_supervisor_pid,
+          monitor_ref: monitor_ref,
+          global: false
+        } = state
+      ) do
     {:stop, :terminate, state}
   end
 

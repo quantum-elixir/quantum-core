@@ -6,9 +6,10 @@ defmodule Quantum.ClusterTaskSupervisorRegistry.StartOpts do
   @type t :: %__MODULE__{
           name: GenServer.server(),
           task_supervisor_reference: GenServer.server(),
-          group_name: atom() | nil
+          group_name: atom() | nil,
+          global: boolean()
         }
 
-  @enforce_keys [:name, :task_supervisor_reference]
+  @enforce_keys [:name, :task_supervisor_reference, :global]
   defstruct @enforce_keys ++ [:group_name]
 end

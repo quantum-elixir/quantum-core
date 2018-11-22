@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+- Faster Startup duration for non-global
+
 Diff for [unreleased]
 
 ## 2.3.3 - 2018-09-06
