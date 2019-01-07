@@ -4,10 +4,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-### Fixed
-- Faster Startup duration for non-global
-
 Diff for [unreleased]
+
+## 2.3.4 - 2019-01-06
+
+### Fixed
+- Faster Startup duration for non-global (Fixes #376)
+
+Diff for [2.3.4]
 
 ## 2.3.3 - 2018-09-06
 
@@ -532,7 +536,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.4...HEAD
+[2.3.4]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...v2.3.3
 [2.3.2]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.0...v2.3.1
