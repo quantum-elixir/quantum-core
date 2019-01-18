@@ -154,7 +154,7 @@ defmodule Quantum.TaskRegistry do
         %State{running_tasks: running_tasks} = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating state from other cluster node"
     end)
 
     {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}
@@ -165,7 +165,7 @@ defmodule Quantum.TaskRegistry do
         %State{running_tasks: running_tasks} = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating conflict state from other cluster node"
     end)
 
     {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}

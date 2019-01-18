@@ -210,7 +210,7 @@ defmodule Quantum.JobBroadcaster do
         } = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating state from other cluster node"
     end)
 
     new_jobs = Enum.into(handoff_jobs, jobs)
@@ -225,7 +225,7 @@ defmodule Quantum.JobBroadcaster do
         } = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating conflict state from other cluster node"
     end)
 
     new_jobs = Enum.into(handoff_jobs, jobs)

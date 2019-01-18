@@ -233,7 +233,7 @@ defmodule Quantum.ExecutionBroadcaster do
         %State{time: last_execution_date} = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating state from other cluster node"
     end)
 
     earlier_last_execution_date =
@@ -257,7 +257,7 @@ defmodule Quantum.ExecutionBroadcaster do
         %State{time: last_execution_date} = state
       ) do
     Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorperating conflict state from other cluster node"
+      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating conflict state from other cluster node"
     end)
 
     earlier_last_execution_date =
