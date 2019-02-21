@@ -75,7 +75,7 @@ defmodule Quantum.Job do
   end
 
   @doc """
-  Sets a jobs name.
+  Sets a job's name.
 
   ### Parameters
 
@@ -94,7 +94,7 @@ defmodule Quantum.Job do
   def set_name(%__MODULE__{} = job, name) when is_atom(name), do: Map.put(job, :name, name)
 
   @doc """
-  Sets a jobs schedule.
+  Sets a job's schedule.
 
   ### Parameters
 
@@ -114,19 +114,19 @@ defmodule Quantum.Job do
     do: %{job | schedule: schedule}
 
   @doc """
-  Sets a jobs schedule.
+  Sets a job's task.
 
   ### Parameters
 
     1. `job` - The job struct to modify
-    2. `schedule` - The schedule to set. May only be of type `%Crontab.CronExpression{}`
+    2. `task` - The function to be performed, ex: `{Heartbeat, :send, []}` or `fn -> :something end`
 
   ### Examples
 
       iex> Acme.Scheduler.new_job()
-      ...> |> Quantum.Job.set_schedule(Crontab.CronExpression.Parser.parse!("*/7"))
-      ...> |> Map.get(:schedule)
-      Crontab.CronExpression.Parser.parse!("*/7")
+      ...> |> Quantum.Job.set_task({Backup, :backup, []})
+      ...> |> Map.get(:task)
+      {Backup, :backup, []}
 
   """
   @spec set_task(t, task) :: t
@@ -137,7 +137,7 @@ defmodule Quantum.Job do
   def set_task(%__MODULE__{} = job, task) when is_function(task, 0), do: Map.put(job, :task, task)
 
   @doc """
-  Sets a jobs state.
+  Sets a job's state.
 
   ### Parameters
 
@@ -157,7 +157,7 @@ defmodule Quantum.Job do
   def set_state(%__MODULE__{} = job, :inactive), do: Map.put(job, :state, :inactive)
 
   @doc """
-  Sets a jobs run strategy.
+  Sets a job's run strategy.
 
   ### Parameters
 
@@ -177,7 +177,7 @@ defmodule Quantum.Job do
     do: Map.put(job, :run_strategy, run_strategy)
 
   @doc """
-  Sets a jobs overlap.
+  Sets a job's overlap.
 
   ### Parameters
 
@@ -197,7 +197,7 @@ defmodule Quantum.Job do
     do: Map.put(job, :overlap, overlap?)
 
   @doc """
-  Sets a jobs timezone.
+  Sets a job's timezone.
 
   ### Parameters
 
