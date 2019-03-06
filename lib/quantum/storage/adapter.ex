@@ -9,7 +9,7 @@ defmodule Quantum.Storage.Adapter do
   alias Quantum.Job
 
   @typedoc """
-  The calling scheduler Module
+  The calling scheduler Module.
   """
   @type scheduler_module :: atom
 
@@ -19,10 +19,10 @@ defmodule Quantum.Storage.Adapter do
   @type ok :: :ok
 
   @doc """
-  Load saved jobs from storage
+  Load saved jobs from storage.
 
   Returns `:not_applicable` if the storage has never received an `add_job` call or after it has been purged.
-  In this case the jobs from the configuration weill be loaded.
+  In this case the jobs from the configuration will be loaded.
   """
   @callback jobs(scheduler_module) :: :not_applicable | [Job.t()]
 
@@ -42,7 +42,7 @@ defmodule Quantum.Storage.Adapter do
   @callback update_job_state(scheduler_module, job :: Job.name(), state :: Job.state()) :: ok
 
   @doc """
-  Load last execution time from storage
+  Load last execution time from storage.
 
   Returns `:unknown` if the storage does not know the last execution time.
   In this case all jobs will be run at the next applicable date.
