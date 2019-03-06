@@ -14,7 +14,7 @@ defmodule Quantum.Scheduler do
 
       config :my_app, MyApp.Scheduler,
         jobs: [
-          {"@daily", {Backup, :backup, []},
+          {"@daily", {Backup, :backup, []}},
         ]
 
   ## Configuration:
