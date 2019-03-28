@@ -1,7 +1,11 @@
 defmodule Quantum.DateLibraryTest do
   use ExUnit.Case, async: true
 
-  @implementations [Quantum.DateLibrary.Timex, Quantum.DateLibrary.Calendar]
+  @implementations [
+    Quantum.DateLibrary.Timex,
+    Quantum.DateLibrary.Calendar,
+    Quantum.DateLibrary.Core
+  ]
 
   for module <- @implementations do
     @module module
