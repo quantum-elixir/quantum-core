@@ -73,8 +73,6 @@ Possible options:
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
 
 It is possible to control the behavior of jobs at runtime.
-For runtime configuration, job names are not restricted to be atoms.
-Atoms are allowed as job names.
 
 ## Override default settings
 
