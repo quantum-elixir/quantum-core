@@ -45,7 +45,7 @@ defmodule YourApp.Application do
 
     children = [
       # This is the new line
-      %{ id: YourApp.Scheduler, start: {YourApp.Scheduler, :start_link, []} }
+      YourApp.Scheduler
     ]
 
     opts = [strategy: :one_for_one, name: YourApp.Supervisor]
