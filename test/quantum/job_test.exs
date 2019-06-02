@@ -20,4 +20,11 @@ defmodule Quantum.JobTest do
 
     assert %Job{schedule: ^schedule, overlap: false} = Job.new(configs)
   end
+
+  test "is is possible to initialize a job as inactive" do
+    configs = Scheduler.config(schedule: "*/7", overlap: false, state: :inactive)
+    schedule = ~e[*/7]
+
+    assert %Job{schedule: ^schedule, overlap: false, state: :inactive} = Job.new(configs)
+  end
 end
