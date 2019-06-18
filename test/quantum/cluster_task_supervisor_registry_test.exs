@@ -6,6 +6,11 @@ defmodule Quantum.ClusterTaskSupervisorRegistryTest do
   alias Quantum.ClusterTaskSupervisorRegistry
   alias Quantum.ClusterTaskSupervisorRegistry.StartOpts
 
+  setup_all do
+    Application.ensure_all_started(:swarm)
+    :ok
+  end
+
   describe "global" do
     test "should register name", %{test: test} do
       {:ok, task_supervisor_pid} = start_supervised({Task.Supervisor, name: test})

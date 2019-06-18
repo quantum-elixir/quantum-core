@@ -85,6 +85,8 @@ defmodule Quantum.Supervisor do
 
     workers =
       if global do
+        Application.ensure_all_started(:swarm)
+
         %{start: {TaskRegistry, f, a}} = TaskRegistry.child_spec(task_registry_opts)
         Swarm.register_name(task_registry_name, TaskRegistry, f, a, 15_000)
 
@@ -104,7 +106,6 @@ defmodule Quantum.Supervisor do
       else
         [
           {Task.Supervisor, [name: task_supervisor_name]},
-          {ClusterTaskSupervisorRegistry, cluster_task_supervisor_registry_opts},
           {TaskRegistry, task_registry_opts},
           {JobBroadcaster, job_broadcaster_opts},
           {ExecutionBroadcaster, execution_broadcaster_opts},

@@ -78,7 +78,7 @@ defmodule Quantum.Mixfile do
       {:calendar, "~> 0.17", optional: true},
       {:crontab, "~> 1.1"},
       {:gen_stage, "~> 0.12"},
-      {:swarm, "~> 3.3"},
+      {:swarm, "~> 3.3", runtime: false},
       {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:ex_doc, "~> 0.13", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},

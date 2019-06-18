@@ -54,7 +54,11 @@ defmodule Quantum do
         do: {:via, :swarm, task_registry_name},
         else: task_registry_name
 
-    cluster_task_supervisor_registry_name = Module.concat(quantum, ClusterTaskSupervisorRegistry)
+    cluster_task_supervisor_registry_name =
+      if global,
+        do: Module.concat(quantum, ClusterTaskSupervisorRegistry),
+        else: nil
+
     cluster_task_supervisor_registry_reference = cluster_task_supervisor_registry_name
 
     task_supervisor_name = Module.concat(quantum, Task.Supervisor)
