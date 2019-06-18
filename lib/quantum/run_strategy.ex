@@ -22,13 +22,5 @@ defmodule Quantum.RunStrategy do
     """
     @spec nodes(any, Quantum.Job.t()) :: [Node.t()]
     def nodes(strategy, job)
-
-    @doc """
-    Get nodes to run on
-    """
-    @spec nodes(strategy :: any, joby :: Quantum.Job.t(), available_nodes :: [Node.t()]) :: [
-            Node.t()
-          ]
-    def nodes(strategy, job, available_nodes)
   end
 end

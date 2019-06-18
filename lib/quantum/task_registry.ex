@@ -110,15 +110,6 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
-  def handle_call({:swarm, :begin_handoff}, _from, state) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
-    end)
-
-    {:reply, {:resume, state}, state}
-  end
-
-  @doc false
   def handle_cast({:finished, task, node}, %State{running_tasks: running_tasks} = state) do
     running_tasks =
       running_tasks
@@ -132,44 +123,5 @@ defmodule Quantum.TaskRegistry do
       end
 
     {:noreply, %{state | running_tasks: running_tasks}}
-  end
-
-  @doc false
-  def handle_cast(
-        {:swarm, :end_handoff, %State{running_tasks: handoff_tasks}},
-        %State{running_tasks: running_tasks} = state
-      ) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating state from other cluster node"
-    end)
-
-    {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}
-  end
-
-  @doc false
-  def handle_cast(
-        {:swarm, :resolve_conflict, %State{running_tasks: handoff_tasks}},
-        %State{running_tasks: running_tasks} = state
-      ) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating conflict state from other cluster node"
-    end)
-
-    {:noreply, %{state | running_tasks: merge_states(running_tasks, handoff_tasks)}}
-  end
-
-  @doc false
-  def handle_info({:swarm, :die}, state) do
-    {:stop, :shutdown, state}
-  end
-
-  defp merge_states(state1, state2) do
-    state1
-    |> Enum.into([])
-    |> Kernel.++(Enum.into(state2, []))
-    |> Enum.group_by(fn {job, _nodes_list} -> job end, fn {_job, nodes_list} -> nodes_list end)
-    |> Enum.into(%{}, fn {job, nodes_list_list} ->
-      {job, List.flatten(nodes_list_list)}
-    end)
   end
 end

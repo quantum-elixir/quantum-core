@@ -7,7 +7,6 @@ defmodule Quantum.Executor do
   require Logger
 
   alias Quantum.{
-    ClusterTaskSupervisorRegistry,
     ExecutionBroadcaster.Event,
     Job,
     RunStrategy.NodeList,
@@ -30,8 +29,7 @@ defmodule Quantum.Executor do
          %StartOpts{
            task_supervisor_reference: task_supervisor,
            task_registry_reference: _task_registry,
-           debug_logging: debug_logging,
-           cluster_task_supervisor_registry_reference: cluster_task_supervisor_registry
+           debug_logging: debug_logging
          },
          %Job{overlap: true, run_strategy: run_strategy} = job
        ) do
@@ -39,7 +37,7 @@ defmodule Quantum.Executor do
     # Check if Node is up and running
     # Run Task
     job
-    |> nodes(run_strategy, task_supervisor, cluster_task_supervisor_registry)
+    |> nodes(run_strategy, task_supervisor)
     |> Enum.each(&run(&1, job, task_supervisor, debug_logging))
 
     :ok
@@ -50,8 +48,7 @@ defmodule Quantum.Executor do
          %StartOpts{
            task_supervisor_reference: task_supervisor,
            task_registry_reference: task_registry,
-           debug_logging: debug_logging,
-           cluster_task_supervisor_registry_reference: cluster_task_supervisor_registry
+           debug_logging: debug_logging
          },
          %Job{overlap: false, run_strategy: run_strategy, name: job_name} = job
        ) do
@@ -66,7 +63,7 @@ defmodule Quantum.Executor do
     # Run Task
     # Mark Task as finished
     job
-    |> nodes(run_strategy, task_supervisor, cluster_task_supervisor_registry)
+    |> nodes(run_strategy, task_supervisor)
     |> Enum.filter(&(TaskRegistry.mark_running(task_registry, job_name, &1) == :marked_running))
     |> Enum.map(&run(&1, job, task_supervisor, debug_logging))
     |> Enum.each(fn {node, %Task{ref: ref}} ->
@@ -82,18 +79,10 @@ defmodule Quantum.Executor do
     :ok
   end
 
-  defp nodes(job, run_strategy, task_supervisor, nil) do
+  defp nodes(job, run_strategy, task_supervisor) do
     run_strategy
     |> NodeList.nodes(job)
     |> Enum.filter(&check_node(&1, task_supervisor, job))
-  end
-
-  defp nodes(job, run_strategy, task_supervisor, cluster_task_supervisor_registry) do
-    available_nodes = ClusterTaskSupervisorRegistry.nodes(cluster_task_supervisor_registry)
-    NodeList.nodes(run_strategy, job, available_nodes)
-  rescue
-    UndefinedFunctionError ->
-      nodes(job, run_strategy, task_supervisor, nil)
   end
 
   # Ececute the given function on a given node via the task supervisor

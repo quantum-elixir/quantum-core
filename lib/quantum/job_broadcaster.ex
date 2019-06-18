@@ -178,56 +178,10 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @doc false
-  def handle_cast(
-        {:swarm, :end_handoff, {handoff_jobs, handoff_buffer}},
-        %State{
-          jobs: jobs,
-          buffer: buffer
-        } = state
-      ) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating state from other cluster node"
-    end)
-
-    new_jobs = Enum.into(handoff_jobs, jobs)
-    {:noreply, [], %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
-  end
-
-  @doc false
-  def handle_cast(
-        {:swarm, :resolve_conflict, {handoff_jobs, handoff_buffer}},
-        %State{
-          jobs: jobs,
-          buffer: buffer
-        } = state
-      ) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Incorporating conflict state from other cluster node"
-    end)
-
-    new_jobs = Enum.into(handoff_jobs, jobs)
-    {:noreply, [], %{state | jobs: new_jobs, buffer: buffer ++ handoff_buffer}}
-  end
-
-  @doc false
   def handle_call(:jobs, _, %State{jobs: jobs} = state),
     do: {:reply, Map.to_list(jobs), [], state}
 
   @doc false
   def handle_call({:find_job, name}, _, %State{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
-
-  @doc false
-  def handle_call({:swarm, :begin_handoff}, _from, %State{jobs: jobs, buffer: buffer} = state) do
-    Logger.info(fn ->
-      "[#{inspect(Node.self())}][#{__MODULE__}] Handing of state to other cluster node"
-    end)
-
-    {:reply, {:resume, {jobs, buffer}}, [], state}
-  end
-
-  @doc false
-  def handle_info({:swarm, :die}, state) do
-    {:stop, :shutdown, state}
-  end
 end

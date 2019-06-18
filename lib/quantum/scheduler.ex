@@ -64,11 +64,10 @@ defmodule Quantum.Scheduler do
       end
 
       defp __job_broadcaster__ do
-        configuration = config()
-
-        job_broadcaster = Keyword.fetch!(configuration, :job_broadcaster_reference)
-
-        __job_broadcaster__(job_broadcaster, configuration)
+        __job_broadcaster__(
+          config() |> Keyword.fetch!(:quantum) |> Module.concat(JobBroadcaster),
+          config()
+        )
       end
 
       defp __job_broadcaster__(job_broadcaster, configuration) do

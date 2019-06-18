@@ -28,14 +28,5 @@ defmodule Quantum.RunStrategy.Local do
     def nodes(_, _) do
       [node()]
     end
-
-    @spec nodes(
-            run_strategy :: Quantum.RunStrategy.Local.t(),
-            job :: Job.t(),
-            available_nodes :: [Node.t()]
-          ) :: [Node.t()]
-    def nodes(_, _, _) do
-      [node()]
-    end
   end
 end
