@@ -12,7 +12,7 @@ defmodule Quantum.Mixfile do
       deps: deps(),
       description: "Cron-like job scheduler for Elixir.",
       docs: docs(),
-      elixir: ">= 1.7.0",
+      elixir: "~> 1.8",
       name: "Quantum",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
@@ -74,9 +74,7 @@ defmodule Quantum.Mixfile do
 
   defp deps do
     [
-      {:tzdata, "~> 1.0.0-rc.1", override: true},
-      {:timex, "~> 3.1", optional: true},
-      {:calendar, "~> 0.17", optional: true},
+      {:tzdata, "~> 1.0", override: true},
       {:crontab, "~> 1.1"},
       {:gen_stage, "~> 0.14"},
       {:swarm, "~> 3.3"},
