@@ -267,7 +267,7 @@ defmodule Quantum.ExecutionBroadcaster do
 
   defp add_to_state(%State{execution_timeline: execution_timeline} = state, time, date, job) do
     unless NaiveDateTime.compare(time, date) in [:lt, :eq] do
-      raise JobInPastError
+      raise Quantum.ExecutionBroadcaster.JobInPastError
     end
 
     %{state | execution_timeline: add_job_at_date(execution_timeline, date, job)}

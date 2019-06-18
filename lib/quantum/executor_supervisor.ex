@@ -16,7 +16,7 @@ defmodule Quantum.ExecutorSupervisor do
       struct!(
         InitOpts,
         Map.take(opts, [
-          :execution_broadcaster_reference,
+          :node_selector_broadcaster_reference,
           :task_supervisor_reference,
           :task_registry_reference,
           :debug_logging
@@ -29,7 +29,7 @@ defmodule Quantum.ExecutorSupervisor do
   @doc false
   def init(
         %InitOpts{
-          execution_broadcaster_reference: execution_broadcaster
+          node_selector_broadcaster_reference: node_selector_broadcaster
         } = opts
       ) do
     executor_opts =
@@ -45,7 +45,7 @@ defmodule Quantum.ExecutorSupervisor do
     ConsumerSupervisor.init(
       [{Quantum.Executor, executor_opts}],
       strategy: :one_for_one,
-      subscribe_to: [{execution_broadcaster, max_demand: 50}]
+      subscribe_to: [{node_selector_broadcaster, max_demand: 50}]
     )
   end
 end
