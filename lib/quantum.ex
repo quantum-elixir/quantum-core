@@ -13,6 +13,7 @@ defmodule Quantum do
     timeout: 5_000,
     schedule: nil,
     overlap: true,
+    state: :active,
     timezone: :utc,
     run_strategy: {Random, :cluster},
     debug_logging: true

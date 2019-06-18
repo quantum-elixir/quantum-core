@@ -63,13 +63,15 @@ defmodule Quantum.Job do
          overlap when is_boolean(overlap) <- Keyword.fetch!(config, :overlap),
          timezone when timezone == :utc or is_binary(timezone) <-
            Keyword.fetch!(config, :timezone),
+         state when is_atom(state) <- Keyword.fetch!(config, :state),
          schedule <- Keyword.get(config, :schedule) do
       %__MODULE__{
         name: name,
         overlap: Keyword.fetch!(config, :overlap),
         timezone: Keyword.fetch!(config, :timezone),
         run_strategy: run_strategy,
-        schedule: schedule
+        schedule: schedule,
+        state: state
       }
     end
   end
