@@ -20,8 +20,7 @@ defmodule Quantum.Mixfile do
       test_coverage: [tool: ExCoveralls],
       version: @version,
       dialyzer: [
-        ignore_warnings: "dialyzer.ignore-warnings",
-        plt_add_apps: [:timex, :calendar]
+        ignore_warnings: "dialyzer.ignore-warnings"
       ]
     ]
   end
@@ -82,7 +81,7 @@ defmodule Quantum.Mixfile do
       {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :docs], runtime: false},
-      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0-rc", only: [:dev, :test], runtime: false},
       {:credo, "~> 0.7", only: [:dev, :test], runtime: false}
     ]
   end
