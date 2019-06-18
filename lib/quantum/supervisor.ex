@@ -63,13 +63,19 @@ defmodule Quantum.Supervisor do
         })
       )
 
+    node_selector_broadcaster_opts = %Quantum.NodeSelectorBroadcaster.StartOpts{
+      execution_broadcaster_reference: Module.concat(quantum, ExecutionBroadcaster),
+      task_supervisor_reference: Module.concat(quantum, TaskSupervisor),
+      name: Module.concat(quantum, NodeSelectorBroadcaster)
+    }
+
     executor_supervisor_opts =
       struct!(
         Quantum.ExecutorSupervisor.StartOpts,
         opts
         |> Map.take([:debug_logging])
         |> Map.merge(%{
-          execution_broadcaster_reference: Module.concat(quantum, ExecutionBroadcaster),
+          node_selector_broadcaster_reference: Module.concat(quantum, NodeSelectorBroadcaster),
           task_supervisor_reference: Module.concat(quantum, TaskSupervisor),
           task_registry_reference: Module.concat(quantum, TaskRegistry),
           name: Module.concat(quantum, ExecutorSupervisor)
@@ -78,11 +84,12 @@ defmodule Quantum.Supervisor do
 
     Supervisor.init(
       [
-        {Task.Supervisor, [name: Module.concat(quantum, Task.Supervisor)]},
+        {Task.Supervisor, [name: Module.concat(quantum, TaskSupervisor)]},
         {Quantum.ClockBroadcaster, clock_broadcaster_opts},
         {Quantum.TaskRegistry, task_registry_opts},
         {Quantum.JobBroadcaster, job_broadcaster_opts},
         {Quantum.ExecutionBroadcaster, execution_broadcaster_opts},
+        {Quantum.NodeSelectorBroadcaster, node_selector_broadcaster_opts},
         {Quantum.ExecutorSupervisor, executor_supervisor_opts}
       ],
       strategy: :rest_for_one

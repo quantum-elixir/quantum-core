@@ -5,8 +5,7 @@ defmodule Quantum.ExecutorTest do
 
   import ExUnit.CaptureLog
 
-  alias Quantum.{ExecutionBroadcaster.Event, Executor, Executor.StartOpts, Job}
-  alias Quantum.RunStrategy.All
+  alias Quantum.{Executor, Executor.StartOpts, Job, NodeSelectorBroadcaster.Event}
   alias Quantum.TaskRegistry
   alias Quantum.TaskRegistry.StartOpts, as: TaskRegistryStartOpts
 
@@ -56,7 +55,7 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         assert_receive :executed
@@ -81,39 +80,11 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         assert_receive :executed
       end)
-    end
-
-    test "doesn't crash on invalid node", %{
-      task_supervisor: task_supervisor,
-      task_registry: task_registry,
-      debug_logging: debug_logging
-    } do
-      caller = self()
-      node = :"invalid-name@invalid-host"
-
-      job =
-        TestScheduler.new_job()
-        |> Job.set_task(fn -> send(caller, :executed) end)
-        |> Job.set_run_strategy(%All{nodes: [node]})
-
-      assert capture_log(fn ->
-               Executor.start_link(
-                 %StartOpts{
-                   task_supervisor_reference: task_supervisor,
-                   task_registry_reference: task_registry,
-                   debug_logging: debug_logging
-                 },
-                 %Event{job: job}
-               )
-
-               refute_receive :executed
-             end) =~
-               "Node #{inspect(node)} is not running. Job #{inspect(job.name)} could not be executed."
     end
 
     test "executes given task without overlap", %{
@@ -138,7 +109,7 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         Executor.start_link(
@@ -147,7 +118,7 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         assert_receive :executed
@@ -177,7 +148,7 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         # Wait until running
@@ -210,7 +181,7 @@ defmodule Quantum.ExecutorTest do
             task_registry_reference: task_registry,
             debug_logging: debug_logging
           },
-          %Event{job: job}
+          %Event{job: job, node: Node.self()}
         )
 
         Process.sleep(150)

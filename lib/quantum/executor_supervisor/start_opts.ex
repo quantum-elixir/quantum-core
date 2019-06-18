@@ -5,7 +5,7 @@ defmodule Quantum.ExecutorSupervisor.StartOpts do
 
   @type t :: %__MODULE__{
           name: GenServer.server(),
-          execution_broadcaster_reference: GenServer.server(),
+          node_selector_broadcaster_reference: GenServer.server(),
           task_supervisor_reference: GenServer.server(),
           task_registry_reference: GenServer.server(),
           debug_logging: boolean()
@@ -13,7 +13,7 @@ defmodule Quantum.ExecutorSupervisor.StartOpts do
 
   @enforce_keys [
     :name,
-    :execution_broadcaster_reference,
+    :node_selector_broadcaster_reference,
     :task_supervisor_reference,
     :task_registry_reference,
     :debug_logging
