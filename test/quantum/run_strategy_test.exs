@@ -23,19 +23,9 @@ defmodule Quantum.RunStrategyTest do
     assert Enum.member?(node_list, node)
   end
 
-  test "run strategy random cluster" do
-    job = Job.new(Scheduler.config(run_strategy: {Quantum.RunStrategy.Random, :cluster}))
-    assert [:test] = NodeList.nodes(job.run_strategy, job, [:test])
-  end
-
   test "run strategy all" do
     node_list = [:node1, :node2]
     job = Job.new(Scheduler.config(run_strategy: {Quantum.RunStrategy.All, node_list}))
     assert [:node1, :node2] == NodeList.nodes(job.run_strategy, job)
-  end
-
-  test "run strategy all cluster" do
-    job = Job.new(Scheduler.config(run_strategy: {Quantum.RunStrategy.All, :cluster}))
-    assert [:test] = NodeList.nodes(job.run_strategy, job, [:test])
   end
 end

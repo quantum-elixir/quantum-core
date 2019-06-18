@@ -145,36 +145,6 @@ defmodule Quantum.ExecutionBroadcaster do
     |> execute_events_to_fire(time)
   end
 
-  def handle_call(
-        {:swarm, :begin_handoff},
-        _from,
-        %State{uninitialized_jobs: uninitialized_jobs, execution_timeline: execution_timeline} =
-          state
-      ) do
-    handoff_jobs =
-      uninitialized_jobs ++ Enum.flat_map(execution_timeline, fn {_date, jobs} -> jobs end)
-
-    {:reply, {:resume, handoff_jobs}, [], state}
-  end
-
-  def handle_cast(
-        {:swarm, :end_handoff, handoff_jobs},
-        %State{uninitialized_jobs: uninitialized_jobs} = state
-      ) do
-    {:noreply, [], %{state | uninitialized_jobs: uninitialized_jobs ++ handoff_jobs}}
-  end
-
-  def handle_cast(
-        {:swarm, :resolve_conflict, handoff_jobs},
-        %State{uninitialized_jobs: uninitialized_jobs} = state
-      ) do
-    {:noreply, [], %{state | uninitialized_jobs: uninitialized_jobs ++ handoff_jobs}}
-  end
-
-  def handle_info({:swarm, :die}, state) do
-    {:stop, :shutdown, state}
-  end
-
   defp initialize_jobs(%State{uninitialized_jobs: uninitialized_jobs} = state, time) do
     uninitialized_jobs
     |> Enum.reduce(

@@ -54,8 +54,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )
@@ -80,8 +79,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )
@@ -108,8 +106,7 @@ defmodule Quantum.ExecutorTest do
                  %StartOpts{
                    task_supervisor_reference: task_supervisor,
                    task_registry_reference: task_registry,
-                   debug_logging: debug_logging,
-                   cluster_task_supervisor_registry_reference: nil
+                   debug_logging: debug_logging
                  },
                  %Event{job: job}
                )
@@ -139,8 +136,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )
@@ -149,8 +145,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )
@@ -180,8 +175,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )
@@ -214,8 +208,7 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging,
-            cluster_task_supervisor_registry_reference: nil
+            debug_logging: debug_logging
           },
           %Event{job: job}
         )

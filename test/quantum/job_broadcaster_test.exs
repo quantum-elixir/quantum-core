@@ -3,7 +3,7 @@ defmodule Quantum.JobBroadcasterTest do
 
   use ExUnit.Case, async: true
 
-  alias Quantum.{HandoffHelper, Job, JobBroadcaster, JobBroadcaster.StartOpts}
+  alias Quantum.{Job, JobBroadcaster, JobBroadcaster.StartOpts}
   alias Quantum.Storage.Test, as: TestStorage
   alias Quantum.TestConsumer
 
@@ -321,94 +321,6 @@ defmodule Quantum.JobBroadcasterTest do
       active_job_name = active_job.name
 
       assert active_job == TestScheduler.find_job(broadcaster, active_job_name)
-    end
-  end
-
-  describe "swarm/handoff" do
-    test "works" do
-      Process.flag(:trap_exit, true)
-
-      job = TestScheduler.new_job()
-      job_name = job.name
-
-      %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(%StartOpts{
-          name: Module.concat(__MODULE__, Old),
-          jobs: [job],
-          storage: TestStorage,
-          scheduler: TestScheduler,
-          debug_logging: true
-        })
-
-      {:ok, old_job_broadcaster} = apply(JobBroadcaster, f, a)
-
-      {:ok, _old_consumer} = TestConsumer.start_link(old_job_broadcaster, self())
-
-      %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(%StartOpts{
-          name: Module.concat(__MODULE__, New),
-          jobs: [],
-          storage: TestStorage,
-          scheduler: TestScheduler,
-          debug_logging: true
-        })
-
-      {:ok, new_job_broadcaster} = apply(JobBroadcaster, f, a)
-
-      {:ok, _new_consumer} = TestConsumer.start_link(new_job_broadcaster, self())
-
-      HandoffHelper.initiate_handoff(old_job_broadcaster, new_job_broadcaster)
-
-      assert TestScheduler.jobs(new_job_broadcaster) == [{job_name, job}]
-
-      assert_receive {:EXIT, ^old_job_broadcaster, :shutdown}
-    end
-  end
-
-  describe "swarm/resolve_conflict" do
-    test "works" do
-      Process.flag(:trap_exit, true)
-
-      job_1 = TestScheduler.new_job()
-      job_1_name = job_1.name
-
-      job_2 = TestScheduler.new_job()
-      job_2_name = job_2.name
-
-      %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(%StartOpts{
-          name: Module.concat(__MODULE__, Old),
-          jobs: [job_1],
-          storage: TestStorage,
-          scheduler: TestScheduler,
-          debug_logging: true
-        })
-
-      {:ok, old_job_broadcaster} = apply(JobBroadcaster, f, a)
-
-      {:ok, _old_consumer} = TestConsumer.start_link(old_job_broadcaster, self())
-
-      %{start: {JobBroadcaster, f, a}} =
-        JobBroadcaster.child_spec(%StartOpts{
-          name: Module.concat(__MODULE__, New),
-          jobs: [job_2],
-          storage: TestStorage,
-          scheduler: TestScheduler,
-          debug_logging: true
-        })
-
-      {:ok, new_job_broadcaster} = apply(JobBroadcaster, f, a)
-
-      {:ok, _new_consumer} = TestConsumer.start_link(new_job_broadcaster, self())
-
-      HandoffHelper.resolve_conflict(old_job_broadcaster, new_job_broadcaster)
-
-      resulting_jobs = TestScheduler.jobs(new_job_broadcaster)
-
-      assert Enum.member?(resulting_jobs, {job_1_name, job_1})
-      assert Enum.member?(resulting_jobs, {job_2_name, job_2})
-
-      assert_receive {:EXIT, ^old_job_broadcaster, :shutdown}
     end
   end
 end

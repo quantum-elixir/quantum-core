@@ -19,7 +19,6 @@ defmodule Quantum.ExecutorSupervisor do
           :execution_broadcaster_reference,
           :task_supervisor_reference,
           :task_registry_reference,
-          :cluster_task_supervisor_registry_reference,
           :debug_logging
         ])
       ),
@@ -39,8 +38,7 @@ defmodule Quantum.ExecutorSupervisor do
         Map.take(opts, [
           :task_supervisor_reference,
           :task_registry_reference,
-          :debug_logging,
-          :cluster_task_supervisor_registry_reference
+          :debug_logging
         ])
       )
 
