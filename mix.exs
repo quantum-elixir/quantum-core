@@ -27,7 +27,7 @@ defmodule Quantum.Mixfile do
   end
 
   def application do
-    [mod: {Quantum.Application, []}, extra_applications: [:logger]]
+    [extra_applications: [:logger]]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]

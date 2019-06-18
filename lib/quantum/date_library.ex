@@ -1,63 +1,83 @@
 defmodule Quantum.DateLibrary do
-  @moduledoc """
-  This Behaviour offers Date Library Independant integration of helper
-  functions.
+  @moduledoc false
 
-  **This behaviour is considered internal. Breaking Changes can occur on every
-  release.**
+  require Logger
 
-  Make sure your implementation passes `Quantum.DateLibraryTest`. Otherwise
-  unexpected behaviour can occur.
-  """
-
-  @date_library Application.get_env(:quantum, :date_library, Quantum.DateLibrary.Timex)
-
-  @doc """
-  Convert `NaiveDateTime` in UTC to `NaiveDateTime` in given tz.
-
-  * Should raise an `InvalidTimezoneError` if the timezone is not valid.
-  """
-  @callback utc_to_tz!(NaiveDateTime.t(), String.t()) :: NaiveDateTime.t() | no_return
-
-  @doc """
-  Convert `NaiveDateTime` in given tz to `NaiveDateTime` in UTC.
-
-  * Should raise an `InvalidDateTimeForTimezoneError` if the time is not valid.
-  * Should raise an `InvalidTimezoneError` if the timezone is not valid.
-  """
-  @callback tz_to_utc!(NaiveDateTime.t(), String.t()) :: NaiveDateTime.t() | no_return
-
-  @doc """
-  Gives back the required application dependency to start, if any is needed.
-  """
-  @callback dependency_application :: atom | nil
+  alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
 
   @doc """
   Convert Date to Utc
   """
-  @spec to_utc!(NaiveDateTime.t(), :utc | binary) :: NaiveDateTime.t() | no_return
+  @spec to_utc!(NaiveDateTime.t(), :utc | String.t()) :: NaiveDateTime.t()
+
   def to_utc!(date, :utc), do: date
-  def to_utc!(date, tz) when is_binary(tz), do: @date_library.tz_to_utc!(date, tz)
+
+  def to_utc!(date, tz) when is_binary(tz) do
+    dt =
+      case DateTime.from_naive(date, tz) do
+        {:ok, dt} ->
+          dt
+
+        {:ambiguous, _, _} ->
+          raise InvalidDateTimeForTimezoneError
+
+        {:gap, _, _} ->
+          raise InvalidDateTimeForTimezoneError
+
+        {:error, :incompatible_calendars} ->
+          raise InvalidDateTimeForTimezoneError
+
+        {:error, :time_zone_not_found} ->
+          raise InvalidTimezoneError
+
+        {:error, :utc_only_time_zone_database} ->
+          Logger.warn("Timezone database not setup")
+          raise InvalidTimezoneError
+      end
+
+    case DateTime.shift_zone(dt, "Etc/UTC") do
+      {:ok, dt} ->
+        DateTime.to_naive(dt)
+
+      {:error, :utc_only_time_zone_database} ->
+        Logger.warn("Timezone database not setup")
+        raise InvalidTimezoneError
+    end
+  end
 
   @doc """
   Convert Date to TZ
   """
-  @spec to_utc!(NaiveDateTime.t(), :utc | binary) :: NaiveDateTime.t() | no_return
+  @spec to_tz!(NaiveDateTime.t(), :utc | String.t()) :: NaiveDateTime.t()
   def to_tz!(date, :utc), do: date
-  def to_tz!(date, tz) when is_binary(tz), do: @date_library.utc_to_tz!(date, tz)
+
+  def to_tz!(date, tz) when is_binary(tz) do
+    result =
+      date
+      |> DateTime.from_naive!("Etc/UTC")
+      |> DateTime.shift_zone(tz)
+
+    case result do
+      {:ok, dt} ->
+        DateTime.to_naive(dt)
+
+      {:error, :time_zone_not_found} ->
+        raise InvalidTimezoneError
+
+      {:error, :utc_only_time_zone_database} ->
+        Logger.warn("Timezone database not setup")
+        raise InvalidTimezoneError
+    end
+  end
 
   defmodule InvalidDateTimeForTimezoneError do
-    @moduledoc """
-    Raised when a time does not exist in a timezone. THis happens for example when chaninging from DST to normal time.
-    """
+    @moduledoc false
 
     defexception message: "The requested time does not exist in the given timezone."
   end
 
   defmodule InvalidTimezoneError do
-    @moduledoc """
-    Raised when a timezone does not exist.
-    """
+    @moduledoc false
 
     defexception message: "The requested timezone is invalid."
   end
