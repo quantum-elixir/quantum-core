@@ -3,9 +3,9 @@ sudo: false
 env:
   - MIX_ENV=test
 elixir:
-  - 1.7
+  - 1.8
 otp_release:
-  - 20.0
+  - 22.0
 script: mix coveralls.travis
 cache:
   directories:
@@ -17,20 +17,20 @@ jobs:
       env:
         - MIX_ENV=dev
       script: mix format --check-formatted
-      elixir: 1.7
+      elixir: 1.8
     - stage: credo
       env:
         - MIX_ENV=dev
       script: mix credo --strict
-      elixir: 1.7
+      elixir: 1.8
     - stage: dialyzer
       env:
         - MIX_ENV=dev
       before_script: travis_wait mix dialyzer --plt
       script: mix dialyzer --halt-exit-status
-      elixir: 1.7
+      elixir: 1.8
     - stage: inch
       env:
         - MIX_ENV=docs
       script: mix inch.report
-      elixir: 1.7
+      elixir: 1.8
