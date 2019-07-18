@@ -2,7 +2,7 @@
 
 [Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/).
 
-[![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
+[![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum) [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/quantum)
 [![Build Status](https://travis-ci.org/quantum-elixir/quantum-core.svg?branch=master)](https://travis-ci.org/quantum-elixir/quantum-core)
 [![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
@@ -115,6 +115,36 @@ terms of this contract."
 5. Send a pull request.
 6. Pull requests SHALL be named as "Solution: _description of your solution_"
 7. Your pull request is merged and you are added to the [list of contributors](https://github.com/quantum-elixir/quantum-core/graphs/contributors)
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/quantum-elixir/quantum-core/graphs/contributors"><img src="https://opencollective.com/quantum/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/quantum/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/quantum"><img src="https://opencollective.com/quantum/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/quantum/contribute)]
+
+<a href="https://opencollective.com/quantum/organization/0/website"><img src="https://opencollective.com/quantum/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/1/website"><img src="https://opencollective.com/quantum/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/2/website"><img src="https://opencollective.com/quantum/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/3/website"><img src="https://opencollective.com/quantum/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/4/website"><img src="https://opencollective.com/quantum/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/5/website"><img src="https://opencollective.com/quantum/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/6/website"><img src="https://opencollective.com/quantum/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/7/website"><img src="https://opencollective.com/quantum/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/8/website"><img src="https://opencollective.com/quantum/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/quantum/organization/9/website"><img src="https://opencollective.com/quantum/organization/9/avatar.svg"></a>
 
 ## License
 
