@@ -54,7 +54,7 @@ defmodule Quantum.Scheduler do
       @otp_app Keyword.fetch!(opts, :otp_app)
       @moduledoc moduledoc
                  |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
-                 |> String.replace(~r/:my_app/, ":" <> @otp_app)
+                 |> String.replace(~r/:my_app/, ":" <> Atom.to_string(@otp_app))
 
       @behaviour Quantum.Scheduler
 
