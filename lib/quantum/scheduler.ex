@@ -51,13 +51,12 @@ defmodule Quantum.Scheduler do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts, moduledoc: @moduledoc] do
+      @otp_app Keyword.fetch!(opts, :otp_app)
       @moduledoc moduledoc
                  |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
-                 |> String.replace(~r/:my_app/, Atom.to_string(Keyword.fetch!(opts, :otp_app)))
+                 |> String.replace(~r/:my_app/, ":" <> Atom.to_string(@otp_app))
 
       @behaviour Quantum.Scheduler
-
-      @otp_app Keyword.fetch!(opts, :otp_app)
 
       def config(custom \\ []) do
         Quantum.scheduler_config(__MODULE__, @otp_app, custom)
