@@ -75,7 +75,7 @@ defmodule Quantum.Mixfile do
     [
       {:tzdata, "~> 1.0", override: true},
       {:crontab, "~> 1.1"},
-      {:gen_stage, "~> 0.14"},
+      {:gen_stage, "~> 1.0"},
       {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},
