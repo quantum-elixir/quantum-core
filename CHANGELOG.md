@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 2.4.0 - 2020-02-25
+
+### Added
+- Native Date Library (via #405)
+- Adding of inactive Jobs (via #409)
+
+### Fixed
+- GenStage 1.0 compatibility (via #424)
+- Doc Fixes (#394, #396, #400, #401)
+
+Diff for [2.4.0]
+
 ## 2.3.4 - 2019-01-06
 
 ### Fixed
@@ -536,7 +548,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.4...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...v2.3.3
 [2.3.2]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.1...v2.3.2
