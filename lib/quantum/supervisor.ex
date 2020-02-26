@@ -17,7 +17,7 @@ defmodule Quantum.Supervisor do
   def init({quantum, otp_app, opts}) do
     opts = Quantum.runtime_config(quantum, otp_app, opts)
     opts = quantum_init(quantum, opts)
-    opts = Enum.into(opts, %{})
+    opts = Map.new(opts)
 
     %{quantum: quantum} = opts
 

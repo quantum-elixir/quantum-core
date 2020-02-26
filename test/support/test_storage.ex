@@ -74,7 +74,7 @@ defmodule Quantum.Storage.Test do
       other -> other
     end
     |> Keyword.get(:dictionary, [])
-    |> Enum.into(%{})
+    |> Map.new()
     |> case do
       %{test_pid: pid} ->
         pid

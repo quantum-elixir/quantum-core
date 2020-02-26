@@ -30,12 +30,12 @@ defmodule Quantum.Normalizer do
 
   @doc false
   def normalize(%Job{} = base, job) when is_list(job) do
-    normalize_options(base, job |> Enum.into(%{}))
+    normalize_options(base, Map.new(job))
   end
 
   @doc false
   def normalize(%Job{} = base, {job_name, opts}) when is_list(opts) do
-    normalize(base, {job_name, opts |> Enum.into(%{})})
+    normalize(base, {job_name, Map.new(opts)})
   end
 
   @doc false

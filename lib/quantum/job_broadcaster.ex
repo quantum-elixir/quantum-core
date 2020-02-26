@@ -52,7 +52,7 @@ defmodule Quantum.JobBroadcaster do
 
     {:producer,
      %State{
-       jobs: Enum.into(effective_jobs, %{}, fn %{name: name} = job -> {name, job} end),
+       jobs: effective_jobs |> Enum.map(&{&1.name, &1}) |> Map.new(),
        buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
        storage: storage,
        scheduler: scheduler,

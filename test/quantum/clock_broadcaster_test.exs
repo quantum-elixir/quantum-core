@@ -20,7 +20,7 @@ defmodule Quantum.ClockBroadcasterTest do
       test
       |> stream_broadcaster!()
       |> Stream.take(1)
-      |> Enum.into([])
+      |> Enum.to_list()
 
     assert [%Event{}] = events
   end
@@ -125,11 +125,13 @@ defmodule Quantum.ClockBroadcasterTest do
       {ClockBroadcaster,
        struct!(
          StartOpts,
-         Enum.into(
-           opts,
-           name: Module.concat(__MODULE__, test),
-           debug_logging: false,
-           start_time: NaiveDateTime.utc_now()
+         Keyword.merge(
+           [
+             name: Module.concat(__MODULE__, test),
+             debug_logging: false,
+             start_time: NaiveDateTime.utc_now()
+           ],
+           Enum.to_list(opts)
          )
        )}
     )
