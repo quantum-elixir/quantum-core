@@ -7,7 +7,7 @@ defmodule Quantum.NormalizerTest do
   alias Quantum.Job
 
   defmodule Scheduler do
-    use Quantum.Scheduler, otp_app: :quantum_test
+    use Quantum, otp_app: :quantum_test
   end
 
   setup_all do

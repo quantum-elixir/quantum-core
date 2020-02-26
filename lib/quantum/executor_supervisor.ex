@@ -8,7 +8,6 @@ defmodule Quantum.ExecutorSupervisor do
 
   alias __MODULE__.{InitOpts, StartOpts}
 
-  @doc false
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     ConsumerSupervisor.start_link(
@@ -26,7 +25,6 @@ defmodule Quantum.ExecutorSupervisor do
     )
   end
 
-  @doc false
   @impl ConsumerSupervisor
   def init(
         %InitOpts{

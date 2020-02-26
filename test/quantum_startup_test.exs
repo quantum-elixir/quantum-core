@@ -10,7 +10,7 @@ defmodule QuantumStartupTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum_startup_test
+    use Quantum, otp_app: :quantum_startup_test
   end
 
   @tag :startup

@@ -65,8 +65,20 @@ defmodule Quantum.Mixfile do
         "pages/configuration.md",
         "pages/runtime.md",
         "pages/crontab-format.md",
-        "pages/run-strategies.md",
-        "pages/date-library.md"
+        "pages/run-strategies.md"
+      ],
+      groups_for_modules: [
+        "Run Strategy": [
+          Quantum.RunStrategy,
+          Quantum.RunStrategy.All,
+          Quantum.RunStrategy.Local,
+          Quantum.RunStrategy.NodeList,
+          Quantum.RunStrategy.Random
+        ],
+        Storage: [
+          Quantum.Storage,
+          Quantum.Storage.Noop
+        ]
       ]
     ]
   end

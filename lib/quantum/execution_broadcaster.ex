@@ -28,13 +28,12 @@ defmodule Quantum.ExecutionBroadcaster do
   @type event :: {:add, Job.t()} | {:execute, Job.t()}
 
   defmodule JobInPastError do
+    @moduledoc false
     defexception message:
                    "The job was scheduled in the past. This must not happen to prevent infinite loops!"
   end
 
-  @doc """
-  Start Stage
-  """
+  # Start Stage
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
@@ -53,7 +52,6 @@ defmodule Quantum.ExecutionBroadcaster do
     )
   end
 
-  @doc false
   @impl GenStage
   def init(%InitOpts{
         job_broadcaster_reference: job_broadcaster,

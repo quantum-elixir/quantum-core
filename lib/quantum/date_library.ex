@@ -5,9 +5,7 @@ defmodule Quantum.DateLibrary do
 
   alias Quantum.DateLibrary.{InvalidDateTimeForTimezoneError, InvalidTimezoneError}
 
-  @doc """
-  Convert Date to Utc
-  """
+  # Convert Date to Utc
   @spec to_utc!(NaiveDateTime.t(), :utc | String.t()) :: NaiveDateTime.t()
 
   def to_utc!(date, :utc), do: date
@@ -45,9 +43,7 @@ defmodule Quantum.DateLibrary do
     end
   end
 
-  @doc """
-  Convert Date to TZ
-  """
+  # Convert Date to TZ
   @spec to_tz!(NaiveDateTime.t(), :utc | String.t()) :: NaiveDateTime.t()
   def to_tz!(date, :utc), do: date
 

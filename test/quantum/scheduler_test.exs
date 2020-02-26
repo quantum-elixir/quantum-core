@@ -13,7 +13,7 @@ defmodule Quantum.SchedulerTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :scheduler_test
+    use Quantum, otp_app: :scheduler_test
   end
 
   @defaults %{
@@ -25,13 +25,13 @@ defmodule Quantum.SchedulerTest do
   defmodule DefaultConfigScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :scheduler_test
+    use Quantum, otp_app: :scheduler_test
   end
 
   defmodule ZeroTimeoutScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :scheduler_test
+    use Quantum, otp_app: :scheduler_test
   end
 
   setup_all do

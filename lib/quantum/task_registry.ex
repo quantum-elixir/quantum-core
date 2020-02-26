@@ -8,14 +8,12 @@ defmodule Quantum.TaskRegistry do
 
   alias __MODULE__.{InitOpts, StartOpts, State}
 
-  @doc false
   # Start the registry
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name}) do
     GenServer.start_link(__MODULE__, %InitOpts{}, name: name)
   end
 
-  @doc false
   # Mark a task as Running
   #
   # ### Examples
@@ -29,7 +27,6 @@ defmodule Quantum.TaskRegistry do
     GenServer.call(server, {:running, task, node})
   end
 
-  @doc false
   # Mark a task as Finished
   #
   # ### Examples
@@ -43,7 +40,6 @@ defmodule Quantum.TaskRegistry do
     GenServer.cast(server, {:finished, task, node})
   end
 
-  @doc false
   # Query if a task with given name is running
   #
   # ### Examples
@@ -57,7 +53,6 @@ defmodule Quantum.TaskRegistry do
     GenServer.call(server, {:is_running?, task})
   end
 
-  @doc false
   # Query if any tasks are running in the cluster
   #
   # ### Examples
@@ -71,13 +66,11 @@ defmodule Quantum.TaskRegistry do
     GenServer.call(server, :any_running?)
   end
 
-  @doc false
   @impl GenServer
   def init(%InitOpts{}) do
     {:ok, %State{running_tasks: %{}}}
   end
 
-  @doc false
   @impl GenServer
   def handle_call({:running, task, node}, _caller, %State{running_tasks: running_tasks} = state) do
     if Enum.member?(Map.get(running_tasks, task, []), node) do
@@ -88,7 +81,6 @@ defmodule Quantum.TaskRegistry do
     end
   end
 
-  @doc false
   @impl GenServer
   def handle_call({:is_running?, task}, _caller, %State{running_tasks: running_tasks} = state) do
     case running_tasks do
@@ -103,7 +95,6 @@ defmodule Quantum.TaskRegistry do
     end
   end
 
-  @doc false
   @impl GenServer
   def handle_call(:any_running?, _caller, %State{running_tasks: running_tasks} = state) do
     if Enum.empty?(running_tasks) do
@@ -113,7 +104,6 @@ defmodule Quantum.TaskRegistry do
     end
   end
 
-  @doc false
   @impl GenServer
   def handle_cast({:finished, task, node}, %State{running_tasks: running_tasks} = state) do
     running_tasks =

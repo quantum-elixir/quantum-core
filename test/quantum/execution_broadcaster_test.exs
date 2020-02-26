@@ -23,7 +23,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
   defmodule TestScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :execution_broadcaster_test
+    use Quantum, otp_app: :execution_broadcaster_test
   end
 
   setup tags do

@@ -16,6 +16,7 @@ defmodule Quantum.RunStrategy.All do
 
   """
 
+  @typedoc false
   @type t :: %__MODULE__{nodes: [Node.t() | :cluster]}
 
   defstruct nodes: nil

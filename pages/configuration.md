@@ -27,12 +27,12 @@ Persistent storage can be used to track jobs and last execution times over resta
 
 ```elixir
 config :your_app, YourApp.Scheduler,
-  storage: Quantum.Storage.Adapter.Implementation
+  storage: Quantum.Storage.Implementation
 ```
 
 ### Storage Adapters
 
-Storage implementations must implement the `Quantum.Storage.Adapter` behaviour.
+Storage implementations must implement the `Quantum.Storage` behaviour.
 
 The following adapters are supported:
 
@@ -121,25 +121,6 @@ Or if you wish to wait indefinitely:
 ```elixir
 config :your_app, YourApp.Scheduler,
   timeout: :infinity
-```
-
-
-## Run Quantum as a global process
-
-When you have a cluster of nodes, you may not want same jobs to be
-generated on every single node, e.g. jobs involving db changes.
-
-In this case, you may choose to run Quantum as a global process, thus
-preventing same job being run multiple times because of it being generated
-on multiple nodes. With the following configuration, Quantum will be run
-as a globally unique process across the cluster.
-
-```elixir
-config :your_app, YourApp.Scheduler,
-  global: true,
-  jobs: [
-    # Your cronjobs
-  ]
 ```
 
 ## Timezone Support

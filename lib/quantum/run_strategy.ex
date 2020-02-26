@@ -17,8 +17,6 @@ defmodule Quantum.RunStrategy do
 
     @doc """
     Get nodes to run on
-
-    Deprecated: Use nodes/3 instead
     """
     @spec nodes(any, Quantum.Job.t()) :: [Node.t()]
     def nodes(strategy, job)

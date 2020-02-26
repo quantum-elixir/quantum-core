@@ -11,9 +11,6 @@
 > **This README follows master, which may not be the currently published version**. Here are the
 [docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
 
-> :warning: **If you're using a version below `v2.2.6`, please update immediately.** :warning:
-> See [Issue #321](https://github.com/quantum-elixir/quantum-core/issues/321) for more details.
-
 ## Setup
 
 To use Quantum in your project, edit the `mix.exs` file and add Quantum to
@@ -27,15 +24,14 @@ end
 
 **2. and create a scheduler for your app:**
 ```elixir
-defmodule YourApp.Scheduler do
-  use Quantum.Scheduler,
-    otp_app: :your_app
+defmodule Acme.Scheduler do
+  use Quantum, otp_app: :your_app
 end
 ```
 
 **3. and your application's supervision tree:**
 ```elixir
-defmodule YourApp.Application do
+defmodule Acme.Application do
   use Application
 
   def start(_type, _args) do
@@ -43,10 +39,10 @@ defmodule YourApp.Application do
 
     children = [
       # This is the new line
-      YourApp.Scheduler
+      Acme.Scheduler
     ]
 
-    opts = [strategy: :one_for_one, name: YourApp.Supervisor]
+    opts = [strategy: :one_for_one, name: Acme.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
@@ -57,14 +53,13 @@ end
 To see more transparently what `quantum` is doing, configure the `logger` to display `:debug` messages.
 
 ```elixir
-config :logger,
-  level: :debug
+config :logger, level: :debug
 ```
 
 If you want do use the logger in debug-level without the messages from quantum:
 
 ```elixir
-config :your_app, YourApp.Scheduler,
+config :acme, Acme.Scheduler,
   debug_logging: false
 ```
 
@@ -73,16 +68,12 @@ If you encounter any problems with `quantum`, please search if there is already 
 
 Otherwise feel free to [open an issue](https://github.com/quantum-elixir/quantum-core/issues/new). Please include debug logs.
 
-## Migrate to V2
-
-See the [Migration Guide](https://hexdocs.pm/quantum/migrate-v2.html).
-
 ## Usage
 
 Configure your cronjobs in your `config/config.exs` like this:
 
 ```elixir
-config :your_app, YourApp.Scheduler,
+config :acme, Acme.Scheduler,
   jobs: [
     # Every minute
     {"* * * * *",      {Heartbeat, :send, []}},
@@ -114,11 +105,9 @@ terms of this contract."
 6. Pull requests SHALL be named as "Solution: _description of your solution_"
 7. Your pull request is merged and you are added to the [list of contributors](https://github.com/quantum-elixir/quantum-core/graphs/contributors)
 
-## Contributors
-
 ### Code Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+This project exists thanks to all the people who contribute.
 <a href="https://github.com/quantum-elixir/quantum-core/graphs/contributors"><img src="https://opencollective.com/quantum/contributors.svg?width=890&button=false" /></a>
 
 ### Financial Contributors

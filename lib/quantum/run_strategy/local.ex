@@ -12,6 +12,7 @@ defmodule Quantum.RunStrategy.Local do
 
   """
 
+  @typedoc false
   @type t :: %__MODULE__{nodes: any}
 
   defstruct nodes: nil

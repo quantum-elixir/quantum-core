@@ -1,7 +1,5 @@
 # Run Strategies
 
-If you're using quantum without the `global` flag, this isn't concerning you.
-
 Tasks can be executed via different run strategies.
 
 ## Configuration

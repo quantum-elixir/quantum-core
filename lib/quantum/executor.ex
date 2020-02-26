@@ -14,7 +14,6 @@ defmodule Quantum.Executor do
 
   alias __MODULE__.StartOpts
 
-  @doc false
   @spec start_link(StartOpts.t(), Event.t()) :: {:ok, pid}
   def start_link(opts, %Event{job: job, node: node}) do
     Task.start_link(fn ->

@@ -3,12 +3,12 @@ defmodule Quantum.JobBroadcaster.StartOpts do
 
   # Start Options for Quantum.JobBroadcaster
 
-  alias Quantum.{Job, Scheduler, Storage.Adapter}
+  alias Quantum.{Job, Scheduler, Storage}
 
   @type t :: %__MODULE__{
           name: GenServer.server(),
           jobs: [Job.t()],
-          storage: Adapter,
+          storage: Storage,
           scheduler: Scheduler,
           debug_logging: boolean
         }

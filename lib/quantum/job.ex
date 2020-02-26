@@ -4,7 +4,7 @@ defmodule Quantum.Job do
 
   ## Usage
 
-  The struct should never be defined by hand. Use `Acme.Scheduler.new_job/0` to create a new job and use the setters mentioned
+  The struct should never be defined by hand. Use `c:Quantum.new_job/1` to create a new job and use the setters mentioned
   below to mutate the job.
 
   This is to ensure type safety.
@@ -41,15 +41,7 @@ defmodule Quantum.Job do
           timezone: timezone
         }
 
-  @doc """
-  Takes some config from a scheduler and returns a new job
-
-  ### Examples
-
-      iex> Acme.Scheduler.config
-      ...> |> Quantum.Job.new
-      %Quantum.Job{...}
-  """
+  # Takes some config from a scheduler and returns a new job
   @spec new(config :: Keyword.t()) :: t
   def new(config) do
     {run_strategy_name, options} =

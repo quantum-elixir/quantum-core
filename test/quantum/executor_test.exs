@@ -14,7 +14,7 @@ defmodule Quantum.ExecutorTest do
   defmodule TestScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :job_broadcaster_test
+    use Quantum, otp_app: :job_broadcaster_test
   end
 
   setup do

@@ -7,7 +7,6 @@ defmodule Quantum.TestConsumer do
     GenStage.start_link(__MODULE__, {producer, target})
   end
 
-  @doc false
   def child_spec([producer, target]) do
     %{super([]) | start: {__MODULE__, :start_link, [producer, target]}}
   end

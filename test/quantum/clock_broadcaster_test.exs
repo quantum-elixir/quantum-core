@@ -12,7 +12,7 @@ defmodule Quantum.ClockBroadcasterTest do
   defmodule TestScheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum
+    use Quantum, otp_app: :quantum
   end
 
   test "should only generate event from event struct", %{test: test} do

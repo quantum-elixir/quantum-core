@@ -9,7 +9,6 @@ defmodule Quantum.ClockBroadcaster do
 
   alias __MODULE__.{Event, InitOpts, StartOpts, State}
 
-  @doc false
   @spec start_link(opts :: StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
@@ -19,7 +18,6 @@ defmodule Quantum.ClockBroadcaster do
     )
   end
 
-  @doc false
   @impl GenStage
   @spec init(opts :: InitOpts.t()) :: {:producer, State.t()}
   def init(%InitOpts{debug_logging: debug_logging, start_time: start_time}) do
@@ -32,7 +30,6 @@ defmodule Quantum.ClockBroadcaster do
      }}
   end
 
-  @doc false
   @impl GenStage
   def handle_demand(
         demand,
@@ -75,19 +72,16 @@ defmodule Quantum.ClockBroadcaster do
      %{state | time: new_time, remaining_demand: new_remaining_demand, timer: new_timer}}
   end
 
-  @doc false
   def handle_demand(demand, %State{timer: timer} = state) do
     Process.cancel_timer(timer)
     handle_demand(demand, %{state | timer: nil})
   end
 
-  @doc false
   @impl GenStage
   def handle_info(:ping, %State{remaining_demand: 0} = state) do
     {:noreply, [], state}
   end
 
-  @doc false
   def handle_info(:ping, %State{time: time, remaining_demand: remaining_demand} = state)
       when remaining_demand > 0 do
     now = NaiveDateTime.utc_now()

@@ -18,7 +18,6 @@ defmodule Quantum.Normalizer do
   @type config_task :: {module, fun, [any]} | (() -> any)
   @type config_name :: String.t() | atom
 
-  @doc false
   # Normalize Config Input into `Quantum.Job`.
   #
   # ### Parameters:
@@ -28,96 +27,77 @@ defmodule Quantum.Normalizer do
   @spec normalize(Job.t(), config_full_notation | config_short_notation) :: Job.t() | no_return
   def normalize(base, job)
 
-  @doc false
   def normalize(%Job{} = base, job) when is_list(job) do
     normalize_options(base, Map.new(job))
   end
 
-  @doc false
   def normalize(%Job{} = base, {job_name, opts}) when is_list(opts) do
     normalize(base, {job_name, Map.new(opts)})
   end
 
-  @doc false
   def normalize(%Job{} = base, {nil, opts}) when is_map(opts) do
     normalize_options(base, opts)
   end
 
-  @doc false
   def normalize(%Job{} = base, {job_name, opts}) when is_map(opts) do
     opts = Map.put(opts, :name, job_name)
 
     normalize_options(base, opts)
   end
 
-  @doc false
   def normalize(%Job{} = base, {schedule, task}) do
     normalize_options(base, %{schedule: schedule, task: task})
   end
 
-  @doc false
   @spec normalize_options(Job.t(), map) :: Job.t()
   defp normalize_options(job, options) do
     Enum.reduce(options, job, &normalize_job_option/2)
   end
 
-  @doc false
   @spec normalize_job_option({atom, any}, Job.t()) :: Job.t()
   defp normalize_job_option({:name, name}, job) do
     Job.set_name(job, normalize_name(name))
   end
 
-  @doc false
   defp normalize_job_option({:schedule, schedule}, job) do
     Job.set_schedule(job, normalize_schedule(schedule))
   end
 
-  @doc false
   defp normalize_job_option({:task, task}, job) do
     Job.set_task(job, normalize_task(task))
   end
 
-  @doc false
   defp normalize_job_option({:run_strategy, run_strategy}, job) do
     Job.set_run_strategy(job, normalize_run_strategy(run_strategy))
   end
 
-  @doc false
   defp normalize_job_option({:overlap, overlap}, job) do
     Job.set_overlap(job, overlap)
   end
 
-  @doc false
   defp normalize_job_option({:timezone, timezone}, job) do
     Job.set_timezone(job, normalize_timezone(timezone))
   end
 
-  @doc false
   defp normalize_job_option(_, job), do: job
 
-  @doc false
   @spec normalize_task(config_task) :: Job.task() | no_return
   defp normalize_task({mod, fun, args}), do: {mod, fun, args}
   defp normalize_task(fun) when is_function(fun, 0), do: fun
 
-  @doc false
   defp normalize_task(fun) when is_function(fun),
     do: raise("Only 0 arity functions are supported via the short syntax.")
 
-  @doc false
   @spec normalize_schedule(config_schedule) :: Job.schedule() | no_return
   def normalize_schedule(nil), do: nil
   def normalize_schedule(%CronExpression{} = e), do: e
 
-  @doc false
   def normalize_schedule(e) when is_binary(e),
     do: e |> String.downcase() |> CronExpressionParser.parse!()
 
-  @doc false
   def normalize_schedule({:cron, e}) when is_binary(e),
     do: e |> String.downcase() |> CronExpressionParser.parse!()
 
-  @doc false
   def normalize_schedule({:extended, e}) when is_binary(e),
     do: e |> String.downcase() |> CronExpressionParser.parse!(true)
 

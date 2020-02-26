@@ -3,11 +3,11 @@ defmodule Quantum.JobBroadcaster.InitOpts do
 
   # Init Options for Quantum.JobBroadcaster
 
-  alias Quantum.{Job, Scheduler, Storage.Adapter}
+  alias Quantum.{Job, Scheduler, Storage}
 
   @type t :: %__MODULE__{
           jobs: [Job.t()],
-          storage: Adapter,
+          storage: Storage,
           scheduler: Scheduler,
           debug_logging: boolean
         }

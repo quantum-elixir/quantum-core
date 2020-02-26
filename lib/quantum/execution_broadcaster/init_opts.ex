@@ -3,12 +3,12 @@ defmodule Quantum.ExecutionBroadcaster.InitOpts do
 
   # Init Options for Quantum.ExecutionBroadcaster
 
-  alias Quantum.{Scheduler, Storage.Adapter}
+  alias Quantum.{Scheduler, Storage}
 
   @type t :: %__MODULE__{
           job_broadcaster_reference: GenServer.server(),
           clock_broadcaster_reference: GenServer.server(),
-          storage: Adapter,
+          storage: Storage,
           scheduler: Scheduler,
           debug_logging: boolean
         }

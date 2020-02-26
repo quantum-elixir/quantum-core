@@ -11,7 +11,6 @@ defmodule Quantum.JobBroadcaster do
 
   @type event :: {:add, Job.t()} | {:remove, Job.t()}
 
-  @doc false
   # Start Job Broadcaster
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
@@ -22,7 +21,6 @@ defmodule Quantum.JobBroadcaster do
     )
   end
 
-  @doc false
   @impl GenStage
   def init(%InitOpts{
         jobs: jobs,
@@ -61,7 +59,6 @@ defmodule Quantum.JobBroadcaster do
      }}
   end
 
-  @doc false
   @impl GenStage
   def handle_demand(demand, %State{buffer: buffer} = state) do
     {to_send, remaining} = Enum.split(buffer, demand)
@@ -69,7 +66,6 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, to_send, %{state | buffer: remaining}}
   end
 
-  @doc false
   @impl GenStage
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
@@ -86,7 +82,6 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
-  @doc false
   def handle_cast(
         {:add, %Job{state: :inactive, name: job_name} = job},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -102,7 +97,6 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
-  @doc false
   def handle_cast(
         {:delete, name},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -129,7 +123,6 @@ defmodule Quantum.JobBroadcaster do
     end
   end
 
-  @doc false
   def handle_cast(
         {:change_state, name, new_state},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -162,7 +155,6 @@ defmodule Quantum.JobBroadcaster do
     end
   end
 
-  @doc false
   def handle_cast(
         :delete_all,
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -180,12 +172,10 @@ defmodule Quantum.JobBroadcaster do
     {:noreply, messages, %{state | jobs: %{}}}
   end
 
-  @doc false
   @impl GenStage
   def handle_call(:jobs, _, %State{jobs: jobs} = state),
     do: {:reply, Map.to_list(jobs), [], state}
 
-  @doc false
   def handle_call({:find_job, name}, _, %State{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
 end

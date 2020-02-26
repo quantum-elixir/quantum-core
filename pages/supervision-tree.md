@@ -1,6 +1,6 @@
 # Supervision Tree
 
-* `YourApp.Scheduler` (`Quantum.Scheduler`) - Your primary Interface to interact with. (Like `add_job/1` etc.)
+* `YourApp.Scheduler` (`Quantum`) - Your primary Interface to interact with. (Like `add_job/1` etc.)
   - `YourApp.Scheduler.Supervisor` (`Quantum.Supervisor`) - The Supervisor that coordinates configuration, the runner and task supervisor.
     * `YourApp.Scheduler.TaskRegistry` (`Quantum.TaskRegistry`) - The `GenServer` that keeps track of running tasks and prevents overlap.
     * `YourApp.Scheduler.JobBroadcaster` (`Quantum.JobBroadcaster`) - The `GenStage` that keeps track of all jobs.

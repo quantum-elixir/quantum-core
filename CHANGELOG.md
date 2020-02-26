@@ -4,6 +4,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## Changed
+
+- A lot of function that were not for public use have been undocumented. Those are now considered internal and may break at any point in time.
+- `Quantum.Scheduler` has been renamed to `Quantum`
+- `Quantum.Storage.Adapter` has been renamed to `Quantum.Storage`
+- The `global` mode has been removed. It will be reimplemented if a stable replacement is found.
+
 Diff for [unreleased]
 
 ## 2.4.0 - 2020-02-25

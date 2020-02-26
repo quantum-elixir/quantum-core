@@ -1,9 +1,9 @@
 defmodule Quantum.Storage.Test do
   @moduledoc """
-  Test implementation of a `Quantum.Storage.Adapter`.
+  Test implementation of a `Quantum.Storage`.
   """
 
-  @behaviour Quantum.Storage.Adapter
+  @behaviour Quantum.Storage
 
   def jobs(scheduler_module), do: send_and_wait(:jobs, scheduler_module, :not_applicable)
   def add_job(scheduler_module, job), do: send_and_wait(:add_job, {scheduler_module, job})
@@ -22,11 +22,10 @@ defmodule Quantum.Storage.Test do
 
   def purge(scheduler_module), do: send_and_wait(:purge, scheduler_module)
 
-  @doc false
   # Used for Small Test Storages
   defmacro __using__(_) do
     quote do
-      @behaviour Quantum.Storage.Adapter
+      @behaviour Quantum.Storage
 
       alias Quantum.Storage.Test
 
@@ -50,7 +49,7 @@ defmodule Quantum.Storage.Test do
 
       def purge(scheduler_module), do: Test.send_and_wait(:purge, scheduler_module)
 
-      defoverridable Quantum.Storage.Adapter
+      defoverridable Quantum.Storage
     end
   end
 

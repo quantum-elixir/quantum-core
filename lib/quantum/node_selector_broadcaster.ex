@@ -15,9 +15,7 @@ defmodule Quantum.NodeSelectorBroadcaster do
 
   @type event :: {:add, Job.t()} | {:execute, Job.t()}
 
-  @doc """
-  Start Stage
-  """
+  # Start Stage
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
@@ -33,7 +31,6 @@ defmodule Quantum.NodeSelectorBroadcaster do
     )
   end
 
-  @doc false
   @impl GenStage
   def init(%InitOpts{
         execution_broadcaster_reference: execution_broadcaster,

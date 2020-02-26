@@ -19,6 +19,7 @@ defmodule Quantum.RunStrategy.Random do
 
   """
 
+  @typedoc false
   @type t :: %__MODULE__{nodes: [Node.t()] | :cluster}
 
   defstruct nodes: nil

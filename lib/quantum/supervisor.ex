@@ -3,9 +3,11 @@ defmodule Quantum.Supervisor do
 
   use Supervisor
 
-  @doc """
-  Starts the quantum supervisor.
-  """
+  require Logger
+
+  alias Quantum.{Job, Normalizer}
+
+  # Starts the quantum supervisor.
   @spec start_link(GenServer.server(), atom, Keyword.t()) :: GenServer.on_start()
   def start_link(quantum, otp_app, opts) do
     name = Keyword.take(opts, [:name])
@@ -14,7 +16,7 @@ defmodule Quantum.Supervisor do
 
   @impl Supervisor
   def init({quantum, otp_app, opts}) do
-    opts = Quantum.runtime_config(quantum, otp_app, opts)
+    opts = runtime_config(quantum, otp_app, opts)
     opts = quantum_init(quantum, opts)
     %{storage: storage, scheduler: scheduler, quantum: quantum} = opts = Map.new(opts)
 
@@ -104,5 +106,34 @@ defmodule Quantum.Supervisor do
     else
       config
     end
+  end
+
+  defp runtime_config(quantum, otp_app, custom) do
+    config = Quantum.scheduler_config(quantum, otp_app, custom)
+
+    # Load Jobs from Config
+    jobs =
+      config
+      |> Keyword.get(:jobs, [])
+      |> Enum.map(&Normalizer.normalize(quantum.new_job(config), &1))
+      |> remove_jobs_with_duplicate_names(quantum)
+
+    Keyword.put(config, :jobs, jobs)
+  end
+
+  defp remove_jobs_with_duplicate_names(job_list, quantum) do
+    job_list
+    |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
+      if Enum.member?(Map.keys(acc), name) do
+        Logger.warn(
+          "Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name"
+        )
+
+        acc
+      else
+        Map.put_new(acc, name, job)
+      end
+    end)
+    |> Map.values()
   end
 end

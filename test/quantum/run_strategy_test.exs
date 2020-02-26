@@ -7,7 +7,7 @@ defmodule Quantum.RunStrategyTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum_test
+    use Quantum, otp_app: :quantum_test
   end
 
   test "run strategy local" do

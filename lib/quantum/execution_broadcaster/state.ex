@@ -4,14 +4,13 @@ defmodule Quantum.ExecutionBroadcaster.State do
   # Internal State
 
   alias Quantum.Job
-  alias Quantum.Scheduler
-  alias Quantum.Storage.Adapter, as: StorageAdapter
+  alias Quantum.Storage, as: StorageAdapter
 
   @type t :: %__MODULE__{
           uninitialized_jobs: [Job.t()],
           execution_timeline: [{NaiveDateTime.t(), [Job.t()]}],
           storage: StorageAdapter,
-          scheduler: Scheduler,
+          scheduler: Quantum,
           debug_logging: boolean()
         }
 

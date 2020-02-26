@@ -7,7 +7,7 @@ defmodule Quantum.JobTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum.Scheduler, otp_app: :quantum_test
+    use Quantum, otp_app: :quantum_test
   end
 
   test "new/1 returns a new job" do
