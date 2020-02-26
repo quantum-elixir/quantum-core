@@ -20,6 +20,7 @@ defmodule Quantum.RunStrategy.Local do
 
   alias Quantum.Job
 
+  @impl Quantum.RunStrategy
   @spec normalize_config!(any) :: t
   def normalize_config!(_), do: %__MODULE__{}
 

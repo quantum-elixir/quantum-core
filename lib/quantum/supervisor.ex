@@ -12,8 +12,7 @@ defmodule Quantum.Supervisor do
     Supervisor.start_link(__MODULE__, {quantum, otp_app, opts}, name)
   end
 
-  ## Callbacks
-
+  @impl Supervisor
   def init({quantum, otp_app, opts}) do
     opts = Quantum.runtime_config(quantum, otp_app, opts)
     opts = quantum_init(quantum, opts)

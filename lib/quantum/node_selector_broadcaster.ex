@@ -34,6 +34,7 @@ defmodule Quantum.NodeSelectorBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def init(%InitOpts{
         execution_broadcaster_reference: execution_broadcaster,
         task_supervisor_reference: task_supervisor_reference
@@ -44,6 +45,7 @@ defmodule Quantum.NodeSelectorBroadcaster do
      }, subscribe_to: [execution_broadcaster]}
   end
 
+  @impl GenStage
   def handle_events(events, _, %{task_supervisor_reference: task_supervisor_reference} = state) do
     {:noreply,
      Enum.flat_map(events, fn %ExecuteEvent{job: job} ->

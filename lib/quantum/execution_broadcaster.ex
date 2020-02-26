@@ -54,6 +54,7 @@ defmodule Quantum.ExecutionBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def init(%InitOpts{
         job_broadcaster_reference: job_broadcaster,
         clock_broadcaster_reference: clock_broadcaster,
@@ -71,6 +72,7 @@ defmodule Quantum.ExecutionBroadcaster do
      }, subscribe_to: [job_broadcaster, clock_broadcaster]}
   end
 
+  @impl GenStage
   def handle_events(events, _, state) do
     {events, state} =
       Enum.reduce(events, {[], state}, fn event, {list, state} ->

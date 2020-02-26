@@ -20,6 +20,7 @@ defmodule Quantum.ClockBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   @spec init(opts :: InitOpts.t()) :: {:producer, State.t()}
   def init(%InitOpts{debug_logging: debug_logging, start_time: start_time}) do
     {:producer,
@@ -32,6 +33,7 @@ defmodule Quantum.ClockBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def handle_demand(
         demand,
         %State{remaining_demand: remaining_demand, time: time, timer: nil} = state
@@ -80,6 +82,7 @@ defmodule Quantum.ClockBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def handle_info(:ping, %State{remaining_demand: 0} = state) do
     {:noreply, [], state}
   end

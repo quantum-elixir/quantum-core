@@ -27,6 +27,7 @@ defmodule Quantum.ExecutorSupervisor do
   end
 
   @doc false
+  @impl ConsumerSupervisor
   def init(
         %InitOpts{
           node_selector_broadcaster_reference: node_selector_broadcaster

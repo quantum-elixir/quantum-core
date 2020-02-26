@@ -24,6 +24,7 @@ defmodule Quantum.RunStrategy.All do
 
   alias Quantum.Job
 
+  @impl Quantum.RunStrategy
   @spec normalize_config!([Node.t()] | :cluster) :: t
   def normalize_config!(nodes) when is_list(nodes) do
     %__MODULE__{nodes: Enum.map(nodes, &normalize_node/1)}

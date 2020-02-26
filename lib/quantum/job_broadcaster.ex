@@ -23,6 +23,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def init(%InitOpts{
         jobs: jobs,
         storage: storage,
@@ -61,6 +62,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def handle_demand(demand, %State{buffer: buffer} = state) do
     {to_send, remaining} = Enum.split(buffer, demand)
 
@@ -68,6 +70,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
         %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
@@ -178,6 +181,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @doc false
+  @impl GenStage
   def handle_call(:jobs, _, %State{jobs: jobs} = state),
     do: {:reply, Map.to_list(jobs), [], state}
 

@@ -72,11 +72,13 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
+  @impl GenServer
   def init(%InitOpts{}) do
     {:ok, %State{running_tasks: %{}}}
   end
 
   @doc false
+  @impl GenServer
   def handle_call({:running, task, node}, _caller, %State{running_tasks: running_tasks} = state) do
     if Enum.member?(Map.get(running_tasks, task, []), node) do
       {:reply, :already_running, state}
@@ -87,6 +89,7 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
+  @impl GenServer
   def handle_call({:is_running?, task}, _caller, %State{running_tasks: running_tasks} = state) do
     case running_tasks do
       %{^task => [_ | _]} ->
@@ -101,6 +104,7 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
+  @impl GenServer
   def handle_call(:any_running?, _caller, %State{running_tasks: running_tasks} = state) do
     if Enum.empty?(running_tasks) do
       {:reply, false, state}
@@ -110,6 +114,7 @@ defmodule Quantum.TaskRegistry do
   end
 
   @doc false
+  @impl GenServer
   def handle_cast({:finished, task, node}, %State{running_tasks: running_tasks} = state) do
     running_tasks =
       running_tasks

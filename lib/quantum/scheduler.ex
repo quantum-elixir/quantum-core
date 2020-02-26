@@ -50,14 +50,15 @@ defmodule Quantum.Scheduler do
   @opaque t :: module
 
   defmacro __using__(opts) do
-    quote bind_quoted: [opts: opts, moduledoc: @moduledoc] do
+    quote bind_quoted: [behaviour: __MODULE__, opts: opts, moduledoc: @moduledoc] do
       @otp_app Keyword.fetch!(opts, :otp_app)
       @moduledoc moduledoc
                  |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
                  |> String.replace(~r/:my_app/, ":" <> Atom.to_string(@otp_app))
 
-      @behaviour Quantum.Scheduler
+      @behaviour behaviour
 
+      @impl behaviour
       def config(custom \\ []) do
         Quantum.scheduler_config(__MODULE__, @otp_app, custom)
       end
@@ -75,14 +76,17 @@ defmodule Quantum.Scheduler do
 
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
+      @impl behaviour
       def start_link(opts \\ [name: __MODULE__]) do
         Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
       end
 
+      @impl behaviour
       def stop(server \\ __MODULE__, timeout \\ 5000) do
         Supervisor.stop(server, :normal, timeout)
       end
 
+      @impl behaviour
       def add_job(server \\ __job_broadcaster__(), job)
 
       def add_job(server, %Job{name: name} = job) do
@@ -99,32 +103,39 @@ defmodule Quantum.Scheduler do
         add_job(server, job)
       end
 
+      @impl behaviour
       def new_job(config \\ config()), do: Job.new(config)
 
+      @impl behaviour
       def deactivate_job(server \\ __job_broadcaster__(), name)
           when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:change_state, name, :inactive})
       end
 
+      @impl behaviour
       def activate_job(server \\ __job_broadcaster__(), name)
           when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:change_state, name, :active})
       end
 
+      @impl behaviour
       def find_job(server \\ __job_broadcaster__(), name)
           when is_atom(name) or is_reference(name) do
         GenStage.call(server, {:find_job, name}, __timeout__())
       end
 
+      @impl behaviour
       def delete_job(server \\ __job_broadcaster__(), name)
           when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:delete, name})
       end
 
+      @impl behaviour
       def delete_all_jobs(server \\ __job_broadcaster__()) do
         GenStage.cast(server, :delete_all)
       end
 
+      @impl behaviour
       def jobs(server \\ __job_broadcaster__()) do
         GenStage.call(server, :jobs, __timeout__())
       end
