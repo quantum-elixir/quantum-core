@@ -79,7 +79,6 @@ defmodule Quantum.Mixfile do
       {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},
-      {:inch_ex, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]

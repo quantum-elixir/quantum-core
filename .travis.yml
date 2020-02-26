@@ -29,8 +29,3 @@ jobs:
       before_script: travis_wait mix dialyzer --plt
       script: mix dialyzer --halt-exit-status
       elixir: 1.8
-    - stage: inch
-      env:
-        - MIX_ENV=docs
-      script: mix inch.report
-      elixir: 1.8

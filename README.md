@@ -6,7 +6,6 @@
 [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/quantum)
 [![Build Status](https://travis-ci.org/quantum-elixir/quantum-core.svg?branch=master)](https://travis-ci.org/quantum-elixir/quantum-core)
 [![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
-[![Inline docs](http://inch-ci.org/github/quantum-elixir/quantum-core.svg)](http://inch-ci.org/github/quantum-elixir/quantum-core)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 
 > **This README follows master, which may not be the currently published version**. Here are the
