@@ -73,15 +73,15 @@ defmodule Quantum.Mixfile do
 
   defp deps do
     [
-      {:tzdata, "~> 1.0", only: [:dev, :test]},
       {:crontab, "~> 1.1"},
       {:gen_stage, "~> 0.14 or ~> 1.0"},
+      {:tzdata, "~> 1.0", only: [:dev, :test]},
       {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:dev, :test], runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :docs], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev, :test], runtime: false},
-      {:credo, "~> 0.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end
