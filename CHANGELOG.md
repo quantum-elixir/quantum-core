@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+Diff for [unreleased]
+
+## 3.0.0-rc.1 - 2020-02-26
+
 ## Changed
 
 - A lot of function that were not for public use have been undocumented. Those are now considered internal and may break at any point in time.
@@ -11,7 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `Quantum.Storage.Adapter` has been renamed to `Quantum.Storage`
 - The `global` mode has been removed. It will be reimplemented if a stable replacement is found.
 
-Diff for [unreleased]
+Diff for [3.0.0-rc.1]
 
 ## 2.4.0 - 2020-02-25
 
@@ -555,7 +559,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v2.4.0...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.1...HEAD
+[3.0.0-cr.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.4.0...v3.0.0-rc.1
 [2.4.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...v2.3.3
