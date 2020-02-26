@@ -17,9 +17,7 @@ defmodule Quantum.Supervisor do
   def init({quantum, otp_app, opts}) do
     opts = Quantum.runtime_config(quantum, otp_app, opts)
     opts = quantum_init(quantum, opts)
-    opts = Map.new(opts)
-
-    %{quantum: quantum} = opts
+    %{storage: storage, scheduler: scheduler, quantum: quantum} = opts = Map.new(opts)
 
     task_registry_opts = %Quantum.TaskRegistry.StartOpts{
       name: Module.concat(quantum, TaskRegistry)
@@ -32,8 +30,11 @@ defmodule Quantum.Supervisor do
         |> Map.take([:debug_logging])
         |> Map.merge(%{
           name: Module.concat(quantum, ClockBroadcaster),
-          # TODO: Load from Storage
-          start_time: NaiveDateTime.utc_now()
+          start_time:
+            case storage.last_execution_date(scheduler) do
+              :unknown -> NaiveDateTime.utc_now()
+              date -> date
+            end
         })
       )
 
