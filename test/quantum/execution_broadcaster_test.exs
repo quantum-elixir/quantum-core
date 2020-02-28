@@ -113,8 +113,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
-        assert_receive {:update_last_execution_date, {TestScheduler, %NaiveDateTime{}}, _},
-                       @max_timeout
+        assert_receive {:update_last_execution_date, %NaiveDateTime{}, _}, @max_timeout
 
         assert_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
       end)

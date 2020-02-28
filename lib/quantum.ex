@@ -52,7 +52,8 @@ defmodule Quantum do
     state: :active,
     timezone: :utc,
     run_strategy: {Random, :cluster},
-    debug_logging: true
+    debug_logging: true,
+    storage: Noop
   ]
 
   @optional_callbacks init: 1
@@ -135,18 +136,12 @@ defmodule Quantum do
 
   @doc false
   # Retrieves only scheduler related configuration.
-  def scheduler_config(quantum, otp_app, custom) do
-    config =
-      @defaults
-      |> Keyword.merge(Application.get_env(otp_app, quantum, []))
-      |> Keyword.merge(custom)
-      |> Keyword.merge(otp_app: otp_app, quantum: quantum)
-
-    config
-    |> Keyword.put_new(:quantum, quantum)
-    |> Keyword.put_new(:scheduler, quantum)
+  def scheduler_config(scheduler, otp_app, custom) do
+    @defaults
+    |> Keyword.merge(Application.get_env(otp_app, scheduler, []))
+    |> Keyword.merge(custom)
+    |> Keyword.merge(otp_app: otp_app, scheduler: scheduler)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
-    |> Keyword.put_new(:storage, Noop)
   end
 
   defmacro __using__(opts) do
@@ -166,7 +161,7 @@ defmodule Quantum do
 
       defp __job_broadcaster__ do
         __job_broadcaster__(
-          config() |> Keyword.fetch!(:quantum) |> Module.concat(JobBroadcaster),
+          config() |> Keyword.fetch!(:scheduler) |> Module.concat(JobBroadcaster),
           config()
         )
       end
@@ -178,7 +173,8 @@ defmodule Quantum do
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
       @impl behaviour
-      def start_link(opts \\ [name: __MODULE__]) do
+      def start_link(opts \\ []) do
+        opts = Keyword.put_new(opts, :name, __MODULE__)
         Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
       end
 

@@ -3,13 +3,17 @@ defmodule Quantum.ClockBroadcaster.StartOpts do
 
   # Start Options
 
+  alias Quantum.{Scheduler, Storage}
+
   @type t :: %__MODULE__{
           name: GenServer.server(),
           start_time: NaiveDateTime.t(),
+          storage: Storage,
+          scheduler: Scheduler,
           debug_logging: boolean()
         }
 
-  @enforce_keys [:name, :start_time, :debug_logging]
+  @enforce_keys [:start_time, :name, :storage, :scheduler, :debug_logging]
 
   defstruct @enforce_keys
 end

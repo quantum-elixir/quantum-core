@@ -5,49 +5,75 @@ defmodule Quantum.Storage.Test do
 
   @behaviour Quantum.Storage
 
-  def jobs(scheduler_module), do: send_and_wait(:jobs, scheduler_module, :not_applicable)
-  def add_job(scheduler_module, job), do: send_and_wait(:add_job, {scheduler_module, job})
+  use GenServer
 
-  def delete_job(scheduler_module, job_name),
-    do: send_and_wait(:delete_job, {scheduler_module, job_name})
+  def start_link(_opts), do: send_and_wait(:jobs, :start_link, :ignore)
 
-  def update_job_state(scheduler_module, job_name, state),
-    do: send_and_wait(:update_job_state, {scheduler_module, job_name, state})
+  @doc false
+  @impl GenServer
+  def init(_args), do: {:ok, nil}
 
-  def last_execution_date(scheduler_module),
-    do: send_and_wait(:last_execution_date, scheduler_module, :unknown)
+  @impl Quantum.Storage
+  def jobs(_storage_pid), do: send_and_wait(:jobs, nil, :not_applicable)
 
-  def update_last_execution_date(scheduler_module, last_execution_date),
-    do: send_and_wait(:update_last_execution_date, {scheduler_module, last_execution_date})
+  @impl Quantum.Storage
+  def add_job(_storage_pid, job), do: send_and_wait(:add_job, job)
 
-  def purge(scheduler_module), do: send_and_wait(:purge, scheduler_module)
+  @impl Quantum.Storage
+  def delete_job(_storage_pid, job_name), do: send_and_wait(:delete_job, job_name)
+
+  @impl Quantum.Storage
+  def update_job_state(_storage_pid, job_name, state),
+    do: send_and_wait(:update_job_state, {job_name, state})
+
+  @impl Quantum.Storage
+  def last_execution_date(_storage_pid), do: send_and_wait(:last_execution_date, nil, :unknown)
+
+  @impl Quantum.Storage
+  def update_last_execution_date(_storage_pid, last_execution_date),
+    do: send_and_wait(:update_last_execution_date, last_execution_date)
+
+  @impl Quantum.Storage
+  def purge(_storage_pid), do: send_and_wait(:purge, nil)
 
   # Used for Small Test Storages
   defmacro __using__(_) do
     quote do
       @behaviour Quantum.Storage
 
-      alias Quantum.Storage.Test
+      import Quantum.Storage.Test
 
-      def jobs(scheduler_module), do: Test.send_and_wait(:jobs, scheduler_module, :not_applicable)
+      use GenServer
 
-      def add_job(scheduler_module, job),
-        do: Test.send_and_wait(:add_job, {scheduler_module, job})
+      def start_link(_opts), do: send_and_wait(:jobs, :start_link, :ignore)
 
-      def delete_job(scheduler_module, job_name),
-        do: Test.send_and_wait(:delete_job, {scheduler_module, job_name})
+      @doc false
+      @impl GenServer
+      def init(_args), do: {:ok, nil}
 
-      def update_job_state(scheduler_module, job_name, state),
-        do: Test.send_and_wait(:update_job_state, {scheduler_module, job_name, state})
+      @impl Quantum.Storage
+      def jobs(_storage_pid), do: send_and_wait(:jobs, nil, :not_applicable)
 
-      def last_execution_date(scheduler_module),
-        do: Test.send_and_wait(:last_execution_date, scheduler_module, :unknown)
+      @impl Quantum.Storage
+      def add_job(_storage_pid, job), do: send_and_wait(:add_job, job)
 
-      def update_last_execution_date(scheduler_module, last_execution_date),
-        do:
-          Test.send_and_wait(:update_last_execution_date, {scheduler_module, last_execution_date})
+      @impl Quantum.Storage
+      def delete_job(_storage_pid, job_name), do: send_and_wait(:delete_job, job_name)
 
-      def purge(scheduler_module), do: Test.send_and_wait(:purge, scheduler_module)
+      @impl Quantum.Storage
+      def update_job_state(_storage_pid, job_name, state),
+        do: send_and_wait(:update_job_state, job_name, state)
+
+      @impl Quantum.Storage
+      def last_execution_date(_storage_pid),
+        do: send_and_wait(:last_execution_date, nil, :unknown)
+
+      @impl Quantum.Storage
+      def update_last_execution_date(_storage_pid, last_execution_date),
+        do: send_and_wait(:update_last_execution_date, last_execution_date)
+
+      @impl Quantum.Storage
+      def purge(_storage_pid), do: send_and_wait(:purge, nil)
 
       defoverridable Quantum.Storage
     end

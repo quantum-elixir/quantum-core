@@ -13,14 +13,29 @@ defmodule Quantum.ClockBroadcaster do
   def start_link(%StartOpts{name: name} = opts) do
     GenStage.start_link(
       __MODULE__,
-      struct!(InitOpts, Map.take(opts, [:start_time, :debug_logging])),
+      struct!(InitOpts, Map.take(opts, [:start_time, :storage, :scheduler, :debug_logging])),
       name: name
     )
   end
 
   @impl GenStage
   @spec init(opts :: InitOpts.t()) :: {:producer, State.t()}
-  def init(%InitOpts{debug_logging: debug_logging, start_time: start_time}) do
+  def init(%InitOpts{
+        debug_logging: debug_logging,
+        storage: storage,
+        scheduler: scheduler,
+        start_time: start_time
+      }) do
+    start_time =
+      scheduler
+      |> Module.concat(Storage)
+      |> GenServer.whereis()
+      |> storage.last_execution_date()
+      |> case do
+        :unknown -> start_time
+        date -> date
+      end
+
     {:producer,
      %State{
        time: %{start_time | microsecond: {0, 0}},

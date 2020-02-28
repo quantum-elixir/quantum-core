@@ -15,27 +15,28 @@ defmodule Quantum.Supervisor do
   end
 
   @impl Supervisor
-  def init({quantum, otp_app, opts}) do
-    opts = runtime_config(quantum, otp_app, opts)
-    opts = quantum_init(quantum, opts)
-    %{storage: storage, scheduler: scheduler, quantum: quantum} = opts = Map.new(opts)
+  def init({scheduler, otp_app, opts}) do
+    opts = runtime_config(scheduler, otp_app, opts)
+    opts = quantum_init(scheduler, opts)
+    %{storage: storage, scheduler: ^scheduler} = opts = Map.new(opts)
+
+    storage_opts =
+      opts
+      |> Map.get(:storage_opts, [])
+      |> Keyword.put(:scheduler, scheduler)
 
     task_registry_opts = %Quantum.TaskRegistry.StartOpts{
-      name: Module.concat(quantum, TaskRegistry)
+      name: Module.concat(scheduler, TaskRegistry)
     }
 
     clock_broadcaster_opts =
       struct!(
         Quantum.ClockBroadcaster.StartOpts,
         opts
-        |> Map.take([:debug_logging])
+        |> Map.take([:debug_logging, :storage, :scheduler])
         |> Map.merge(%{
-          name: Module.concat(quantum, ClockBroadcaster),
-          start_time:
-            case storage.last_execution_date(scheduler) do
-              :unknown -> NaiveDateTime.utc_now()
-              date -> date
-            end
+          name: Module.concat(scheduler, ClockBroadcaster),
+          start_time: NaiveDateTime.utc_now()
         })
       )
 
@@ -45,7 +46,7 @@ defmodule Quantum.Supervisor do
         opts
         |> Map.take([:jobs, :storage, :scheduler, :debug_logging])
         |> Map.merge(%{
-          name: Module.concat(quantum, JobBroadcaster)
+          name: Module.concat(scheduler, JobBroadcaster)
         })
       )
 
@@ -59,16 +60,16 @@ defmodule Quantum.Supervisor do
           :debug_logging
         ])
         |> Map.merge(%{
-          job_broadcaster_reference: Module.concat(quantum, JobBroadcaster),
-          clock_broadcaster_reference: Module.concat(quantum, ClockBroadcaster),
-          name: Module.concat(quantum, ExecutionBroadcaster)
+          job_broadcaster_reference: Module.concat(scheduler, JobBroadcaster),
+          clock_broadcaster_reference: Module.concat(scheduler, ClockBroadcaster),
+          name: Module.concat(scheduler, ExecutionBroadcaster)
         })
       )
 
     node_selector_broadcaster_opts = %Quantum.NodeSelectorBroadcaster.StartOpts{
-      execution_broadcaster_reference: Module.concat(quantum, ExecutionBroadcaster),
-      task_supervisor_reference: Module.concat(quantum, TaskSupervisor),
-      name: Module.concat(quantum, NodeSelectorBroadcaster)
+      execution_broadcaster_reference: Module.concat(scheduler, ExecutionBroadcaster),
+      task_supervisor_reference: Module.concat(scheduler, TaskSupervisor),
+      name: Module.concat(scheduler, NodeSelectorBroadcaster)
     }
 
     executor_supervisor_opts =
@@ -77,16 +78,17 @@ defmodule Quantum.Supervisor do
         opts
         |> Map.take([:debug_logging])
         |> Map.merge(%{
-          node_selector_broadcaster_reference: Module.concat(quantum, NodeSelectorBroadcaster),
-          task_supervisor_reference: Module.concat(quantum, TaskSupervisor),
-          task_registry_reference: Module.concat(quantum, TaskRegistry),
-          name: Module.concat(quantum, ExecutorSupervisor)
+          node_selector_broadcaster_reference: Module.concat(scheduler, NodeSelectorBroadcaster),
+          task_supervisor_reference: Module.concat(scheduler, TaskSupervisor),
+          task_registry_reference: Module.concat(scheduler, TaskRegistry),
+          name: Module.concat(scheduler, ExecutorSupervisor)
         })
       )
 
     Supervisor.init(
       [
-        {Task.Supervisor, [name: Module.concat(quantum, TaskSupervisor)]},
+        {Task.Supervisor, [name: Module.concat(scheduler, TaskSupervisor)]},
+        {storage, storage_opts ++ [name: Module.concat(scheduler, Storage)]},
         {Quantum.ClockBroadcaster, clock_broadcaster_opts},
         {Quantum.TaskRegistry, task_registry_opts},
         {Quantum.JobBroadcaster, job_broadcaster_opts},
