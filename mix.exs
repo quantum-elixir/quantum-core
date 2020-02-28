@@ -3,7 +3,7 @@ defmodule Quantum.Mixfile do
 
   use Mix.Project
 
-  @version "3.0.0-rc.2"
+  @version "3.0.0-rc.3"
 
   def project do
     [
@@ -53,6 +53,7 @@ defmodule Quantum.Mixfile do
         "Kai Faber",
         "Jonatan Männchen"
       ],
+      exclude_patterns: [~r[priv/plts]],
       licenses: ["Apache License 2.0"],
       links: %{
         "Changelog" => "https://github.com/quantum-elixir/quantum-core/blob/master/CHANGELOG.md",

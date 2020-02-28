@@ -36,7 +36,7 @@ Storage implementations must implement the `Quantum.Storage` behaviour.
 
 The following adapters are supported:
 
-* TODO: Add Adapters
+* [`PersistentEts`](https://hex.pm/packages/quantum_storage_persistent_ets)
 
 ## Release managers
 (
