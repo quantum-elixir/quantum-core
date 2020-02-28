@@ -1,5 +1,6 @@
 defmodule Quantum.TaskRegistry do
   @moduledoc false
+
   # Registry to check if a task is already running on a node.
 
   use GenServer

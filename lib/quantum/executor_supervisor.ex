@@ -1,5 +1,6 @@
 defmodule Quantum.ExecutorSupervisor do
   @moduledoc false
+
   # This `ConsumerSupervisor` is responsible to start a job for every execute event.
 
   use ConsumerSupervisor

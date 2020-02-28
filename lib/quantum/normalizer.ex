@@ -1,5 +1,6 @@
 defmodule Quantum.Normalizer do
   @moduledoc false
+
   # Normalize Config values into a `Quantum.Job`.
 
   alias Crontab.CronExpression

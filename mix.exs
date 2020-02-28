@@ -19,9 +19,18 @@ defmodule Quantum.Mixfile do
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
       version: @version,
-      dialyzer: [
-        ignore_warnings: "dialyzer.ignore-warnings"
-      ]
+      build_embedded: (System.get_env("BUILD_EMBEDDED") || "false") in ["1", "true"],
+      dialyzer:
+        [
+          ignore_warnings: "dialyzer.ignore-warnings"
+        ] ++
+          if (System.get_env("DIALYZER_PLT_PRIV") || "false") in ["1", "true"] do
+            [
+              plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+            ]
+          else
+            []
+          end
     ]
   end
 

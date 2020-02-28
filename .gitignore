@@ -6,3 +6,5 @@ erl_crash.dump
 mix.lock
 *.ez
 /cover
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
