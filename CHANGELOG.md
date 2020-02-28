@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Changed
+- The `Quantum.Storage` behaviour contains a new  mandatory `child_spec/1` callback.
+
 Diff for [unreleased]
 
 ## 3.0.0-rc.1 - 2020-02-26

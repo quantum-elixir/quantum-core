@@ -5,24 +5,40 @@ defmodule Quantum.Storage.Noop do
 
   @behaviour Quantum.Storage
 
-  @impl Quantum.Storage
-  def jobs(_scheduler_module), do: :not_applicable
+  use GenServer
 
-  @impl Quantum.Storage
-  def add_job(_scheduler_module, _job), do: :ok
+  @doc false
+  @impl GenServer
+  def init(_args), do: {:ok, nil}
 
-  @impl Quantum.Storage
-  def delete_job(_scheduler_module, _job_name), do: :ok
+  @doc false
+  def start_link(_opts), do: :ignore
 
+  @doc false
   @impl Quantum.Storage
-  def update_job_state(_scheduler_module, _job_name, _state), do: :ok
+  def jobs(_storage_pid), do: :not_applicable
 
+  @doc false
   @impl Quantum.Storage
-  def last_execution_date(_scheduler_module), do: :unknown
+  def add_job(_storage_pid, _job), do: :ok
 
+  @doc false
   @impl Quantum.Storage
-  def update_last_execution_date(_scheduler_module, _last_execution_date), do: :ok
+  def delete_job(_storage_pid, _job_name), do: :ok
 
+  @doc false
   @impl Quantum.Storage
-  def purge(_scheduler_module), do: :ok
+  def update_job_state(_storage_pid, _job_name, _state), do: :ok
+
+  @doc false
+  @impl Quantum.Storage
+  def last_execution_date(_storage_pid), do: :unknown
+
+  @doc false
+  @impl Quantum.Storage
+  def update_last_execution_date(_storage_pid, _last_execution_date), do: :ok
+
+  @doc false
+  @impl Quantum.Storage
+  def purge(_storage_pid), do: :ok
 end

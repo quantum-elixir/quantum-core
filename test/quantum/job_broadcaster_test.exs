@@ -123,7 +123,7 @@ defmodule Quantum.JobBroadcasterTest do
 
                assert_receive {:received, {:add, ^active_job}}
 
-               assert_receive {:add_job, {TestScheduler, ^active_job}, _}
+               assert_receive {:add_job, ^active_job, _}
              end) =~ "Adding job #Reference"
     end
 
@@ -160,7 +160,7 @@ defmodule Quantum.JobBroadcasterTest do
 
         refute_receive {:received, {:add, _}}
 
-        assert_receive {:add_job, {TestScheduler, ^inactive_job}, _}
+        assert_receive {:add_job, ^inactive_job, _}
       end)
     end
   end
@@ -175,7 +175,7 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:received, {:remove, ^active_job_name}}
 
-        assert_receive {:delete_job, {TestScheduler, ^active_job_name}, _}
+        assert_receive {:delete_job, ^active_job_name, _}
 
         refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
                  key == active_job_name
@@ -203,7 +203,7 @@ defmodule Quantum.JobBroadcasterTest do
 
         refute_receive {:received, {:remove, _}}
 
-        assert_receive {:delete_job, {TestScheduler, ^inactive_job_name}, _}
+        assert_receive {:delete_job, ^inactive_job_name, _}
 
         refute Enum.any?(TestScheduler.jobs(broadcaster), fn {key, _} ->
                  key == inactive_job.name
@@ -222,7 +222,7 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:received, {:remove, ^active_job_name}}
 
-        assert_receive {:update_job_state, {TestScheduler, _, _}, _}
+        assert_receive {:update_job_state, {_, _}, _}
       end)
     end
 
@@ -235,7 +235,7 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:received, {:add, ^active_job}}
 
-        assert_receive {:update_job_state, {TestScheduler, _, _}, _}
+        assert_receive {:update_job_state, {_, _}, _}
       end)
     end
 
@@ -295,7 +295,7 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:received, {:remove, ^inactive_job_name}}
         assert_receive {:received, {:remove, ^active_job_name}}
 
-        assert_receive {:purge, TestScheduler, _}
+        assert_receive {:purge, _, _}
       end)
     end
   end

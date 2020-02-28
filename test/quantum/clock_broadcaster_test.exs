@@ -129,7 +129,9 @@ defmodule Quantum.ClockBroadcasterTest do
            [
              name: Module.concat(__MODULE__, test),
              debug_logging: false,
-             start_time: NaiveDateTime.utc_now()
+             start_time: NaiveDateTime.utc_now(),
+             storage: Quantum.Storage.Test,
+             scheduler: NotNeeded
            ],
            Enum.to_list(opts)
          )

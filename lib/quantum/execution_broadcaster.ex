@@ -60,11 +60,14 @@ defmodule Quantum.ExecutionBroadcaster do
         scheduler: scheduler,
         debug_logging: debug_logging
       }) do
+    storage_pid = GenServer.whereis(Module.concat(scheduler, Storage))
+
     {:producer_consumer,
      %State{
        uninitialized_jobs: [],
        execution_timeline: [],
        storage: storage,
+       storage_pid: storage_pid,
        scheduler: scheduler,
        debug_logging: debug_logging
      }, subscribe_to: [job_broadcaster, clock_broadcaster]}
@@ -159,7 +162,7 @@ defmodule Quantum.ExecutionBroadcaster do
   defp execute_events_to_fire(
          %State{
            storage: storage,
-           scheduler: scheduler,
+           storage_pid: storage_pid,
            debug_logging: debug_logging,
            execution_timeline: [{time_to_execute, jobs} | tail]
          } = state,
@@ -173,7 +176,7 @@ defmodule Quantum.ExecutionBroadcaster do
         {[], state}
 
       :eq ->
-        :ok = storage.update_last_execution_date(scheduler, time_to_execute)
+        :ok = storage.update_last_execution_date(storage_pid, time_to_execute)
 
         events =
           for %Job{name: job_name} = job <- jobs do

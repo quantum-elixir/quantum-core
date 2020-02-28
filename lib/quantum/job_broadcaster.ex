@@ -29,8 +29,10 @@ defmodule Quantum.JobBroadcaster do
         scheduler: scheduler,
         debug_logging: debug_logging
       }) do
+    storage_pid = GenServer.whereis(Module.concat(scheduler, Storage))
+
     effective_jobs =
-      scheduler
+      storage_pid
       |> storage.jobs()
       |> case do
         :not_applicable ->
@@ -55,6 +57,7 @@ defmodule Quantum.JobBroadcaster do
        jobs: effective_jobs |> Enum.map(&{&1.name, &1}) |> Map.new(),
        buffer: for(%{state: :active} = job <- effective_jobs, do: {:add, job}),
        storage: storage,
+       storage_pid: storage_pid,
        scheduler: scheduler,
        debug_logging: debug_logging
      }}
@@ -70,38 +73,50 @@ defmodule Quantum.JobBroadcaster do
   @impl GenStage
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
-        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
-          state
+        %State{
+          jobs: jobs,
+          storage: storage,
+          storage_pid: storage_pid,
+          debug_logging: debug_logging
+        } = state
       ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
       end)
 
-    :ok = storage.add_job(scheduler, job)
+    :ok = storage.add_job(storage_pid, job)
 
     {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
   def handle_cast(
         {:add, %Job{state: :inactive, name: job_name} = job},
-        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
-          state
+        %State{
+          jobs: jobs,
+          storage: storage,
+          storage_pid: storage_pid,
+          debug_logging: debug_logging
+        } = state
       ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
       end)
 
-    :ok = storage.add_job(scheduler, job)
+    :ok = storage.add_job(storage_pid, job)
 
     {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
   end
 
   def handle_cast(
         {:delete, name},
-        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
-          state
+        %State{
+          jobs: jobs,
+          storage: storage,
+          storage_pid: storage_pid,
+          debug_logging: debug_logging
+        } = state
       ) do
     debug_logging &&
       Logger.debug(fn ->
@@ -110,12 +125,12 @@ defmodule Quantum.JobBroadcaster do
 
     case Map.fetch(jobs, name) do
       {:ok, %{state: :active}} ->
-        :ok = storage.delete_job(scheduler, name)
+        :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
       {:ok, %{state: :inactive}} ->
-        :ok = storage.delete_job(scheduler, name)
+        :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [], %{state | jobs: Map.delete(jobs, name)}}
 
@@ -126,8 +141,12 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         {:change_state, name, new_state},
-        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
-          state
+        %State{
+          jobs: jobs,
+          storage: storage,
+          storage_pid: storage_pid,
+          debug_logging: debug_logging
+        } = state
       ) do
     debug_logging &&
       Logger.debug(fn ->
@@ -144,7 +163,7 @@ defmodule Quantum.JobBroadcaster do
       {:ok, job} ->
         jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
 
-        :ok = storage.update_job_state(scheduler, job.name, new_state)
+        :ok = storage.update_job_state(storage_pid, job.name, new_state)
 
         case new_state do
           :active ->
@@ -158,8 +177,12 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_cast(
         :delete_all,
-        %State{jobs: jobs, storage: storage, scheduler: scheduler, debug_logging: debug_logging} =
-          state
+        %State{
+          jobs: jobs,
+          storage: storage,
+          storage_pid: storage_pid,
+          debug_logging: debug_logging
+        } = state
       ) do
     debug_logging &&
       Logger.debug(fn ->
@@ -168,7 +191,7 @@ defmodule Quantum.JobBroadcaster do
 
     messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
 
-    :ok = storage.purge(scheduler)
+    :ok = storage.purge(storage_pid)
 
     {:noreply, messages, %{state | jobs: %{}}}
   end
