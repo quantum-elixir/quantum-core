@@ -4,10 +4,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+Diff for [unreleased]
+
+## 3.0.0-rc.2 - 2020-02-28
+
 ### Changed
 - The `Quantum.Storage` behaviour contains a new  mandatory `child_spec/1` callback.
 
-Diff for [unreleased]
+Diff for [3.0.0-rc.1]
 
 ## 3.0.0-rc.1 - 2020-02-26
 
@@ -562,8 +566,9 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.1...HEAD
-[3.0.0-cr.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.4.0...v3.0.0-rc.1
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.2...HEAD
+[3.0.0-rc.2]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.1...v3.0.0-rc.2
+[3.0.0-rc.1]: https://github.com/quantum-elixir/quantum-core/compare/v2.4.0...v3.0.0-rc.1
 [2.4.0]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/quantum-elixir/quantum-core/compare/v2.3.2...v2.3.3
