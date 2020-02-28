@@ -4,7 +4,7 @@
 
 [![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum) [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/quantum)
-[![Build Status](https://travis-ci.com/quantum-elixir/quantum-core.svg?branch=master)](https://travis-ci.com/quantum-elixir/quantum-core)
+![.github/workflows/elixir.yml](https://github.com/quantum-elixir/quantum-core/workflows/.github/workflows/elixir.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
 [![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
 

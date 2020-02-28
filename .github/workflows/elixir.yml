@@ -1,0 +1,400 @@
+on:
+  - push
+  - pull_request
+
+env:
+  BUILD_EMBEDDED: true
+  DIALYZER_PLT_PRIV: true
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  deps:
+    name: Install Deps
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            deps-${{ runner.os }}-
+            deps-
+      - run: mix deps.get
+      - uses: actions/upload-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/upload-artifact@master
+        with:
+          name: deps_lock
+          path: mix.lock
+  
+  compile_dev:
+    name: Compile Dev Environment
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: _build/dev
+          key: compile_dev-${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            compile_dev-${{ runner.os }}-
+            compile_dev-
+      - run: mix deps.compile
+        env:
+          MIX_ENV: dev
+      - run: mix compile --warning-as-errors
+        env:
+          MIX_ENV: dev
+      - uses: actions/upload-artifact@master
+        with:
+          name: compile_dev
+          path: _build/dev
+  
+  compile_docs:
+    name: Compile Docs Environment
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: _build/docs
+          key: compile_docs${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            compile_docs-${{ runner.os }}-
+            compile_docs-
+      - run: mix deps.compile
+        env:
+          MIX_ENV: docs
+      - run: mix compile --warning-as-errors
+        env:
+          MIX_ENV: docs
+      - uses: actions/upload-artifact@master
+        with:
+          name: compile_docs
+          path: _build/docs
+  
+  compile_test:
+    name: Compile Test Environment (OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}})
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps']
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [21.3, 22.2]
+        elixir: [1.8.2, 1.9.4, 1.10.2]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: _build/test
+          key: compile_test-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            compile_test-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_test-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile
+        env:
+          MIX_ENV: test
+      - run: mix compile --warning-as-errors
+        env:
+          MIX_ENV: test
+      - uses: actions/upload-artifact@master
+        with:
+          name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
+          path: _build/test
+  
+  compile_prod:
+    name: Compile Prod Environment
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: _build/prod
+          key: compile_prod-${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            compile_prod-${{ runner.os }}-
+            compile_prod-
+      - run: mix deps.compile
+        env:
+          MIX_ENV: prod
+      - run: mix compile --warning-as-errors
+        env:
+          MIX_ENV: prod
+      - uses: actions/upload-artifact@master
+        with:
+          name: compile_prod
+          path: _build/prod
+
+  format:
+    name: Check Formatting
+    
+    runs-on: ubuntu-latest
+
+    needs: ['deps']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - run: mix format --check-formatted
+        env:
+          MIX_ENV: dev
+
+  test:
+    name: Run Tests & Submit Coverage (OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}})
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [21.3, 22.2]
+        elixir: [1.8.2, 1.9.4, 1.10.2]
+
+    needs: ['deps', 'compile_test']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
+          path: _build/test
+      - run: mix coveralls.github
+        env:
+          MIX_ENV: test
+
+  credo:
+    name: Check Credo
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps', 'compile_dev']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: compile_dev
+          path: _build/dev
+      - run: mix credo --strict
+        env:
+          MIX_ENV: dev
+
+  dialyzer_plt:
+    name: Generate Dialyzer PLT
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps', 'compile_dev']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: compile_dev
+          path: _build/dev
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: priv/plts/
+          key: dialyzer_plt_dev-${{ runner.os }}-${{ github.ref }}
+          restore-keys: |
+            dialyzer_plt_dev-${{ runner.os }}-
+            dialyzer_plt_dev-
+      - run: mix dialyzer --plt
+        env:
+          MIX_ENV: dev
+      - uses: actions/upload-artifact@master
+        with:
+          name: dialyzer_plt_dev
+          path: priv/plts/
+
+  dialyzer_test:
+    name: "Check Dialyzer"
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps', 'compile_dev', 'dialyzer_plt']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: compile_dev
+          path: _build/dev
+      - uses: actions/download-artifact@master
+        with:
+          name: dialyzer_plt_dev
+          path: priv/plts/
+      - run: mix dialyzer --halt-exit-status
+        env:
+          MIX_ENV: dev
+
+  docs:
+    name: "Generate Docs"
+
+    runs-on: ubuntu-latest
+
+    needs: ['deps', 'compile_docs']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.2
+          elixir-version: 1.10.2
+      - uses: actions/download-artifact@master
+        with:
+          name: deps
+          path: deps
+      - uses: actions/download-artifact@master
+        with:
+          name: deps_lock
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: compile_docs
+          path: _build/docs
+      - run: mix docs
+        env:
+          MIX_ENV: docs
+      - uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: doc

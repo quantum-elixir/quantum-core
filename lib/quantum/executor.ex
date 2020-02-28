@@ -1,5 +1,6 @@
 defmodule Quantum.Executor do
   @moduledoc false
+
   # Task to actually execute a Task
 
   use Task
