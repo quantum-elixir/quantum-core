@@ -127,7 +127,13 @@ config :your_app, YourApp.Scheduler,
 
 Please note that Quantum uses **UTC timezone** and not local timezone.
 
-To specify another default timezone, add the following `timezone` option to your configuration:
+Before changing the timezone you need to install [Tzdata](https://github.com/lau/tzdata) and add the following line in your config file.
+
+```elixir
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+```
+
+Now you can specify another default timezone, add the following `timezone` option to your configuration:
 
 ```elixir
 config :your_app, YourApp.Scheduler,
