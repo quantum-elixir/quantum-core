@@ -150,8 +150,16 @@ defmodule Quantum.ExecutionBroadcaster do
 
   defp initialize_jobs(%State{uninitialized_jobs: uninitialized_jobs} = state, time) do
     uninitialized_jobs
+    |> Enum.reject(&match?(%Job{schedule: %CronExpression{reboot: true}}, &1))
     |> Enum.reduce(
-      %{state | uninitialized_jobs: []},
+      %{
+        state
+        | uninitialized_jobs:
+            Enum.filter(
+              uninitialized_jobs,
+              &match?(%Job{schedule: %CronExpression{reboot: true}}, &1)
+            )
+      },
       &add_job_to_state(&1, &2, time)
     )
     |> sort_state
