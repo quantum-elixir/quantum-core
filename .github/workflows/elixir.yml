@@ -17,9 +17,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/cache@v1
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/cache@v2
         id: cache
         with:
           path: deps
@@ -28,11 +28,11 @@ jobs:
             deps-${{ runner.os }}-
             deps-
       - run: mix deps.get
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: deps
-          path: deps
-      - uses: actions/upload-artifact@master
+          path: deps/
+      - uses: actions/upload-artifact@v1
         with:
           name: deps_lock
           path: mix.lock
@@ -48,17 +48,17 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: cache
         with:
           path: _build/dev
@@ -72,10 +72,10 @@ jobs:
       - run: mix compile --warning-as-errors
         env:
           MIX_ENV: dev
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: compile_dev
-          path: _build/dev
+          path: _build/dev/
   
   compile_docs:
     name: Compile Docs Environment
@@ -88,17 +88,17 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: cache
         with:
           path: _build/docs
@@ -112,10 +112,10 @@ jobs:
       - run: mix compile --warning-as-errors
         env:
           MIX_ENV: docs
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: compile_docs
-          path: _build/docs
+          path: _build/docs/
   
   compile_test:
     name: Compile Test Environment (OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}})
@@ -127,8 +127,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: [21.3, 22.2]
-        elixir: [1.8.2, 1.9.4, 1.10.2]
+        otp: [21.3, 22.3, 23.0]
+        elixir: [1.8.2, 1.9.4, 1.10.3]
 
     steps:
       - uses: actions/checkout@v2
@@ -136,15 +136,15 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: cache
         with:
           path: _build/test
@@ -158,10 +158,10 @@ jobs:
       - run: mix compile --warning-as-errors
         env:
           MIX_ENV: test
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
-          path: _build/test
+          path: _build/test/
   
   compile_prod:
     name: Compile Prod Environment
@@ -174,17 +174,17 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: cache
         with:
           path: _build/prod
@@ -198,10 +198,10 @@ jobs:
       - run: mix compile --warning-as-errors
         env:
           MIX_ENV: prod
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: compile_prod
-          path: _build/prod
+          path: _build/prod/
 
   format:
     name: Check Formatting
@@ -214,13 +214,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
@@ -236,8 +236,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: [21.3, 22.2]
-        elixir: [1.8.2, 1.9.4, 1.10.2]
+        otp: [21.3, 22.3, 23.0]
+        elixir: [1.8.2, 1.9.4, 1.10.3]
 
     needs: ['deps', 'compile_test']
 
@@ -247,15 +247,15 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
           path: _build/test
@@ -274,17 +274,17 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: compile_dev
           path: _build/dev
@@ -303,21 +303,21 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: compile_dev
           path: _build/dev
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: cache
         with:
           path: priv/plts/
@@ -328,7 +328,7 @@ jobs:
       - run: mix dialyzer --plt
         env:
           MIX_ENV: dev
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: dialyzer_plt_dev
           path: priv/plts/
@@ -344,21 +344,21 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: compile_dev
           path: _build/dev
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: dialyzer_plt_dev
           path: priv/plts/
@@ -377,24 +377,24 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.2
-          elixir-version: 1.10.2
-      - uses: actions/download-artifact@master
+          otp-version: 22.3
+          elixir-version: 1.10.3
+      - uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: deps_lock
           path: .
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v1
         with:
           name: compile_docs
           path: _build/docs
       - run: mix docs
         env:
           MIX_ENV: docs
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
           name: docs
           path: doc
