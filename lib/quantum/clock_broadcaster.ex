@@ -72,6 +72,8 @@ defmodule Quantum.ClockBroadcaster do
         end
       )
 
+    events = Enum.reverse(events)
+
     new_remaining_demand = expected_event_count - Enum.count(events)
 
     if remaining_demand > 0 and new_remaining_demand == 0 do
