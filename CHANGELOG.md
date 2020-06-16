@@ -6,12 +6,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 3.0.1 - 2020-06-16
+
+### Fixed
+- `ClockEvent` order corrected
+
+Diff for [3.0.1]
+
 ## 3.0.0 - 2020-06-11
 
 ### Fixed
 - Fix `@reboot` Cron Expression (#437)
 
-Diff for [3.0.0-rc.3]
+Diff for [3.0.0]
 
 ## 3.0.0-rc.3 - 2020-02-28
 
@@ -580,7 +587,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.3...v3.0.0
 [3.0.0-rc.3]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.2...v3.0.0-rc.3
 [3.0.0-rc.2]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.1...v3.0.0-rc.2
