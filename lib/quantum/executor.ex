@@ -84,7 +84,13 @@ defmodule Quantum.Executor do
           "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job_name)}"
         end)
 
-      result = execute_task(task)
+      result = 
+        try do
+          execute_task(task)
+        catch
+          type, value ->
+            {type, value}
+        end
 
       debug_logging &&
         Logger.debug(fn ->
