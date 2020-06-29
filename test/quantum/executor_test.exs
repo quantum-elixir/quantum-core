@@ -189,9 +189,107 @@ defmodule Quantum.ExecutorTest do
 
       assert :marked_running = TaskRegistry.mark_running(task_registry, job.name, Node.self())
     end
+
+    test "logs error", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry,
+      debug_logging: debug_logging
+    } do
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> raise "failed" end)
+        |> Job.set_overlap(false)
+
+      logs =
+        capture_log(fn ->
+          {:ok, task} =
+            Executor.start_link(
+              %StartOpts{
+                task_supervisor_reference: task_supervisor,
+                task_registry_reference: task_registry,
+                debug_logging: debug_logging
+              },
+              %Event{job: job, node: Node.self()}
+            )
+
+          assert :ok == wait_for_termination(task)
+        end)
+
+      assert logs =~ ~r/\(RuntimeError\) failed/
+    end
+
+    test "logs exit", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry,
+      debug_logging: debug_logging
+    } do
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> exit(:failure) end)
+        |> Job.set_overlap(false)
+
+      logs =
+        capture_log(fn ->
+          {:ok, task} =
+            Executor.start_link(
+              %StartOpts{
+                task_supervisor_reference: task_supervisor,
+                task_registry_reference: task_registry,
+                debug_logging: debug_logging
+              },
+              %Event{job: job, node: Node.self()}
+            )
+
+          assert :ok == wait_for_termination(task)
+        end)
+
+      assert logs =~ ~r/\(exit\) :failure/
+    end
+
+    test "logs throw", %{
+      task_supervisor: task_supervisor,
+      task_registry: task_registry,
+      debug_logging: debug_logging
+    } do
+      ref = make_ref()
+
+      job =
+        TestScheduler.new_job()
+        |> Job.set_task(fn -> throw(ref) end)
+        |> Job.set_overlap(false)
+
+      logs =
+        capture_log(fn ->
+          {:ok, task} =
+            Executor.start_link(
+              %StartOpts{
+                task_supervisor_reference: task_supervisor,
+                task_registry_reference: task_registry,
+                debug_logging: debug_logging
+              },
+              %Event{job: job, node: Node.self()}
+            )
+
+          assert :ok == wait_for_termination(task)
+        end)
+
+      assert logs =~ "(throw) #{inspect(ref)}"
+    end
   end
 
   def send(caller) do
     send(caller, :executed)
+  end
+
+  def wait_for_termination(pid, timeout \\ 5000) do
+    ref = Process.monitor(pid)
+
+    receive do
+      {:DOWN, ^ref, :process, _pid, _reason} ->
+        :ok
+    after
+      timeout ->
+        :error
+    end
   end
 end
