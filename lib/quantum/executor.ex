@@ -84,20 +84,25 @@ defmodule Quantum.Executor do
           "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job_name)}"
         end)
 
-      result = 
-        try do
-          execute_task(task)
-        catch
-          type, value ->
-            {type, value}
-        end
-
-      debug_logging &&
-        Logger.debug(fn ->
-          "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{inspect(job_name)}, which yielded result: #{
-            inspect(result)
-          }"
-        end)
+      try do
+        execute_task(task)
+      catch
+        type, value ->
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{
+                inspect(job_name)
+              }, which failed due to: #{Exception.format(type, value, __STACKTRACE__)}"
+            end)
+      else
+        result ->
+          debug_logging &&
+            Logger.debug(fn ->
+              "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{
+                inspect(job_name)
+              }, which yielded result: #{inspect(result)}"
+            end)
+      end
 
       :ok
     end)
