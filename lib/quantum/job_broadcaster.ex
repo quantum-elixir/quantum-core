@@ -15,11 +15,22 @@ defmodule Quantum.JobBroadcaster do
   # Start Job Broadcaster
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
-    GenStage.start_link(
-      __MODULE__,
+    __MODULE__
+    |> GenStage.start_link(
       struct!(InitOpts, Map.take(opts, [:jobs, :storage, :scheduler, :debug_logging])),
       name: name
     )
+    |> case do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Process.monitor(pid)
+        {:ok, pid}
+
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   @impl GenStage
@@ -202,4 +213,9 @@ defmodule Quantum.JobBroadcaster do
 
   def handle_call({:find_job, name}, _, %State{jobs: jobs} = state),
     do: {:reply, Map.get(jobs, name), [], state}
+
+  @impl GenStage
+  def handle_info(_message, state) do
+    {:noreply, [], state}
+  end
 end

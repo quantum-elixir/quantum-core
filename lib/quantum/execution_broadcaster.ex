@@ -36,8 +36,8 @@ defmodule Quantum.ExecutionBroadcaster do
   # Start Stage
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
-    GenStage.start_link(
-      __MODULE__,
+    __MODULE__
+    |> GenStage.start_link(
       struct!(
         InitOpts,
         Map.take(opts, [
@@ -50,6 +50,17 @@ defmodule Quantum.ExecutionBroadcaster do
       ),
       name: name
     )
+    |> case do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Process.monitor(pid)
+        {:ok, pid}
+
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   @impl GenStage
@@ -146,6 +157,11 @@ defmodule Quantum.ExecutionBroadcaster do
     state
     |> initialize_jobs(time)
     |> execute_events_to_fire(time)
+  end
+
+  @impl GenStage
+  def handle_info(_message, state) do
+    {:noreply, [], state}
   end
 
   defp initialize_jobs(%State{uninitialized_jobs: uninitialized_jobs} = state, time) do

@@ -12,7 +12,19 @@ defmodule Quantum.TaskRegistry do
   # Start the registry
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name}) do
-    GenServer.start_link(__MODULE__, %InitOpts{}, name: name)
+    __MODULE__
+    |> GenServer.start_link(%InitOpts{}, name: name)
+    |> case do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Process.monitor(pid)
+        {:ok, pid}
+
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   # Mark a task as Running
@@ -119,5 +131,10 @@ defmodule Quantum.TaskRegistry do
       end
 
     {:noreply, %{state | running_tasks: running_tasks}}
+  end
+
+  @impl GenServer
+  def handle_info(_message, state) do
+    {:noreply, [], state}
   end
 end

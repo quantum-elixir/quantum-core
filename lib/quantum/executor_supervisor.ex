@@ -11,8 +11,8 @@ defmodule Quantum.ExecutorSupervisor do
 
   @spec start_link(StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
-    ConsumerSupervisor.start_link(
-      __MODULE__,
+    __MODULE__
+    |> ConsumerSupervisor.start_link(
       struct!(
         InitOpts,
         Map.take(opts, [
@@ -24,6 +24,17 @@ defmodule Quantum.ExecutorSupervisor do
       ),
       name: name
     )
+    |> case do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Process.monitor(pid)
+        {:ok, pid}
+
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   @impl ConsumerSupervisor
