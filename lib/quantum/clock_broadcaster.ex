@@ -11,11 +11,22 @@ defmodule Quantum.ClockBroadcaster do
 
   @spec start_link(opts :: StartOpts.t()) :: GenServer.on_start()
   def start_link(%StartOpts{name: name} = opts) do
-    GenStage.start_link(
-      __MODULE__,
+    __MODULE__
+    |> GenStage.start_link(
       struct!(InitOpts, Map.take(opts, [:start_time, :storage, :scheduler, :debug_logging])),
       name: name
     )
+    |> case do
+      {:ok, pid} ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        Process.monitor(pid)
+        {:ok, pid}
+
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   @impl GenStage
@@ -57,6 +68,10 @@ defmodule Quantum.ClockBroadcaster do
   @impl GenStage
   def handle_info(:tick, state) do
     handle_tick(state)
+  end
+
+  def handle_info(_message, state) do
+    {:noreply, [], state}
   end
 
   defp handle_tick(%State{remaining_demand: 0} = state) do

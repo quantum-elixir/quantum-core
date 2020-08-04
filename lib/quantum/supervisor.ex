@@ -5,39 +5,50 @@ defmodule Quantum.Supervisor do
 
   require Logger
 
-  alias Quantum.{Job, Normalizer}
-
   # Starts the quantum supervisor.
-  @spec start_link(GenServer.server(), atom, Keyword.t()) :: GenServer.on_start()
-  def start_link(quantum, otp_app, opts) do
+  @spec start_link(GenServer.server(), Keyword.t()) :: GenServer.on_start()
+  def start_link(quantum, opts) do
     name = Keyword.take(opts, [:name])
-    Supervisor.start_link(__MODULE__, {quantum, otp_app, opts}, name)
+    Supervisor.start_link(__MODULE__, {quantum, opts}, name)
   end
 
   @impl Supervisor
-  def init({scheduler, otp_app, opts}) do
-    opts = runtime_config(scheduler, otp_app, opts)
-    opts = quantum_init(scheduler, opts)
-    %{storage: storage, scheduler: ^scheduler} = opts = Map.new(opts)
+  def init({scheduler, opts}) do
+    %{
+      storage: storage,
+      scheduler: ^scheduler,
+      task_supervisor_name: task_supervisor_name,
+      storage_name: storage_name,
+      task_registry_name: task_registry_name,
+      clock_broadcaster_name: clock_broadcaster_name,
+      job_broadcaster_name: job_broadcaster_name,
+      execution_broadcaster_name: execution_broadcaster_name,
+      node_selector_broadcaster_name: node_selector_broadcaster_name,
+      executor_supervisor_name: executor_supervisor_name
+    } =
+      opts =
+      opts
+      |> scheduler.config
+      |> quantum_init(scheduler)
+      |> Map.new()
+
+    task_supervisor_opts = [name: task_supervisor_name]
 
     storage_opts =
       opts
       |> Map.get(:storage_opts, [])
       |> Keyword.put(:scheduler, scheduler)
+      |> Keyword.put(:name, storage_name)
 
-    task_registry_opts = %Quantum.TaskRegistry.StartOpts{
-      name: Module.concat(scheduler, TaskRegistry)
-    }
+    task_registry_opts = %Quantum.TaskRegistry.StartOpts{name: task_registry_name}
 
     clock_broadcaster_opts =
       struct!(
         Quantum.ClockBroadcaster.StartOpts,
         opts
         |> Map.take([:debug_logging, :storage, :scheduler])
-        |> Map.merge(%{
-          name: Module.concat(scheduler, ClockBroadcaster),
-          start_time: NaiveDateTime.utc_now()
-        })
+        |> Map.put(:name, clock_broadcaster_name)
+        |> Map.put(:start_time, NaiveDateTime.utc_now())
       )
 
     job_broadcaster_opts =
@@ -45,9 +56,7 @@ defmodule Quantum.Supervisor do
         Quantum.JobBroadcaster.StartOpts,
         opts
         |> Map.take([:jobs, :storage, :scheduler, :debug_logging])
-        |> Map.merge(%{
-          name: Module.concat(scheduler, JobBroadcaster)
-        })
+        |> Map.put(:name, job_broadcaster_name)
       )
 
     execution_broadcaster_opts =
@@ -59,17 +68,15 @@ defmodule Quantum.Supervisor do
           :scheduler,
           :debug_logging
         ])
-        |> Map.merge(%{
-          job_broadcaster_reference: Module.concat(scheduler, JobBroadcaster),
-          clock_broadcaster_reference: Module.concat(scheduler, ClockBroadcaster),
-          name: Module.concat(scheduler, ExecutionBroadcaster)
-        })
+        |> Map.put(:job_broadcaster_reference, job_broadcaster_name)
+        |> Map.put(:clock_broadcaster_reference, clock_broadcaster_name)
+        |> Map.put(:name, execution_broadcaster_name)
       )
 
     node_selector_broadcaster_opts = %Quantum.NodeSelectorBroadcaster.StartOpts{
-      execution_broadcaster_reference: Module.concat(scheduler, ExecutionBroadcaster),
-      task_supervisor_reference: Module.concat(scheduler, TaskSupervisor),
-      name: Module.concat(scheduler, NodeSelectorBroadcaster)
+      execution_broadcaster_reference: execution_broadcaster_name,
+      task_supervisor_reference: task_supervisor_name,
+      name: node_selector_broadcaster_name
     }
 
     executor_supervisor_opts =
@@ -77,18 +84,16 @@ defmodule Quantum.Supervisor do
         Quantum.ExecutorSupervisor.StartOpts,
         opts
         |> Map.take([:debug_logging])
-        |> Map.merge(%{
-          node_selector_broadcaster_reference: Module.concat(scheduler, NodeSelectorBroadcaster),
-          task_supervisor_reference: Module.concat(scheduler, TaskSupervisor),
-          task_registry_reference: Module.concat(scheduler, TaskRegistry),
-          name: Module.concat(scheduler, ExecutorSupervisor)
-        })
+        |> Map.put(:node_selector_broadcaster_reference, node_selector_broadcaster_name)
+        |> Map.put(:task_supervisor_reference, task_supervisor_name)
+        |> Map.put(:task_registry_reference, task_registry_name)
+        |> Map.put(:name, executor_supervisor_name)
       )
 
     Supervisor.init(
       [
-        {Task.Supervisor, [name: Module.concat(scheduler, TaskSupervisor)]},
-        {storage, storage_opts ++ [name: Module.concat(scheduler, Storage)]},
+        {Task.Supervisor, task_supervisor_opts},
+        {storage, storage_opts},
         {Quantum.ClockBroadcaster, clock_broadcaster_opts},
         {Quantum.TaskRegistry, task_registry_opts},
         {Quantum.JobBroadcaster, job_broadcaster_opts},
@@ -101,41 +106,8 @@ defmodule Quantum.Supervisor do
   end
 
   # Run Optional Callback in Quantum Scheduler Implementation
-  @spec quantum_init(atom, Keyword.t()) :: Keyword.t()
-  defp quantum_init(quantum, config) do
-    if Code.ensure_loaded?(quantum) and function_exported?(quantum, :init, 1) do
-      quantum.init(config)
-    else
-      config
-    end
-  end
-
-  defp runtime_config(quantum, otp_app, custom) do
-    config = Quantum.scheduler_config(quantum, otp_app, custom)
-
-    # Load Jobs from Config
-    jobs =
-      config
-      |> Keyword.get(:jobs, [])
-      |> Enum.map(&Normalizer.normalize(quantum.new_job(config), &1))
-      |> remove_jobs_with_duplicate_names(quantum)
-
-    Keyword.put(config, :jobs, jobs)
-  end
-
-  defp remove_jobs_with_duplicate_names(job_list, quantum) do
-    job_list
-    |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
-      if Enum.member?(Map.keys(acc), name) do
-        Logger.warn(
-          "Job with name '#{name}' of quantum '#{quantum}' not started due to duplicate job name"
-        )
-
-        acc
-      else
-        Map.put_new(acc, name, job)
-      end
-    end)
-    |> Map.values()
+  @spec quantum_init(Keyword.t(), atom) :: Keyword.t()
+  defp quantum_init(config, scheduler) do
+    scheduler.init(config)
   end
 end

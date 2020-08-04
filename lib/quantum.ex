@@ -19,17 +19,54 @@ defmodule Quantum do
 
   ## Configuration:
 
-    * `:timeout` - Sometimes, you may come across GenServer
-      timeout errors esp. when you have too many jobs or high
-      load. The default GenServer.call timeout is 5000.
+    * `:clock_broadcaster_name` - GenServer name of clock broadcaster \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:execution_broadcaster_name` - GenServer name of execution broadcaster \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:executor_supervisor_name` - GenServer name of execution supervisor \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:debug_logging` - Turn on debug logging
 
     * `:jobs` - list of cron jobs to execute
 
-    * `:schedule` - Default schedule of new Job
+    * `:job_broadcaster_name` - GenServer name of job broadcaster \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:name` - GenServer name of scheduler \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:node_selector_broadcaster_name` - GenServer name of node selector broadcaster \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:overlap` - Default overlap of new Job
+
+    * `:otp_app` - Application where scheduler runs
 
     * `:run_strategy` - Default Run Strategy of new Job
 
-    * `:overlap` - Default overlap of new Job,
+    * `:schedule` - Default schedule of new Job
+
+    * `:storage` - Storage to use for persistence
+
+    * `:storage_name` - GenServer name of storage \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:supervisor_module` - Module to supervise scheduler \\
+      Can be overwritten to supervise processes differently (for example for clustering) \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:task_registry_name` - GenServer name of task registry \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:task_supervisor_name` - GenServer name of task supervisor \\
+      *(unstable, may break without major release until declared stable)*
+
+    * `:timeout` - Sometimes, you may come across GenServer timeout errors
+      esp. when you have too many jobs or high load. The default `GenServer.call/3`
+      timeout is `5_000`.
 
     * `:timezone` - Default timezone of new Job
 
@@ -45,7 +82,6 @@ defmodule Quantum do
   @type t :: module
 
   @defaults [
-    cron: [],
     timeout: 5_000,
     schedule: nil,
     overlap: true,
@@ -56,8 +92,6 @@ defmodule Quantum do
     storage: Noop
   ]
 
-  @optional_callbacks init: 1
-
   # Returns the configuration stored in the `:otp_app` environment.
   @doc false
   @callback config(Keyword.t()) :: Keyword.t()
@@ -66,7 +100,7 @@ defmodule Quantum do
   Starts supervision and return `{:ok, pid}`
   or just `:ok` if nothing needs to be done.
 
-  Returns `{:error, {:already_started, pid}}` if the repo is already
+  Returns `{:error, {:already_started, pid}}` if the scheduler is already
   started or `{:error, term}` in case anything else goes wrong.
 
   ## Options
@@ -136,16 +170,58 @@ defmodule Quantum do
 
   @doc false
   # Retrieves only scheduler related configuration.
-  def scheduler_config(scheduler, otp_app, custom) do
+  def scheduler_config(opts, scheduler, otp_app) do
     @defaults
     |> Keyword.merge(Application.get_env(otp_app, scheduler, []))
-    |> Keyword.merge(custom)
-    |> Keyword.merge(otp_app: otp_app, scheduler: scheduler)
+    |> Keyword.merge(opts)
+    |> Keyword.put_new(:otp_app, otp_app)
+    |> Keyword.put_new(:scheduler, scheduler)
+    |> Keyword.put_new(:name, scheduler)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
+    |> Keyword.put_new(:task_supervisor_name, Module.concat(scheduler, TaskSupervisor))
+    |> Keyword.put_new(:storage_name, Module.concat(scheduler, Storage))
+    |> Keyword.put_new(:task_registry_name, Module.concat(scheduler, TaskRegistry))
+    |> Keyword.put_new(:clock_broadcaster_name, Module.concat(scheduler, ClockBroadcaster))
+    |> Keyword.put_new(:job_broadcaster_name, Module.concat(scheduler, JobBroadcaster))
+    |> Keyword.put_new(
+      :execution_broadcaster_name,
+      Module.concat(scheduler, ExecutionBroadcaster)
+    )
+    |> Keyword.put_new(
+      :node_selector_broadcaster_name,
+      Module.concat(scheduler, NodeSelectorBroadcaster)
+    )
+    |> Keyword.put_new(:executor_supervisor_name, Module.concat(scheduler, ExecutorSupervisor))
+    |> (fn config ->
+          Keyword.update(config, :jobs, [], fn jobs ->
+            jobs
+            |> Enum.map(&Normalizer.normalize(scheduler.new_job(config), &1))
+            |> remove_jobs_with_duplicate_names(scheduler)
+          end)
+        end).()
+    |> Keyword.put_new(:supervisor_module, Quantum.Supervisor)
+    |> Keyword.put_new(:name, Quantum.Supervisor)
+  end
+
+  defp remove_jobs_with_duplicate_names(job_list, scheduler) do
+    job_list
+    |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
+      if Enum.member?(Map.keys(acc), name) do
+        Logger.warn(
+          "Job with name '#{name}' of scheduler '#{scheduler}' not started due to duplicate job name"
+        )
+
+        acc
+      else
+        Map.put_new(acc, name, job)
+      end
+    end)
+    |> Map.values()
   end
 
   defmacro __using__(opts) do
-    quote bind_quoted: [behaviour: __MODULE__, opts: opts, moduledoc: @moduledoc] do
+    quote bind_quoted: [behaviour: __MODULE__, opts: opts, moduledoc: @moduledoc],
+          location: :keep do
       @otp_app Keyword.fetch!(opts, :otp_app)
       @moduledoc moduledoc
                  |> String.replace(~r/MyApp\.Scheduler/, Enum.join(Module.split(__MODULE__), "."))
@@ -155,27 +231,25 @@ defmodule Quantum do
 
       @doc false
       @impl behaviour
-      def config(custom \\ []) do
-        Quantum.scheduler_config(__MODULE__, @otp_app, custom)
+      def config(opts \\ []) do
+        Quantum.scheduler_config(opts, __MODULE__, @otp_app)
       end
 
       defp __job_broadcaster__ do
-        __job_broadcaster__(
-          config() |> Keyword.fetch!(:scheduler) |> Module.concat(JobBroadcaster),
-          config()
-        )
-      end
-
-      defp __job_broadcaster__(job_broadcaster, configuration) do
-        GenServer.whereis(job_broadcaster)
+        config() |> Keyword.fetch!(:job_broadcaster_name)
       end
 
       defp __timeout__, do: Keyword.fetch!(config(), :timeout)
 
       @impl behaviour
       def start_link(opts \\ []) do
-        opts = Keyword.put_new(opts, :name, __MODULE__)
-        Quantum.Supervisor.start_link(__MODULE__, @otp_app, opts)
+        opts = config(opts)
+        Keyword.fetch!(opts, :supervisor_module).start_link(__MODULE__, opts)
+      end
+
+      @impl behaviour
+      def init(opts) do
+        opts
       end
 
       @impl behaviour
@@ -249,7 +323,7 @@ defmodule Quantum do
         %{unquote_splicing(spec)}
       end
 
-      defoverridable child_spec: 1
+      defoverridable child_spec: 1, config: 0, config: 1, init: 1
     end
   end
 end

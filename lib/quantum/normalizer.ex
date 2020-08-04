@@ -25,7 +25,8 @@ defmodule Quantum.Normalizer do
   #
   #   * `base` - Empty `Quantum.Job`
   #   * `job` - The Job To Normalize
-  @spec normalize(Job.t(), config_full_notation | config_short_notation) :: Job.t() | no_return
+  @spec normalize(Job.t(), config_full_notation | config_short_notation | Job.t()) ::
+          Job.t() | no_return
   def normalize(base, job)
 
   def normalize(%Job{} = base, job) when is_list(job) do
@@ -48,6 +49,10 @@ defmodule Quantum.Normalizer do
 
   def normalize(%Job{} = base, {schedule, task}) do
     normalize_options(base, %{schedule: schedule, task: task})
+  end
+
+  def normalize(%Job{} = _base, %Job{} = job) do
+    job
   end
 
   @spec normalize_options(Job.t(), map) :: Job.t()
