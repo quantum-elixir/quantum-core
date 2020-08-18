@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Diff for [unreleased]
 
+## 3.0.2 - 2020-08-18
+
+### Fixed
+- Fix Warnings with Clock Skew (#449)
+
+Diff for [3.0.2]
+
 ## 3.0.1 - 2020-06-16
 
 ### Fixed
@@ -587,7 +594,8 @@ Diff for [1.0.0]
 - Initial commit
 
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.1...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.2...HEAD
+[3.0.2]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.3...v3.0.0
 [3.0.0-rc.3]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0-rc.2...v3.0.0-rc.3
