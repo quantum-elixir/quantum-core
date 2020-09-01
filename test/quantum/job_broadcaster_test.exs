@@ -25,27 +25,27 @@ defmodule Quantum.JobBroadcasterTest do
           [:quantum, :job, :add],
           _measurements,
           %{job_name: _job_name, module: _module, node: _node} = _metadata,
-          %{parent_thread: parent_thread}
+          %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, :telemetry_pass)
+      send(parent_thread, %{ test_id: test_id })
     end
 
     def handle_event(
           [:quantum, :job, :delete],
           _measurements,
           %{job_name: _job_name, module: _module, node: _node} = _metadata,
-          %{parent_thread: parent_thread}
+          %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, :telemetry_pass)
+      send(parent_thread, %{ test_id: test_id })
     end
 
     def handle_event(
           [:quantum, :job, :update],
           _measurements,
           %{job_name: _job_name, module: _module, node: _node} = _metadata,
-          %{parent_thread: parent_thread}
+          %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, :telemetry_pass)
+      send(parent_thread, %{ test_id: test_id })
     end
   end
 
@@ -149,12 +149,16 @@ defmodule Quantum.JobBroadcasterTest do
   describe "add" do
     @tag listen_storage: true
     test "active", %{broadcaster: broadcaster, active_job: active_job} do
+      test_id = "add-active-job-handler"
       :ok =
         :telemetry.attach(
-          "add-active-job-handler",
+          test_id,
           [:quantum, :job, :add],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       assert capture_log(fn ->
@@ -165,7 +169,7 @@ defmodule Quantum.JobBroadcasterTest do
                assert_receive {:add_job, ^active_job, _}
              end) =~ "Adding job #Reference"
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
 
     test "active (without debug-logging)", %{init_jobs: init_jobs, active_job: active_job} do
@@ -196,12 +200,16 @@ defmodule Quantum.JobBroadcasterTest do
 
     @tag listen_storage: true
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
+      test_id = "add-inactive-job-handler"
       :ok =
         :telemetry.attach(
-          "add-inactive-job-handler",
+          test_id,
           [:quantum, :job, :add],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -212,7 +220,7 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:add_job, ^inactive_job, _}
       end)
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
   end
 
@@ -221,12 +229,16 @@ defmodule Quantum.JobBroadcasterTest do
     test "active", %{broadcaster: broadcaster, active_job: active_job} do
       active_job_name = active_job.name
 
+      test_id = "log-delete-active-job-handler"
       :ok =
         :telemetry.attach(
-          "log-delete-active-job-handler",
+          test_id,
           [:quantum, :job, :delete],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -241,7 +253,7 @@ defmodule Quantum.JobBroadcasterTest do
                end)
       end)
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
 
     @tag listen_storage: true
@@ -257,12 +269,16 @@ defmodule Quantum.JobBroadcasterTest do
 
     @tag jobs: :inactive, listen_storage: true
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
+      test_id = "delete-inactive-job-handler"
       :ok =
         :telemetry.attach(
-          "delete-inactive-job-handler",
+          test_id,
           [:quantum, :job, :delete],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -279,7 +295,7 @@ defmodule Quantum.JobBroadcasterTest do
                end)
       end)
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
   end
 
@@ -288,12 +304,16 @@ defmodule Quantum.JobBroadcasterTest do
     test "active => inactive", %{broadcaster: broadcaster, active_job: active_job} do
       active_job_name = active_job.name
 
+      test_id = "update-active-to-inactive-job-handler"
       :ok =
         :telemetry.attach(
-          "update-active-to-inactive-job-handler",
+          test_id,
           [:quantum, :job, :update],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -304,17 +324,21 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:update_job_state, {_, _}, _}
       end)
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
 
     @tag jobs: :inactive, listen_storage: true
     test "inactive => active", %{broadcaster: broadcaster, inactive_job: inactive_job} do
+      test_id = "update-inactive-to-active-job-handler"
       :ok =
         :telemetry.attach(
-          "update-inactive-to-active-job-handler",
+          test_id,
           [:quantum, :job, :update],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -327,17 +351,22 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:update_job_state, {_, _}, _}
       end)
 
-      assert_receive :telemetry_pass
+      assert_receive %{ test_id: ^test_id }
     end
 
     @tag jobs: :active, listen_storage: true
     test "active => active", %{broadcaster: broadcaster, active_job: active_job} do
+
+      test_id = "update-active-to-active-job-handler"
       :ok =
         :telemetry.attach(
-          "update-active-to-active-job-handler",
+          test_id,
           [:quantum, :job, :update],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       # Initial
@@ -351,17 +380,21 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive :telemetry_pass
+      refute_receive %{ test_id: ^test_id }
     end
 
     @tag jobs: :inactive, listen_storage: true
     test "inactive => inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
+      test_id = "update-inactive-to-inactive-job-handler"
       :ok =
         :telemetry.attach(
-          "update-inactive-to-inactive-job-handler",
+          test_id,
           [:quantum, :job, :update],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       inactive_job_name = inactive_job.name
@@ -374,17 +407,21 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive :telemetry_pass
+      refute_receive %{ test_id: ^test_id }
     end
 
     @tag listen_storage: true
     test "missing", %{broadcaster: broadcaster} do
+      test_id = "update-missing-job-handler"
       :ok =
         :telemetry.attach(
-          "update-missing-job-handler",
+          test_id,
           [:quantum, :job, :update],
           &TelemetryTestHandler.handle_event/4,
-          %{parent_thread: self()}
+          %{
+              parent_thread: self(),
+              test_id: test_id
+          }
         )
 
       capture_log(fn ->
@@ -396,7 +433,7 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive :telemetry_pass
+      refute_receive %{ test_id: ^test_id }
     end
   end
 
