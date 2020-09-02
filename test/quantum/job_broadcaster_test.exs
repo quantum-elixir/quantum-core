@@ -334,7 +334,7 @@ defmodule Quantum.JobBroadcasterTest do
 
     @tag jobs: :inactive, listen_storage: true
     test "inactive => active", %{broadcaster: broadcaster, inactive_job: inactive_job} do
-      IO.inspect "testingA"
+      IO.inspect("testingA")
       :erlang.process_info(self(), :messages) |> IO.inspect()
       test_id = "update-inactive-to-active-job-handler"
 
@@ -358,17 +358,14 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:update_job_state, {_, _}, _}
       end)
-      IO.inspect "testingB"
+
+      IO.inspect("testingB")
       :erlang.process_info(self(), :messages) |> IO.inspect()
       assert_receive %{test_id: ^test_id}
-
-      
     end
 
     @tag jobs: :active, listen_storage: true
     test "active => active", %{broadcaster: broadcaster, active_job: active_job} do
-      IO.inspect "process mailbox before active-active test"
-      :erlang.process_info(self(), :messages) |> IO.inspect()
       test_id = "update-active-to-active-job-handler"
 
       :ok =
@@ -385,6 +382,7 @@ defmodule Quantum.JobBroadcasterTest do
       # Initial
       assert_receive {:received, {:add, ^active_job}}
       name = active_job.name
+
       capture_log(fn ->
         TestScheduler.activate_job(broadcaster, name)
 
@@ -393,8 +391,6 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      IO.inspect "process mailbox after active-active test"
-      :erlang.process_info(self(), :messages) |> IO.inspect()
       refute_receive %{test_id: ^test_id, job_name: ^name}
     end
 
@@ -416,14 +412,14 @@ defmodule Quantum.JobBroadcasterTest do
       inactive_job_name = inactive_job.name
 
       capture_log(fn ->
-        TestScheduler.deactivate_job(broadcaster, inactive_job.name)
+        TestScheduler.deactivate_job(broadcaster, inactive_job_name)
 
         refute_receive {:received, {:remove, ^inactive_job_name}}
 
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive %{test_id: ^test_id}
+      refute_receive %{test_id: ^test_id, job_name: ^inactive_job_name}
     end
 
     @tag listen_storage: true
@@ -441,16 +437,20 @@ defmodule Quantum.JobBroadcasterTest do
           }
         )
 
+      ref1 = make_ref()
+      ref2 = make_ref()
+
       capture_log(fn ->
-        TestScheduler.deactivate_job(broadcaster, make_ref())
-        TestScheduler.activate_job(broadcaster, make_ref())
+        TestScheduler.deactivate_job(broadcaster, ref1)
+        TestScheduler.activate_job(broadcaster, ref2)
 
         refute_receive {:received, {:remove, _}}
         refute_receive {:received, {:add, _}}
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive %{test_id: ^test_id}
+      refute_receive %{test_id: ^test_id, job_name: ref1}
+      refute_receive %{test_id: ^test_id, job_name: ref2}
     end
   end
 
