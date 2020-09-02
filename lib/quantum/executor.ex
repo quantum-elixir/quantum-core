@@ -85,9 +85,9 @@ defmodule Quantum.Executor do
         end)
 
       # Note: we are intentionally mimicking the ":telemetry.span" here to keep current functionality
-      startMonotonicTime = :erlang.monotonic_time()
+      start_monotonic_time = :erlang.monotonic_time()
 
-      :telemetry.execute([:quantum, :job, :start], %{system_time: startMonotonicTime}, %{
+      :telemetry.execute([:quantum, :job, :start], %{system_time: start_monotonic_time}, %{
         job_name: job_name,
         node: inspect(node),
         module: __MODULE__
@@ -104,7 +104,7 @@ defmodule Quantum.Executor do
               }, which failed due to: #{Exception.format(type, value, __STACKTRACE__)}"
             end)
 
-          duration = :erlang.monotonic_time() - startMonotonicTime
+          duration = :erlang.monotonic_time() - start_monotonic_time
 
           :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
             job_name: job_name,
@@ -122,7 +122,7 @@ defmodule Quantum.Executor do
               }, which yielded result: #{inspect(result)}"
             end)
 
-          duration = :erlang.monotonic_time() - startMonotonicTime
+          duration = :erlang.monotonic_time() - start_monotonic_time
 
           :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
             job_name: job_name,
