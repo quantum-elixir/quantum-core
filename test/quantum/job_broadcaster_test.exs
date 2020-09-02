@@ -334,8 +334,6 @@ defmodule Quantum.JobBroadcasterTest do
 
     @tag jobs: :inactive, listen_storage: true
     test "inactive => active", %{broadcaster: broadcaster, inactive_job: inactive_job} do
-      IO.inspect("testingA")
-      :erlang.process_info(self(), :messages) |> IO.inspect()
       test_id = "update-inactive-to-active-job-handler"
 
       :ok =
@@ -359,8 +357,6 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:update_job_state, {_, _}, _}
       end)
 
-      IO.inspect("testingB")
-      :erlang.process_info(self(), :messages) |> IO.inspect()
       assert_receive %{test_id: ^test_id}
     end
 
@@ -449,8 +445,8 @@ defmodule Quantum.JobBroadcasterTest do
         refute_receive {:update_job_state, {TestScheduler, _, _}, _}
       end)
 
-      refute_receive %{test_id: ^test_id, job_name: ref1}
-      refute_receive %{test_id: ^test_id, job_name: ref2}
+      refute_receive %{test_id: ^test_id, job_name: ^ref1}
+      refute_receive %{test_id: ^test_id, job_name: ^ref2}
     end
   end
 
