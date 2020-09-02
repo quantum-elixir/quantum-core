@@ -84,6 +84,15 @@ defmodule Quantum.Executor do
           "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job_name)}"
         end)
 
+      # Note: we are intentionally mimicking the ":telemetry.span" here to keep current functionality
+      startMonotonicTime = :erlang.monotonic_time()
+
+      :telemetry.execute([:quantum, :job, :start], %{system_time: startMonotonicTime}, %{
+        job_name: job_name,
+        node: inspect(node),
+        module: __MODULE__
+      })
+
       try do
         execute_task(task)
       catch
@@ -94,6 +103,16 @@ defmodule Quantum.Executor do
                 inspect(job_name)
               }, which failed due to: #{Exception.format(type, value, __STACKTRACE__)}"
             end)
+
+          duration = :erlang.monotonic_time() - startMonotonicTime
+
+          :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
+            job_name: job_name,
+            node: inspect(node),
+            module: __MODULE__,
+            reason: value,
+            stacktrace: __STACKTRACE__
+          })
       else
         result ->
           debug_logging &&
@@ -102,6 +121,14 @@ defmodule Quantum.Executor do
                 inspect(job_name)
               }, which yielded result: #{inspect(result)}"
             end)
+
+          duration = :erlang.monotonic_time() - startMonotonicTime
+
+          :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
+            job_name: job_name,
+            node: inspect(node),
+            module: __MODULE__
+          })
       end
 
       :ok
