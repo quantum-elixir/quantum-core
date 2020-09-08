@@ -82,6 +82,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @impl GenStage
+
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
         %State{
@@ -91,14 +92,40 @@ defmodule Quantum.JobBroadcaster do
           debug_logging: debug_logging
         } = state
       ) do
-    debug_logging &&
-      Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
-      end)
+    case jobs do
+      %{^job_name => %Job{state: :active} = old_job} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
 
-    :ok = storage.add_job(storage_pid, job)
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
 
-    {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+        {:noreply, [{:delete, old_job}, {:add, job}],
+         %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      %{^job_name => %Job{state: :inactive}} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
+
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      _ ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+          end)
+
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+    end
   end
 
   def handle_cast(
@@ -110,14 +137,39 @@ defmodule Quantum.JobBroadcaster do
           debug_logging: debug_logging
         } = state
       ) do
-    debug_logging &&
-      Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
-      end)
+    case jobs do
+      %{^job_name => %Job{state: :active} = old_job} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
 
-    :ok = storage.add_job(storage_pid, job)
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
 
-    {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+        {:noreply, [{:delete, old_job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      %{^job_name => %Job{state: :inactive}} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
+
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      _ ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+          end)
+
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+    end
   end
 
   def handle_cast(

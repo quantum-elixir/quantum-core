@@ -10,6 +10,8 @@ defmodule Quantum.JobBroadcasterTest do
   import ExUnit.CaptureLog
   import Quantum.CaptureLogExtend
 
+  import Crontab.CronExpression
+
   doctest JobBroadcaster
 
   defmodule TestScheduler do
@@ -162,6 +164,98 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:add_job, ^inactive_job, _}
       end)
+    end
+
+    @tag listen_storage: true
+    test "override active with active", %{broadcaster: broadcaster, test: test_name} do
+      job_1 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/5 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_1)
+
+      assert_receive {:received, {:add, ^job_1}}
+
+      job_2 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/10 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_2)
+
+      assert_receive {:received, {:delete, ^job_1}}
+      assert_receive {:received, {:add, ^job_2}}
+    end
+
+    @tag listen_storage: true
+    test "override active with inactive", %{broadcaster: broadcaster, test: test_name} do
+      job_1 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/5 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_1)
+
+      assert_receive {:received, {:add, ^job_1}}
+
+      job_2 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/10 * * * * *]e)
+        |> Quantum.Job.set_state(:inactive)
+
+      TestScheduler.add_job(broadcaster, job_2)
+
+      assert_receive {:received, {:delete, ^job_1}}
+      refute_receive {:received, {:add, _}}
+    end
+
+    @tag listen_storage: true
+    test "override inactive with active", %{broadcaster: broadcaster, test: test_name} do
+      job_1 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/5 * * * * *]e)
+        |> Quantum.Job.set_state(:inactive)
+
+      TestScheduler.add_job(broadcaster, job_1)
+
+      refute_receive {:received, {:add, _}}
+
+      job_2 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/10 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_2)
+
+      refute_receive {:received, {:delete, _}}
+      assert_receive {:received, {:add, ^job_2}}
+    end
+
+    @tag listen_storage: true
+    test "override inactive with inactive", %{broadcaster: broadcaster, test: test_name} do
+      job_1 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/5 * * * * *]e)
+        |> Quantum.Job.set_state(:inactive)
+
+      TestScheduler.add_job(broadcaster, job_1)
+
+      refute_receive {:received, {:add, _}}
+
+      job_2 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/10 * * * * *]e)
+        |> Quantum.Job.set_state(:inactive)
+
+      TestScheduler.add_job(broadcaster, job_2)
+
+      refute_receive {:received, {:delete, _}}
+      refute_receive {:received, {:add, _}}
     end
   end
 
