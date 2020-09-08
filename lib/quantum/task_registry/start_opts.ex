@@ -4,9 +4,10 @@ defmodule Quantum.TaskRegistry.StartOpts do
   # Start Options for Quantum.TaskRegistry
 
   @type t :: %__MODULE__{
-          name: GenServer.server()
+          name: GenServer.server(),
+          listeners: [atom]
         }
 
   @enforce_keys [:name]
-  defstruct @enforce_keys
+  defstruct @enforce_keys ++ [listeners: []]
 end
