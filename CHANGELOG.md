@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Properly override jobs with duplicate name (#392)
+- Simplify `TaskRegistry` and make tests deterministic
 
 Diff for [unreleased]
 
