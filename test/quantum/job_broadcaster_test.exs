@@ -1,7 +1,8 @@
 defmodule Quantum.JobBroadcasterTest do
   @moduledoc false
 
-  use ExUnit.Case, async: true
+  # , async: true causes random failures due to race conditions with telemetry tests
+  use ExUnit.Case
 
   alias Quantum.{Job, JobBroadcaster, JobBroadcaster.StartOpts}
   alias Quantum.Storage.Test, as: TestStorage
@@ -24,28 +25,28 @@ defmodule Quantum.JobBroadcasterTest do
     def handle_event(
           [:quantum, :job, :add],
           _measurements,
-          %{job_name: job_name, module: _module, node: _node} = _metadata,
+          %{job_name: job_name, job: _job, module: _module, node: _node} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, %{test_id: test_id, job_name: job_name})
+      send(parent_thread, %{test_id: test_id, job_name: job_name, type: :add})
     end
 
     def handle_event(
           [:quantum, :job, :delete],
           _measurements,
-          %{job_name: job_name, module: _module, node: _node} = _metadata,
+          %{job_name: job_name, job: _job, module: _module, node: _node} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, %{test_id: test_id, job_name: job_name})
+      send(parent_thread, %{test_id: test_id, job_name: job_name, type: :delete})
     end
 
     def handle_event(
           [:quantum, :job, :update],
           _measurements,
-          %{job_name: job_name, module: _module, node: _node} = _metadata,
+          %{job_name: job_name, job: _job, module: _module, node: _node} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, %{test_id: test_id, job_name: job_name})
+      send(parent_thread, %{test_id: test_id, job_name: job_name, type: :update})
     end
   end
 
@@ -125,6 +126,10 @@ defmodule Quantum.JobBroadcasterTest do
 
     @tag manual_dispatch: true
     test "storage jobs", %{active_job: active_job, inactive_job: inactive_job} do
+      test_id = "init-storage-jobs-handler"
+
+      :ok = attach_telemetry(:add, test_id, self())
+
       capture_log(fn ->
         defmodule FullStorage do
           @moduledoc false
@@ -155,6 +160,10 @@ defmodule Quantum.JobBroadcasterTest do
         assert_receive {:received, {:add, _}}
         refute_receive {:received, {:add, _}}
       end)
+
+      # Ensure exactly one :add telemetry notifation because only one job is active
+      assert_receive %{test_id: ^test_id, type: :add}
+      refute_receive %{test_id: ^test_id, type: :add}
     end
   end
 
@@ -388,6 +397,10 @@ defmodule Quantum.JobBroadcasterTest do
       active_job: active_job,
       inactive_job: inactive_job
     } do
+      test_id = "delete-all-active-jobs-handler"
+
+      :ok = attach_telemetry(:delete, test_id, self())
+
       active_job_name = active_job.name
       inactive_job_name = inactive_job.name
 
@@ -399,6 +412,9 @@ defmodule Quantum.JobBroadcasterTest do
 
         assert_receive {:purge, _, _}
       end)
+
+      refute_receive %{test_id: ^test_id, job_name: ^inactive_job_name, type: :delete}
+      assert_receive %{test_id: ^test_id, job_name: ^active_job_name, type: :delete}
     end
   end
 

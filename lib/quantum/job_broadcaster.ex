@@ -60,6 +60,16 @@ defmodule Quantum.JobBroadcaster do
               "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Storage, skipping config"
             end)
 
+          for %Job{state: :active, name: name} = job <- storage_jobs do
+            # Send event to telemetry incase the end user wants to monitor events
+            :telemetry.execute([:quantum, :job, :add], %{}, %{
+              job_name: name,
+              job: job,
+              node: inspect(Node.self()),
+              module: __MODULE__
+            })
+          end
+
           storage_jobs
       end
 
@@ -99,6 +109,7 @@ defmodule Quantum.JobBroadcaster do
     # Send event to telemetry incase the end user wants to monitor events
     :telemetry.execute([:quantum, :job, :add], %{}, %{
       job_name: job_name,
+      job: job,
       node: inspect(Node.self()),
       module: __MODULE__
     })
@@ -125,6 +136,7 @@ defmodule Quantum.JobBroadcaster do
     # Send event to telemetry incase the end user wants to monitor events
     :telemetry.execute([:quantum, :job, :add], %{}, %{
       job_name: job_name,
+      job: job,
       node: inspect(Node.self()),
       module: __MODULE__
     })
@@ -148,20 +160,29 @@ defmodule Quantum.JobBroadcaster do
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
       end)
 
-    # Send event to telemetry incase the end user wants to monitor events
-    :telemetry.execute([:quantum, :job, :delete], %{}, %{
-      job_name: name,
-      node: inspect(Node.self()),
-      module: __MODULE__
-    })
-
     case Map.fetch(jobs, name) do
-      {:ok, %{state: :active}} ->
+      {:ok, %{state: :active, name: name} = job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :delete], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+
         :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
-      {:ok, %{state: :inactive}} ->
+      {:ok, %{state: :inactive, name: name} = job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :delete], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+
         :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [], %{state | jobs: Map.delete(jobs, name)}}
@@ -196,6 +217,7 @@ defmodule Quantum.JobBroadcaster do
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
           job_name: name,
+          job: job,
           node: inspect(Node.self()),
           module: __MODULE__
         })
@@ -228,7 +250,18 @@ defmodule Quantum.JobBroadcaster do
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
       end)
 
-    messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
+    messages =
+      for {name, %Job{state: :active} = job} <- jobs do
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :delete], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+
+        {:remove, name}
+      end
 
     :ok = storage.purge(storage_pid)
 
