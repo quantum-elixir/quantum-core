@@ -92,6 +92,7 @@ defmodule Quantum.JobBroadcaster do
   end
 
   @impl GenStage
+
   def handle_cast(
         {:add, %Job{state: :active, name: job_name} = job},
         %State{
@@ -101,22 +102,54 @@ defmodule Quantum.JobBroadcaster do
           debug_logging: debug_logging
         } = state
       ) do
-    debug_logging &&
-      Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
-      end)
+    case jobs do
+      %{^job_name => %Job{state: :active} = old_job} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+        
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
 
-    # Send event to telemetry incase the end user wants to monitor events
-    :telemetry.execute([:quantum, :job, :add], %{}, %{
-      job_name: job_name,
-      job: job,
-      node: inspect(Node.self()),
-      module: __MODULE__
-    })
+        {:noreply, [{:delete, old_job}, {:add, job}],
+         %{state | jobs: Map.put(jobs, job_name, job)}}
 
-    :ok = storage.add_job(storage_pid, job)
+      %{^job_name => %Job{state: :inactive}} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
 
-    {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      _ ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+          end)
+          
+         # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+    end
   end
 
   def handle_cast(
@@ -128,22 +161,54 @@ defmodule Quantum.JobBroadcaster do
           debug_logging: debug_logging
         } = state
       ) do
-    debug_logging &&
-      Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
-      end)
+    case jobs do
+      %{^job_name => %Job{state: :active} = old_job} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
+          
+         # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
 
-    # Send event to telemetry incase the end user wants to monitor events
-    :telemetry.execute([:quantum, :job, :add], %{}, %{
-      job_name: job_name,
-      job: job,
-      node: inspect(Node.self()),
-      module: __MODULE__
-    })
+        {:noreply, [{:delete, old_job}], %{state | jobs: Map.put(jobs, job_name, job)}}
 
-    :ok = storage.add_job(storage_pid, job)
+      %{^job_name => %Job{state: :inactive}} ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+          end)
+          
+        
 
-    {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+        :ok = storage.delete_job(storage_pid, job_name)
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+
+      _ ->
+        debug_logging &&
+          Logger.debug(fn ->
+            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+          end)
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          module: __MODULE__
+        })
+        :ok = storage.add_job(storage_pid, job)
+
+        {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
+    end
   end
 
   def handle_cast(
