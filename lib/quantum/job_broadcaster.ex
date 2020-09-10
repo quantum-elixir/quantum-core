@@ -108,6 +108,7 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
+
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
           job_name: job_name,
@@ -115,7 +116,7 @@ defmodule Quantum.JobBroadcaster do
           node: inspect(Node.self()),
           module: __MODULE__
         })
-        
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -138,14 +139,15 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
           end)
-          
-         # Send event to telemetry incase the end user wants to monitor events
+
+        # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
           module: __MODULE__
         })
+
         :ok = storage.add_job(storage_pid, job)
 
         {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
@@ -167,14 +169,15 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
-          
-         # Send event to telemetry incase the end user wants to monitor events
+
+        # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
           module: __MODULE__
         })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -185,8 +188,6 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
-          
-        
 
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
@@ -198,6 +199,7 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
           end)
+
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
           job_name: job_name,
@@ -205,6 +207,7 @@ defmodule Quantum.JobBroadcaster do
           node: inspect(Node.self()),
           module: __MODULE__
         })
+
         :ok = storage.add_job(storage_pid, job)
 
         {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
