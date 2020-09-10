@@ -25,11 +25,11 @@ defmodule Quantum.Executor do
   @spec execute(StartOpts.t(), Job.t(), Node.t()) :: :ok
   # Execute task on all given nodes without checking for overlap
   defp execute(
-         %StartOpts{task_supervisor_reference: task_supervisor, debug_logging: debug_logging},
+         %StartOpts{task_supervisor_reference: task_supervisor, debug_logging: debug_logging, scheduler: scheduler},
          %Job{overlap: true} = job,
          node
        ) do
-    run(node, job, task_supervisor, debug_logging)
+    run(node, job, task_supervisor, debug_logging, scheduler)
 
     :ok
   end
@@ -39,7 +39,8 @@ defmodule Quantum.Executor do
          %StartOpts{
            task_supervisor_reference: task_supervisor,
            task_registry_reference: task_registry,
-           debug_logging: debug_logging
+           debug_logging: debug_logging,
+           scheduler: scheduler
          },
          %Job{overlap: false, name: job_name} = job,
          node
@@ -51,7 +52,7 @@ defmodule Quantum.Executor do
 
     case TaskRegistry.mark_running(task_registry, job_name, node) do
       :marked_running ->
-        %Task{ref: ref} = run(node, job, task_supervisor, debug_logging)
+        %Task{ref: ref} = run(node, job, task_supervisor, debug_logging, scheduler)
 
         receive do
           {^ref, _} ->
@@ -69,8 +70,8 @@ defmodule Quantum.Executor do
   end
 
   # Ececute the given function on a given node via the task supervisor
-  @spec run(Node.t(), Job.t(), GenServer.server(), boolean()) :: Task.t()
-  defp run(node, %{name: job_name, task: task}, task_supervisor, debug_logging) do
+  @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), Scheduler) :: Task.t()
+  defp run(node, %{name: job_name, task: task}, task_supervisor, debug_logging, scheduler) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job_name)} started on node #{
@@ -90,7 +91,8 @@ defmodule Quantum.Executor do
       :telemetry.execute([:quantum, :job, :start], %{system_time: start_monotonic_time}, %{
         job_name: job_name,
         node: inspect(node),
-        module: __MODULE__
+        module: __MODULE__,
+        scheduler: scheduler
       })
 
       try do
@@ -111,7 +113,8 @@ defmodule Quantum.Executor do
             node: inspect(node),
             module: __MODULE__,
             reason: value,
-            stacktrace: __STACKTRACE__
+            stacktrace: __STACKTRACE__,
+            scheduler: scheduler
           })
       else
         result ->
@@ -127,7 +130,8 @@ defmodule Quantum.Executor do
           :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
             job_name: job_name,
             node: inspect(node),
-            module: __MODULE__
+            module: __MODULE__,
+            scheduler: scheduler
           })
       end
 

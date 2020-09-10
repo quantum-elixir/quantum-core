@@ -66,7 +66,8 @@ defmodule Quantum.JobBroadcaster do
               job_name: name,
               job: job,
               node: inspect(Node.self()),
-              module: __MODULE__
+              module: __MODULE__,
+              scheduler: scheduler
             })
           end
 
@@ -114,7 +115,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.delete_job(storage_pid, job_name)
@@ -145,7 +147,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.add_job(storage_pid, job)
@@ -175,7 +178,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.delete_job(storage_pid, job_name)
@@ -205,7 +209,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.add_job(storage_pid, job)
@@ -235,7 +240,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.delete_job(storage_pid, name)
@@ -248,7 +254,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         :ok = storage.delete_job(storage_pid, name)
@@ -287,7 +294,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
@@ -325,7 +333,8 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__
+          module: __MODULE__,
+          scheduler: state.scheduler
         })
 
         {:remove, name}

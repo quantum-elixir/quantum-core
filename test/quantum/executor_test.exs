@@ -23,7 +23,7 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :start],
           %{system_time: _system_time} = _measurements,
-          %{job_name: job_name, module: _module, node: _node} = _metadata,
+          %{job_name: job_name, module: _module, node: _node, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :start})
@@ -32,7 +32,7 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :stop],
           %{duration: _duration} = _measurements,
-          %{job_name: job_name, module: _module, node: _node} = _metadata,
+          %{job_name: job_name, module: _module, node: _node, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :stop})
@@ -46,7 +46,8 @@ defmodule Quantum.ExecutorTest do
             module: _module,
             node: _node,
             reason: reason,
-            stacktrace: stacktrace
+            stacktrace: stacktrace,
+            scheduler: _scheduler
           } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
@@ -98,7 +99,8 @@ defmodule Quantum.ExecutorTest do
       %{
         task_supervisor: Module.concat(__MODULE__, TaskSupervisor),
         task_registry: Module.concat(__MODULE__, TaskRegistry),
-        debug_logging: true
+        debug_logging: true,
+        scheduler: TestScheduler
       }
     }
   end
@@ -107,7 +109,8 @@ defmodule Quantum.ExecutorTest do
     test "executes given task using anonymous function", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       caller = self()
 
@@ -124,7 +127,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: Node.self()}
         )
@@ -139,7 +143,8 @@ defmodule Quantum.ExecutorTest do
     test "executes given task using function tuple", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       caller = self()
 
@@ -156,7 +161,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: Node.self()}
         )
@@ -171,7 +177,8 @@ defmodule Quantum.ExecutorTest do
     test "executes given task without overlap", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       caller = self()
       test_id = "log-task-no-overlap-handler"
@@ -191,7 +198,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: Node.self()}
         )
@@ -200,7 +208,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: Node.self()}
         )
@@ -216,7 +225,8 @@ defmodule Quantum.ExecutorTest do
     test "releases lock on success", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       caller = self()
       test_id = "release-lock-on-success-handler"
@@ -244,7 +254,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: node}
         )
@@ -269,7 +280,8 @@ defmodule Quantum.ExecutorTest do
     test "releases lock on error", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       test_id = "release-lock-on-error-handler"
 
@@ -289,7 +301,8 @@ defmodule Quantum.ExecutorTest do
           %StartOpts{
             task_supervisor_reference: task_supervisor,
             task_registry_reference: task_registry,
-            debug_logging: debug_logging
+            debug_logging: debug_logging,
+            scheduler: scheduler
           },
           %Event{job: job, node: Node.self()}
         )
@@ -318,7 +331,8 @@ defmodule Quantum.ExecutorTest do
     test "logs error", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       test_id = "logs-error-handler"
 
@@ -336,7 +350,8 @@ defmodule Quantum.ExecutorTest do
               %StartOpts{
                 task_supervisor_reference: task_supervisor,
                 task_registry_reference: task_registry,
-                debug_logging: debug_logging
+                debug_logging: debug_logging,
+                scheduler: scheduler
               },
               %Event{job: job, node: Node.self()}
             )
@@ -365,7 +380,8 @@ defmodule Quantum.ExecutorTest do
     test "logs exit", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       test_id = "logs-exit-handler"
 
@@ -383,7 +399,8 @@ defmodule Quantum.ExecutorTest do
               %StartOpts{
                 task_supervisor_reference: task_supervisor,
                 task_registry_reference: task_registry,
-                debug_logging: debug_logging
+                debug_logging: debug_logging,
+                scheduler: scheduler
               },
               %Event{job: job, node: Node.self()}
             )
@@ -412,7 +429,8 @@ defmodule Quantum.ExecutorTest do
     test "logs throw", %{
       task_supervisor: task_supervisor,
       task_registry: task_registry,
-      debug_logging: debug_logging
+      debug_logging: debug_logging,
+      scheduler: scheduler
     } do
       test_id = "logs-throw-handler"
 
@@ -432,7 +450,8 @@ defmodule Quantum.ExecutorTest do
               %StartOpts{
                 task_supervisor_reference: task_supervisor,
                 task_registry_reference: task_registry,
-                debug_logging: debug_logging
+                debug_logging: debug_logging,
+                scheduler: scheduler
               },
               %Event{job: job, node: Node.self()}
             )
