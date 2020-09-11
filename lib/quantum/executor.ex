@@ -74,7 +74,7 @@ defmodule Quantum.Executor do
   end
 
   # Ececute the given function on a given node via the task supervisor
-  @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), Module.t()) :: Task.t()
+  @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), atom()) :: Task.t()
   defp run(node, %{name: job_name, task: task}, task_supervisor, debug_logging, scheduler) do
     debug_logging &&
       Logger.debug(fn ->

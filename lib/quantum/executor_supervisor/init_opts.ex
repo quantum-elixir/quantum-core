@@ -8,7 +8,7 @@ defmodule Quantum.ExecutorSupervisor.InitOpts do
           task_supervisor_reference: GenServer.server(),
           task_registry_reference: GenServer.server(),
           debug_logging: boolean,
-          scheduler: Module.t()
+          scheduler: atom()
         }
 
   @enforce_keys [
