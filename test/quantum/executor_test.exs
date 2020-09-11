@@ -23,7 +23,7 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :start],
           %{system_time: _system_time} = _measurements,
-          %{job_name: job_name, module: _module, node: _node, scheduler: _scheduler} = _metadata,
+          %{job_name: job_name, node: _node, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :start})
@@ -32,7 +32,7 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :stop],
           %{duration: _duration} = _measurements,
-          %{job_name: job_name, module: _module, node: _node, scheduler: _scheduler} = _metadata,
+          %{job_name: job_name, node: _node, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :stop})
@@ -43,7 +43,6 @@ defmodule Quantum.ExecutorTest do
           %{duration: _duration} = _measurements,
           %{
             job_name: job_name,
-            module: _module,
             node: _node,
             reason: reason,
             stacktrace: stacktrace,

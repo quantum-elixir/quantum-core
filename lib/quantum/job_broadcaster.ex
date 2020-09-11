@@ -129,6 +129,14 @@ defmodule Quantum.JobBroadcaster do
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
 
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -188,6 +196,14 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
+
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
 
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
@@ -318,18 +334,17 @@ defmodule Quantum.JobBroadcaster do
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
       end)
 
-    messages =
-      for {name, %Job{state: :active} = job} <- jobs do
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :delete], %{}, %{
-          job_name: name,
-          job: job,
-          node: inspect(Node.self()),
-          scheduler: state.scheduler
-        })
+    for {name, %Job{} = job} <- jobs do
+      # Send event to telemetry incase the end user wants to monitor events
+      :telemetry.execute([:quantum, :job, :delete], %{}, %{
+        job_name: name,
+        job: job,
+        node: inspect(Node.self()),
+        scheduler: state.scheduler
+      })
+    end
 
-        {:remove, name}
-      end
+    messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
 
     :ok = storage.purge(storage_pid)
 
