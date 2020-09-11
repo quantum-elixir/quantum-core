@@ -19,7 +19,8 @@ defmodule Quantum.ExecutorSupervisor do
           :node_selector_broadcaster_reference,
           :task_supervisor_reference,
           :task_registry_reference,
-          :debug_logging
+          :debug_logging,
+          :scheduler
         ])
       ),
       name: name
@@ -49,7 +50,8 @@ defmodule Quantum.ExecutorSupervisor do
         Map.take(opts, [
           :task_supervisor_reference,
           :task_registry_reference,
-          :debug_logging
+          :debug_logging,
+          :scheduler
         ])
       )
 

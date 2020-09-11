@@ -154,3 +154,6 @@ Timezones can also be configured on a per-job basis. This overrides the default 
   timezone: "America/New_York"
 }
 ```
+
+## Telemetry Support
+

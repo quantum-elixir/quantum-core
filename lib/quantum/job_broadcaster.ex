@@ -60,6 +60,16 @@ defmodule Quantum.JobBroadcaster do
               "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Storage, skipping config"
             end)
 
+          for %Job{state: :active, name: name} = job <- storage_jobs do
+            # Send event to telemetry incase the end user wants to monitor events
+            :telemetry.execute([:quantum, :job, :add], %{}, %{
+              job_name: name,
+              job: job,
+              node: inspect(Node.self()),
+              scheduler: scheduler
+            })
+          end
+
           storage_jobs
       end
 
@@ -99,6 +109,14 @@ defmodule Quantum.JobBroadcaster do
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
 
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -111,6 +129,14 @@ defmodule Quantum.JobBroadcaster do
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
 
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -121,6 +147,14 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
           end)
+
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
 
         :ok = storage.add_job(storage_pid, job)
 
@@ -144,6 +178,14 @@ defmodule Quantum.JobBroadcaster do
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
 
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -155,6 +197,14 @@ defmodule Quantum.JobBroadcaster do
             "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
           end)
 
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, job_name)
         :ok = storage.add_job(storage_pid, job)
 
@@ -165,6 +215,14 @@ defmodule Quantum.JobBroadcaster do
           Logger.debug(fn ->
             "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
           end)
+
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :add], %{}, %{
+          job_name: job_name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
 
         :ok = storage.add_job(storage_pid, job)
 
@@ -187,12 +245,28 @@ defmodule Quantum.JobBroadcaster do
       end)
 
     case Map.fetch(jobs, name) do
-      {:ok, %{state: :active}} ->
+      {:ok, %{state: :active, name: name} = job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :delete], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [{:remove, name}], %{state | jobs: Map.delete(jobs, name)}}
 
-      {:ok, %{state: :inactive}} ->
+      {:ok, %{state: :inactive, name: name} = job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :delete], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         :ok = storage.delete_job(storage_pid, name)
 
         {:noreply, [], %{state | jobs: Map.delete(jobs, name)}}
@@ -224,6 +298,14 @@ defmodule Quantum.JobBroadcaster do
         {:noreply, [], state}
 
       {:ok, job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
+          job_name: name,
+          job: job,
+          node: inspect(Node.self()),
+          scheduler: state.scheduler
+        })
+
         jobs = Map.update!(jobs, name, &Job.set_state(&1, new_state))
 
         :ok = storage.update_job_state(storage_pid, job.name, new_state)
@@ -251,6 +333,16 @@ defmodule Quantum.JobBroadcaster do
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
       end)
+
+    for {name, %Job{} = job} <- jobs do
+      # Send event to telemetry incase the end user wants to monitor events
+      :telemetry.execute([:quantum, :job, :delete], %{}, %{
+        job_name: name,
+        job: job,
+        node: inspect(Node.self()),
+        scheduler: state.scheduler
+      })
+    end
 
     messages = for {name, %Job{state: :active}} <- jobs, do: {:remove, name}
 

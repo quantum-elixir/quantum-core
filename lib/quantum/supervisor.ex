@@ -88,6 +88,7 @@ defmodule Quantum.Supervisor do
         |> Map.put(:task_supervisor_reference, task_supervisor_name)
         |> Map.put(:task_registry_reference, task_registry_name)
         |> Map.put(:name, executor_supervisor_name)
+        |> Map.put(:scheduler, scheduler)
       )
 
     Supervisor.init(
