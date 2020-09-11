@@ -74,7 +74,7 @@ defmodule Quantum.Executor do
   end
 
   # Ececute the given function on a given node via the task supervisor
-  @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), Scheduler) :: Task.t()
+  @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), Module.t()) :: Task.t()
   defp run(node, %{name: job_name, task: task}, task_supervisor, debug_logging, scheduler) do
     debug_logging &&
       Logger.debug(fn ->
@@ -95,7 +95,6 @@ defmodule Quantum.Executor do
       :telemetry.execute([:quantum, :job, :start], %{system_time: start_monotonic_time}, %{
         job_name: job_name,
         node: inspect(node),
-        module: __MODULE__,
         scheduler: scheduler
       })
 
@@ -115,7 +114,6 @@ defmodule Quantum.Executor do
           :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
             job_name: job_name,
             node: inspect(node),
-            module: __MODULE__,
             reason: value,
             stacktrace: __STACKTRACE__,
             scheduler: scheduler
@@ -134,7 +132,6 @@ defmodule Quantum.Executor do
           :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
             job_name: job_name,
             node: inspect(node),
-            module: __MODULE__,
             scheduler: scheduler
           })
       end

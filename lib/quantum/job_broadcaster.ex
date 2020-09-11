@@ -66,7 +66,6 @@ defmodule Quantum.JobBroadcaster do
               job_name: name,
               job: job,
               node: inspect(Node.self()),
-              module: __MODULE__,
               scheduler: scheduler
             })
           end
@@ -111,11 +110,10 @@ defmodule Quantum.JobBroadcaster do
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :add], %{}, %{
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -147,7 +145,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -174,11 +171,10 @@ defmodule Quantum.JobBroadcaster do
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :add], %{}, %{
+        :telemetry.execute([:quantum, :job, :update], %{}, %{
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -209,7 +205,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: job_name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -240,7 +235,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -254,7 +248,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -294,7 +287,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
@@ -333,7 +325,6 @@ defmodule Quantum.JobBroadcaster do
           job_name: name,
           job: job,
           node: inspect(Node.self()),
-          module: __MODULE__,
           scheduler: state.scheduler
         })
 
