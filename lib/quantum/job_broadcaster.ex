@@ -60,12 +60,10 @@ defmodule Quantum.JobBroadcaster do
               "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Storage, skipping config"
             end)
 
-          for %Job{state: :active, name: name} = job <- storage_jobs do
+          for %Job{state: :active} = job <- storage_jobs do
             # Send event to telemetry incase the end user wants to monitor events
             :telemetry.execute([:quantum, :job, :add], %{}, %{
-              job_name: name,
               job: job,
-              node: inspect(Node.self()),
               scheduler: scheduler
             })
           end
@@ -111,9 +109,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -131,9 +127,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -150,9 +144,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -180,9 +172,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -199,9 +189,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -218,9 +206,7 @@ defmodule Quantum.JobBroadcaster do
 
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :add], %{}, %{
-          job_name: job_name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -248,9 +234,7 @@ defmodule Quantum.JobBroadcaster do
       {:ok, %{state: :active, name: name} = job} ->
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :delete], %{}, %{
-          job_name: name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -261,9 +245,7 @@ defmodule Quantum.JobBroadcaster do
       {:ok, %{state: :inactive, name: name} = job} ->
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :delete], %{}, %{
-          job_name: name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -300,9 +282,7 @@ defmodule Quantum.JobBroadcaster do
       {:ok, job} ->
         # Send event to telemetry incase the end user wants to monitor events
         :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job_name: name,
           job: job,
-          node: inspect(Node.self()),
           scheduler: state.scheduler
         })
 
@@ -334,12 +314,10 @@ defmodule Quantum.JobBroadcaster do
         "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
       end)
 
-    for {name, %Job{} = job} <- jobs do
+    for {_name, %Job{} = job} <- jobs do
       # Send event to telemetry incase the end user wants to monitor events
       :telemetry.execute([:quantum, :job, :delete], %{}, %{
-        job_name: name,
         job: job,
-        node: inspect(Node.self()),
         scheduler: state.scheduler
       })
     end

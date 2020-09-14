@@ -22,12 +22,12 @@ defmodule Quantum.JobBroadcasterTest do
   end
 
   defmodule TelemetryTestHandler do
-    require Logger
+    @moduledoc false
 
     def handle_event(
           [:quantum, :job, :add],
           _measurements,
-          %{job_name: job_name, job: _job, node: _node, scheduler: _scheduler} = _metadata,
+          %{job: %Job{name: job_name}, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :add})
@@ -36,7 +36,7 @@ defmodule Quantum.JobBroadcasterTest do
     def handle_event(
           [:quantum, :job, :delete],
           _measurements,
-          %{job_name: job_name, job: _job, node: _node, scheduler: _scheduler} = _metadata,
+          %{job: %Job{name: job_name}, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :delete})
@@ -45,7 +45,7 @@ defmodule Quantum.JobBroadcasterTest do
     def handle_event(
           [:quantum, :job, :update],
           _measurements,
-          %{job_name: job_name, job: _job, node: _node, scheduler: _scheduler} = _metadata,
+          %{job: %Job{name: job_name}, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :update})
