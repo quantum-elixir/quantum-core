@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+Diff for [unreleased]
+
+## 3.2.0 - 2020-10-14
+
 ### Added
 - Telemetry Support (#415)
 
@@ -11,7 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Properly override jobs with duplicate name (#392)
 - Simplify `TaskRegistry` and make tests deterministic
 
-Diff for [unreleased]
+Diff for [3.2.0]
 
 ## 3.1.0 - 2020-08-18
 
@@ -607,7 +611,8 @@ Diff for [1.0.0]
 ### Added
 - Initial commit
 
-[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.1.0...HEAD
+[unreleased]: https://github.com/quantum-elixir/quantum-core/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/quantum-elixir/quantum-core/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.2...v3.1.0
 [3.0.2]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/quantum-elixir/quantum-core/compare/v3.0.0...v3.0.1
