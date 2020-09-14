@@ -18,12 +18,12 @@ defmodule Quantum.ExecutorTest do
   end
 
   defmodule TelemetryTestHandler do
-    require Logger
+    @moduledoc false
 
     def handle_event(
           [:quantum, :job, :start],
           %{system_time: _system_time} = _measurements,
-          %{job_name: job_name, node: _node, scheduler: _scheduler} = _metadata,
+          %{job: %Job{name: job_name}, node: _node, scheduler: _scheduler} = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :start})
@@ -32,7 +32,8 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :stop],
           %{duration: _duration} = _measurements,
-          %{job_name: job_name, node: _node, scheduler: _scheduler} = _metadata,
+          %{job: %Job{name: job_name}, node: _node, scheduler: _scheduler, result: _result} =
+            _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{test_id: test_id, job_name: job_name, type: :stop})
@@ -42,11 +43,11 @@ defmodule Quantum.ExecutorTest do
           [:quantum, :job, :exception],
           %{duration: _duration} = _measurements,
           %{
-            job_name: job_name,
+            job: %Job{name: job_name},
             node: _node,
+            scheduler: _scheduler,
             reason: reason,
-            stacktrace: stacktrace,
-            scheduler: _scheduler
+            stacktrace: stacktrace
           } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do

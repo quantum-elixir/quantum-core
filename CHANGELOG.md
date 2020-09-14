@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+- Telemetry Support (#415)
+
 ### Fixed
 - Properly override jobs with duplicate name (#392)
 - Simplify `TaskRegistry` and make tests deterministic

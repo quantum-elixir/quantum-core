@@ -75,11 +75,17 @@ defmodule Quantum.Executor do
 
   # Ececute the given function on a given node via the task supervisor
   @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), atom()) :: Task.t()
-  defp run(node, %{name: job_name, task: task}, task_supervisor, debug_logging, scheduler) do
+  defp run(
+         node,
+         %Job{name: job_name, task: task} = job,
+         task_supervisor,
+         debug_logging,
+         scheduler
+       ) do
     debug_logging &&
       Logger.debug(fn ->
         "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job_name)} started on node #{
-          inspect(node)
+          node
         }"
       end)
 
@@ -93,8 +99,8 @@ defmodule Quantum.Executor do
       start_monotonic_time = :erlang.monotonic_time()
 
       :telemetry.execute([:quantum, :job, :start], %{system_time: start_monotonic_time}, %{
-        job_name: job_name,
-        node: inspect(node),
+        job: job,
+        node: node,
         scheduler: scheduler
       })
 
@@ -112,8 +118,8 @@ defmodule Quantum.Executor do
           duration = :erlang.monotonic_time() - start_monotonic_time
 
           :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
-            job_name: job_name,
-            node: inspect(node),
+            job: job,
+            node: node,
             reason: value,
             stacktrace: __STACKTRACE__,
             scheduler: scheduler
@@ -130,9 +136,10 @@ defmodule Quantum.Executor do
           duration = :erlang.monotonic_time() - start_monotonic_time
 
           :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
-            job_name: job_name,
-            node: inspect(node),
-            scheduler: scheduler
+            job: job,
+            node: node,
+            scheduler: scheduler,
+            result: result
           })
       end
 
