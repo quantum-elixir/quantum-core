@@ -122,6 +122,18 @@ defmodule Quantum.ExecutionBroadcaster do
   end
 
   def handle_event(
+        {:run, %Job{name: name} = job},
+        %State{debug_logging: debug_logging} = state
+      ) do
+    debug_logging &&
+      Logger.debug(fn ->
+        "[#{inspect(Node.self())}][#{__MODULE__}] Running job #{inspect(name)} once"
+      end)
+
+    {[%ExecuteEvent{job: job}], state}
+  end
+
+  def handle_event(
         {:remove, name},
         %State{
           uninitialized_jobs: uninitialized_jobs,

@@ -301,6 +301,33 @@ defmodule Quantum.JobBroadcaster do
   end
 
   def handle_cast(
+        {:run_job, name},
+        %State{
+          jobs: jobs,
+          debug_logging: debug_logging
+        } = state
+      ) do
+    debug_logging &&
+      Logger.debug(fn ->
+        "[#{inspect(Node.self())}][#{__MODULE__}] Running job #{inspect(name)} once"
+      end)
+
+    case Map.fetch(jobs, name) do
+      :error ->
+        {:noreply, [], state}
+
+      {:ok, job} ->
+        # Send event to telemetry incase the end user wants to monitor events
+        :telemetry.execute([:quantum, :job, :run], %{}, %{
+          job: job,
+          scheduler: state.scheduler
+        })
+
+        {:noreply, [{:run, job}], state}
+    end
+  end
+
+  def handle_cast(
         :delete_all,
         %State{
           jobs: jobs,

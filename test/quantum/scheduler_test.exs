@@ -212,6 +212,30 @@ defmodule Quantum.SchedulerTest do
   end
 
   @tag schedulers: [Scheduler]
+  test "running a named job" do
+    spec = ~e[* * * * *]
+
+    fun = fn ->
+      :ok
+    end
+
+    job =
+      Scheduler.new_job()
+      |> Job.set_name(:test_job)
+      |> Job.set_state(:active)
+      |> Job.set_overlap(false)
+      |> Job.set_schedule(spec)
+      |> Job.set_task(fun)
+
+    capture_log(fn ->
+      :ok = Scheduler.add_job(job)
+      :ok = Scheduler.run_job(:test_job)
+    end)
+
+    :timer.sleep(2000)
+  end
+
+  @tag schedulers: [Scheduler]
   test "deleting a named job at run time" do
     spec = ~e[* * * * *]
     fun = fn -> :ok end
