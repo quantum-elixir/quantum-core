@@ -317,12 +317,6 @@ defmodule Quantum.JobBroadcaster do
         {:noreply, [], state}
 
       {:ok, job} ->
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :run], %{}, %{
-          job: job,
-          scheduler: state.scheduler
-        })
-
         {:noreply, [{:run, job}], state}
     end
   end
