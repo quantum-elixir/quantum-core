@@ -77,6 +77,14 @@ defmodule Quantum.ExecutionBroadcasterTest do
       end)
     end
 
+    test "run_job triggers job to run once", %{producer: producer} do
+      job = TestScheduler.new_job()
+
+      TestProducer.send(producer, {:run, job})
+
+      assert_receive {:received, %ExecuteEvent{job: ^job}}
+    end
+
     test "normal schedule triggers once per second", %{producer: producer} do
       job =
         TestScheduler.new_job()

@@ -30,6 +30,11 @@ Activate an inactive job:
 YourApp.Scheduler.activate_job(:ticker)
 ```
 
+Run a job once outside of normal schedule:
+```elixir
+YourApp.Scheduler.run_job(:ticker)
+```
+
 Find a job:
 ```elixir
 YourApp.Scheduler.find_job(:ticker)
