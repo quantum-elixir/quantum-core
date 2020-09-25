@@ -149,6 +149,11 @@ defmodule Quantum do
   @callback activate_job(GenStage.stage(), atom) :: :ok
 
   @doc """
+  Runs a job by name once
+  """
+  @callback run_job(GenStage.stage(), atom) :: :ok
+
+  @doc """
   Resolves a job by name
   """
   @callback find_job(GenStage.stage(), atom) :: Quantum.Job.t() | nil
@@ -287,6 +292,12 @@ defmodule Quantum do
       def activate_job(server \\ __job_broadcaster__(), name)
           when is_atom(name) or is_reference(name) do
         GenStage.cast(server, {:change_state, name, :active})
+      end
+
+      @impl behaviour
+      def run_job(server \\ __job_broadcaster__(), name)
+          when is_atom(name) or is_reference(name) do
+        GenStage.cast(server, {:run_job, name})
       end
 
       @impl behaviour

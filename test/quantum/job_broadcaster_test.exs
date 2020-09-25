@@ -214,6 +214,19 @@ defmodule Quantum.JobBroadcasterTest do
     end
 
     @tag listen_storage: true
+    test "run", %{broadcaster: broadcaster, active_job: active_job} do
+      test_id = "run-job-handler"
+
+      :ok = attach_telemetry(:run, test_id, self())
+
+      TestScheduler.add_job(broadcaster, active_job)
+      TestScheduler.run_job(broadcaster, active_job.name)
+
+      assert_receive {:received, {:add, ^active_job}}
+      assert_receive {:received, {:run, ^active_job}}
+    end
+
+    @tag listen_storage: true
     test "inactive", %{broadcaster: broadcaster, inactive_job: inactive_job} do
       test_id = "add-inactive-job-handler"
 
