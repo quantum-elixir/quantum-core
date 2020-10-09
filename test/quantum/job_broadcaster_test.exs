@@ -182,7 +182,7 @@ defmodule Quantum.JobBroadcasterTest do
                assert_receive {:received, {:add, ^active_job}}
 
                assert_receive {:add_job, ^active_job, _}
-             end) =~ "Adding job #Reference"
+             end) =~ "Adding job"
 
       assert_receive %{test_id: ^test_id}
     end
