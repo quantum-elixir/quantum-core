@@ -51,7 +51,7 @@ defmodule Quantum.Executor do
        ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Start execution of job #{inspect(job_name)}"
+        {"Start execution of job", node: Node.self(), name: job_name}
       end)
 
     case TaskRegistry.mark_running(task_registry, job_name, node) do
@@ -84,15 +84,13 @@ defmodule Quantum.Executor do
        ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Task for job #{inspect(job_name)} started on node #{
-          node
-        }"
+        {"Task for job started on node", node: Node.self(), name: job_name, started_on: node}
       end)
 
     Task.Supervisor.async_nolink({task_supervisor, node}, fn ->
       debug_logging &&
         Logger.debug(fn ->
-          "[#{inspect(Node.self())}][#{__MODULE__}] Execute started for job #{inspect(job_name)}"
+          {"Execute started for job", node: Node.self(), name: job_name}
         end)
 
       # Note: we are intentionally mimicking the ":telemetry.span" here to keep current functionality
@@ -110,9 +108,13 @@ defmodule Quantum.Executor do
         type, value ->
           debug_logging &&
             Logger.debug(fn ->
-              "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{
-                inspect(job_name)
-              }, which failed due to: #{Exception.format(type, value, __STACKTRACE__)}"
+              {
+                "Execution failed for job",
+                node: Node.self(),
+                name: job_name,
+                type: type,
+                value: value
+              }
             end)
 
           duration = :erlang.monotonic_time() - start_monotonic_time
@@ -128,9 +130,7 @@ defmodule Quantum.Executor do
         result ->
           debug_logging &&
             Logger.debug(fn ->
-              "[#{inspect(Node.self())}][#{__MODULE__}] Execution ended for job #{
-                inspect(job_name)
-              }, which yielded result: #{inspect(result)}"
+              {"Execution ended for job", node: Node.self(), name: job_name, result: result}
             end)
 
           duration = :erlang.monotonic_time() - start_monotonic_time
