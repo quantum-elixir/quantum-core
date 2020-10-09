@@ -110,10 +110,7 @@ defmodule Quantum.Executor do
             Logger.debug(fn ->
               {
                 "Execution failed for job",
-                node: Node.self(),
-                name: job_name,
-                type: type,
-                value: value
+                node: Node.self(), name: job_name, type: type, value: value
               }
             end)
 
