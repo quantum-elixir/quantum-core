@@ -3,8 +3,6 @@ defmodule Quantum.TaskRegistry do
 
   # Registry to check if a task is already running on a node.
 
-  require Logger
-
   alias __MODULE__.StartOpts
   alias Quantum.Job
 
