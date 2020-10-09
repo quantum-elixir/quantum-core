@@ -216,7 +216,7 @@ defmodule Quantum.ExecutionBroadcaster do
           for %Job{name: job_name} = job <- jobs do
             debug_logging &&
               Logger.debug(fn ->
-                {"Scheduling job for execution", node: Node.self(), name: name}
+                {"Scheduling job for execution", node: Node.self(), name: job_name}
               end)
 
             %ExecuteEvent{job: job}
