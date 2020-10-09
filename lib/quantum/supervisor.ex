@@ -3,8 +3,6 @@ defmodule Quantum.Supervisor do
 
   use Supervisor
 
-  require Logger
-
   # Starts the quantum supervisor.
   @spec start_link(GenServer.server(), Keyword.t()) :: GenServer.on_start()
   def start_link(quantum, opts) do
