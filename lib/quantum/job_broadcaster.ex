@@ -227,7 +227,7 @@ defmodule Quantum.JobBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        {"Deleting job", node: Node.self(), name: job_name}
+        {"Deleting job", node: Node.self(), name: name}
       end)
 
     case Map.fetch(jobs, name) do
