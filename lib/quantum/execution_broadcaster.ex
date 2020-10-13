@@ -101,9 +101,7 @@ defmodule Quantum.ExecutionBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for single reboot execution: #{
-          inspect(name)
-        }"
+        {"Scheduling job for single reboot execution", node: Node.self(), name: name}
       end)
 
     {[%ExecuteEvent{job: job}], %{state | uninitialized_jobs: [job | uninitialized_jobs]}}
@@ -115,7 +113,7 @@ defmodule Quantum.ExecutionBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(name)}"
+        {"Adding job", node: Node.self(), name: name}
       end)
 
     {[], %{state | uninitialized_jobs: [job | uninitialized_jobs]}}
@@ -127,7 +125,7 @@ defmodule Quantum.ExecutionBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Running job #{inspect(name)} once"
+        {"Running job once", node: Node.self(), name: name}
       end)
 
     {[%ExecuteEvent{job: job}], state}
@@ -143,7 +141,7 @@ defmodule Quantum.ExecutionBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Removing job #{inspect(name)}"
+        {"Removing job", node: Node.self(), name: name}
       end)
 
     uninitialized_jobs = Enum.reject(uninitialized_jobs, &(&1.name == name))
@@ -218,9 +216,7 @@ defmodule Quantum.ExecutionBroadcaster do
           for %Job{name: job_name} = job <- jobs do
             debug_logging &&
               Logger.debug(fn ->
-                "[#{inspect(Node.self())}][#{__MODULE__}] Scheduling job for execution #{
-                  inspect(job_name)
-                }"
+                {"Scheduling job for execution", node: Node.self(), name: job_name}
               end)
 
             %ExecuteEvent{job: job}

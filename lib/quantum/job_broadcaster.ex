@@ -49,7 +49,7 @@ defmodule Quantum.JobBroadcaster do
         :not_applicable ->
           debug_logging &&
             Logger.debug(fn ->
-              "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Config"
+              {"Loading Initial Jobs from Config", node: Node.self()}
             end)
 
           jobs
@@ -57,7 +57,7 @@ defmodule Quantum.JobBroadcaster do
         storage_jobs when is_list(storage_jobs) ->
           debug_logging &&
             Logger.debug(fn ->
-              "[#{inspect(Node.self())}][#{__MODULE__}] Loading Initial Jobs from Storage, skipping config"
+              {"Loading Initial Jobs from Storage, skipping config", node: Node.self()}
             end)
 
           for %Job{state: :active} = job <- storage_jobs do
@@ -104,7 +104,7 @@ defmodule Quantum.JobBroadcaster do
       %{^job_name => %Job{state: :active} = old_job} ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+            {"Replacing job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -122,7 +122,7 @@ defmodule Quantum.JobBroadcaster do
       %{^job_name => %Job{state: :inactive}} ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+            {"Replacing job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -139,7 +139,7 @@ defmodule Quantum.JobBroadcaster do
       _ ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+            {"Adding job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -167,7 +167,7 @@ defmodule Quantum.JobBroadcaster do
       %{^job_name => %Job{state: :active} = old_job} ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+            {"Replacing job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -184,7 +184,7 @@ defmodule Quantum.JobBroadcaster do
       %{^job_name => %Job{state: :inactive}} ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Replacing job #{inspect(job_name)}"
+            {"Replacing job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -201,7 +201,7 @@ defmodule Quantum.JobBroadcaster do
       _ ->
         debug_logging &&
           Logger.debug(fn ->
-            "[#{inspect(Node.self())}][#{__MODULE__}] Adding job #{inspect(job_name)}"
+            {"Adding job", node: Node.self(), name: job_name}
           end)
 
         # Send event to telemetry incase the end user wants to monitor events
@@ -227,7 +227,7 @@ defmodule Quantum.JobBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Deleting job #{inspect(name)}"
+        {"Deleting job", node: Node.self(), name: name}
       end)
 
     case Map.fetch(jobs, name) do
@@ -269,7 +269,7 @@ defmodule Quantum.JobBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Change job state #{inspect(name)}"
+        {"Change job state", node: Node.self(), name: name}
       end)
 
     case Map.fetch(jobs, name) do
@@ -309,7 +309,7 @@ defmodule Quantum.JobBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Running job #{inspect(name)} once"
+        {"Running job once", node: Node.self(), name: name}
       end)
 
     case Map.fetch(jobs, name) do
@@ -332,7 +332,7 @@ defmodule Quantum.JobBroadcaster do
       ) do
     debug_logging &&
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Deleting all jobs"
+        {"Deleting all jobs", node: Node.self()}
       end)
 
     for {_name, %Job{} = job} <- jobs do

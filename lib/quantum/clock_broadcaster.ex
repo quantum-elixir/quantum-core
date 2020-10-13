@@ -118,6 +118,7 @@ defmodule Quantum.ClockBroadcaster do
   defp log_catched_up(%State{debug_logging: true}),
     do:
       Logger.debug(fn ->
-        "[#{inspect(Node.self())}][#{__MODULE__}] Clock Producer catched up with past times and is now running in normal time"
+        {"Clock Producer catched up with past times and is now running in normal time",
+         node: Node.self()}
       end)
 end
