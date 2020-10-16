@@ -74,6 +74,22 @@ defmodule Quantum.NormalizerTest do
     assert normalize(Scheduler.new_job(), job) == expected_job
   end
 
+  test "normalizer of state" do
+    job = {
+      :newsletter,
+      [
+        state: :inactive
+      ]
+    }
+
+    expected_job =
+      Scheduler.new_job()
+      |> Job.set_name(:newsletter)
+      |> Job.set_state(:inactive)
+
+    assert normalize(Scheduler.new_job(), job) == expected_job
+  end
+
   test "expression tuple not extended" do
     job = {
       :newsletter,

@@ -15,7 +15,7 @@ config :your_app, YourApp.Scheduler,
     # Runs on 18, 20, 22, 0, 2, 4, 6:
     {"0 18-6/2 * * *",         fn -> :mnesia.backup('/var/backup/mnesia') end},
     # Runs every midnight:
-    {"@daily",                 {Backup, :backup, []}}
+    {"@daily",                 {Backup, :backup, []}, state: :inactive}
   ]
 ```
 
@@ -72,6 +72,7 @@ Possible options:
 - `task` function to be performed, ex: `{Heartbeat, :send, []}` or `fn -> :something end`
 - `run_strategy` strategy on how to run tasks inside of cluster, default: `%Quantum.RunStrategy.Random{nodes: :cluster}`
 - `overlap` set to false to prevent next job from being executed if previous job is still running, default: `true`
+- `state` set to `:inactive` to deactivate a job or `:active` to activate it
 
 It is possible to control the behavior of jobs at runtime.
 
