@@ -19,6 +19,7 @@ defmodule QuantumStartupTest do
       test_jobs = [
         {:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},
         {:test_job, [schedule: ~e[2 * * * *], task: fn -> :ok end]},
+        {:inactive_job, [schedule: ~e[* * * * *], task: fn -> :ok end, state: :inactive]},
         {"3 * * * *", fn -> :ok end},
         {"4 * * * *", fn -> :ok end}
       ]
@@ -28,8 +29,9 @@ defmodule QuantumStartupTest do
       capture_log(fn ->
         {:ok, _pid} = start_supervised(Scheduler)
 
-        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 3
+        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 4
         assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
+        assert QuantumStartupTest.Scheduler.find_job(:inactive_job).state == :inactive
 
         :ok = stop_supervised(Scheduler)
       end)

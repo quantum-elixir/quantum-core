@@ -85,6 +85,10 @@ defmodule Quantum.Normalizer do
     Job.set_timezone(job, normalize_timezone(timezone))
   end
 
+  defp normalize_job_option({:state, state}, job) do
+    Job.set_state(job, state)
+  end
+
   defp normalize_job_option(_, job), do: job
 
   @spec normalize_task(config_task) :: Job.task() | no_return
