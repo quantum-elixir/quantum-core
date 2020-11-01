@@ -114,6 +114,8 @@ defmodule Quantum.Executor do
               }
             end)
 
+          log_exception(type, value, __STACKTRACE__)
+
           duration = :erlang.monotonic_time() - start_monotonic_time
 
           :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
@@ -152,5 +154,19 @@ defmodule Quantum.Executor do
 
   defp execute_task(fun) when is_function(fun, 0) do
     fun.()
+  end
+
+  def log_exception(kind, reason, stacktrace) do
+    reason = Exception.normalize(kind, reason, stacktrace)
+
+    crash_reason = case kind do
+      :throw -> {{:nocatch, reason}, stacktrace}
+      _ -> {reason, stacktrace}
+    end
+
+    Logger.error(
+      Exception.format(kind, reason, stacktrace),
+      crash_reason: crash_reason
+    )
   end
 end
