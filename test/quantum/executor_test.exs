@@ -411,6 +411,7 @@ defmodule Quantum.ExecutorTest do
 
       assert logs =~ ~r/type=exit/
       assert logs =~ ~r/value=failure/
+      assert logs =~ "[error] ** (exit) :failure"
       assert_receive %{test_id: ^test_id, type: :start}
 
       assert_receive %{
