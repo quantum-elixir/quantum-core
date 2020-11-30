@@ -159,6 +159,20 @@ defmodule Quantum.Executor do
   def log_exception(kind, reason, stacktrace) do
     reason = Exception.normalize(kind, reason, stacktrace)
 
-    Logger.error(Exception.format(kind, reason, stacktrace))
+    # TODO: Remove in a future version and make elixir 1.10 minimum requirement
+    if Version.match?(System.version(), "< 1.10.0") do
+      Logger.error(Exception.format(kind, reason, stacktrace))
+    else
+      crash_reason =
+        case kind do
+          :throw -> {{:nocatch, reason}, stacktrace}
+          _ -> {reason, stacktrace}
+        end
+
+      Logger.error(
+        Exception.format(kind, reason, stacktrace),
+        crash_reason: crash_reason
+      )
+    end
   end
 end
