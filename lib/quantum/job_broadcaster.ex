@@ -107,14 +107,7 @@ defmodule Quantum.JobBroadcaster do
             {"Replacing job", node: Node.self(), name: job_name}
           end)
 
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job: job,
-          scheduler: state.scheduler
-        })
-
-        :ok = storage.delete_job(storage_pid, job_name)
-        :ok = storage.add_job(storage_pid, job)
+        :ok = update_job(storage, storage_pid, job, state.scheduler)
 
         {:noreply, [{:delete, old_job}, {:add, job}],
          %{state | jobs: Map.put(jobs, job_name, job)}}
@@ -125,14 +118,7 @@ defmodule Quantum.JobBroadcaster do
             {"Replacing job", node: Node.self(), name: job_name}
           end)
 
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job: job,
-          scheduler: state.scheduler
-        })
-
-        :ok = storage.delete_job(storage_pid, job_name)
-        :ok = storage.add_job(storage_pid, job)
+        :ok = update_job(storage, storage_pid, job, state.scheduler)
 
         {:noreply, [{:add, job}], %{state | jobs: Map.put(jobs, job_name, job)}}
 
@@ -170,14 +156,7 @@ defmodule Quantum.JobBroadcaster do
             {"Replacing job", node: Node.self(), name: job_name}
           end)
 
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job: job,
-          scheduler: state.scheduler
-        })
-
-        :ok = storage.delete_job(storage_pid, job_name)
-        :ok = storage.add_job(storage_pid, job)
+        :ok = update_job(storage, storage_pid, job, state.scheduler)
 
         {:noreply, [{:delete, old_job}], %{state | jobs: Map.put(jobs, job_name, job)}}
 
@@ -187,14 +166,7 @@ defmodule Quantum.JobBroadcaster do
             {"Replacing job", node: Node.self(), name: job_name}
           end)
 
-        # Send event to telemetry incase the end user wants to monitor events
-        :telemetry.execute([:quantum, :job, :update], %{}, %{
-          job: job,
-          scheduler: state.scheduler
-        })
-
-        :ok = storage.delete_job(storage_pid, job_name)
-        :ok = storage.add_job(storage_pid, job)
+        :ok = update_job(storage, storage_pid, job, state.scheduler)
 
         {:noreply, [], %{state | jobs: Map.put(jobs, job_name, job)}}
 
@@ -360,5 +332,20 @@ defmodule Quantum.JobBroadcaster do
   @impl GenStage
   def handle_info(_message, state) do
     {:noreply, [], state}
+  end
+
+  defp update_job(storage, storage_pid, %Job{name: job_name} = job, scheduler) do
+    # Send event to telemetry incase the end user wants to monitor events
+    :telemetry.execute([:quantum, :job, :update], %{}, %{
+      job: job,
+      scheduler: scheduler
+    })
+
+    if function_exported?(storage, :update_job, 2) do
+      :ok = storage.update_job(storage_pid, job)
+    else
+      :ok = storage.delete_job(storage_pid, job_name)
+      :ok = storage.add_job(storage_pid, job)
+    end
   end
 end

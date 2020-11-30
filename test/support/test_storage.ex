@@ -114,3 +114,13 @@ defmodule Quantum.Storage.Test do
     end
   end
 end
+
+defmodule Quantum.Storage.TestWithUpdate do
+  @moduledoc """
+  Test implementation of a `Quantum.Storage` that overrides `c:update_job/2`.
+  """
+  use Quantum.Storage.Test
+
+  @impl Quantum.Storage
+  def update_job(_storage_pid, job), do: send_and_wait(:update_job, job)
+end
