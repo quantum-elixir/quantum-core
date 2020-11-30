@@ -263,6 +263,8 @@ defmodule Quantum.ExecutionBroadcaster do
         job: job,
         error: e
       )
+
+      state
   end
 
   defp get_next_execution_time(

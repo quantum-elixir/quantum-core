@@ -359,7 +359,7 @@ defmodule Quantum.ExecutorTest do
           assert :ok == wait_for_termination(task)
         end)
 
-      assert logs =~ ~r/type=error/
+      assert logs =~ ~r/[error]/
       assert logs =~ ~r/Execution failed for job/
       assert_receive %{test_id: ^test_id, type: :start}
 
@@ -409,8 +409,6 @@ defmodule Quantum.ExecutorTest do
           assert :ok == wait_for_termination(task)
         end)
 
-      assert logs =~ ~r/type=exit/
-      assert logs =~ ~r/value=failure/
       assert logs =~ "[error] ** (exit) :failure"
       assert_receive %{test_id: ^test_id, type: :start}
 
@@ -463,8 +461,8 @@ defmodule Quantum.ExecutorTest do
         end)
 
       '#Ref' ++ rest = :erlang.ref_to_list(ref)
-      assert logs =~ "type=throw"
-      assert logs =~ "value=#{rest}"
+      assert logs =~ "[error] ** (throw)"
+      assert logs =~ "#{rest}"
       assert_receive %{test_id: ^test_id, type: :start}
 
       assert_receive %{
