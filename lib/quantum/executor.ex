@@ -159,8 +159,6 @@ defmodule Quantum.Executor do
   def log_exception(kind, reason, stacktrace) do
     reason = Exception.normalize(kind, reason, stacktrace)
 
-    Logger.error(
-      Exception.format(kind, reason, stacktrace)
-    )
+    Logger.error(Exception.format(kind, reason, stacktrace))
   end
 end
