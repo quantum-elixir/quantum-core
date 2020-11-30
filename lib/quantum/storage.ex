@@ -76,4 +76,14 @@ defmodule Quantum.Storage do
   Purge all date from storage and go back to initial state.
   """
   @callback purge(storage_pid :: storage_pid) :: :ok
+
+  @doc """
+  Updates existing job in storage.
+
+  This callback is optional. If not implemented then the `c:delete_job/2`
+  and then the `c:add_job/2` callbacks will be called instead.
+  """
+  @callback update_job(storage_pid :: storage_pid, job :: Job.t()) :: :ok
+
+  @optional_callbacks update_job: 2
 end
