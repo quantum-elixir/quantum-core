@@ -6,6 +6,7 @@ defmodule Quantum.JobBroadcasterTest do
 
   alias Quantum.{Job, JobBroadcaster, JobBroadcaster.StartOpts}
   alias Quantum.Storage.Test, as: TestStorage
+  alias Quantum.Storage.TestWithUpdate, as: TestStorageWithUpdate
   alias Quantum.TestConsumer
 
   import ExUnit.CaptureLog
@@ -87,6 +88,15 @@ defmodule Quantum.JobBroadcasterTest do
           []
       end
 
+    storage =
+      case tags[:storage] do
+        :with_update ->
+          TestStorageWithUpdate
+
+        _ ->
+          TestStorage
+      end
+
     broadcaster =
       if tags[:manual_dispatch] do
         nil
@@ -98,7 +108,7 @@ defmodule Quantum.JobBroadcasterTest do
                %StartOpts{
                  name: __MODULE__,
                  jobs: init_jobs,
-                 storage: TestStorage,
+                 storage: storage,
                  scheduler: TestScheduler,
                  debug_logging: true
                }}
@@ -262,7 +272,38 @@ defmodule Quantum.JobBroadcasterTest do
       TestScheduler.add_job(broadcaster, job_2)
 
       assert_receive {:received, {:delete, ^job_1}}
+      assert_receive {:delete_job, ^test_name, _}
       assert_receive {:received, {:add, ^job_2}}
+      assert_receive {:add_job, ^job_2, _}
+    end
+
+    @tag listen_storage: true, storage: :with_update
+    test "storage with update does not add and delete job", %{
+      broadcaster: broadcaster,
+      test: test_name
+    } do
+      job_1 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/5 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_1)
+
+      assert_receive {:received, {:add, ^job_1}}
+      assert_receive {:add_job, ^job_1, _}
+
+      job_2 =
+        TestScheduler.new_job()
+        |> Quantum.Job.set_name(test_name)
+        |> Quantum.Job.set_schedule(~e[*/10 * * * * *]e)
+
+      TestScheduler.add_job(broadcaster, job_2)
+
+      assert_receive {:received, {:delete, ^job_1}}
+      refute_receive {:delete_job, ^test_name, _}
+      assert_receive {:received, {:add, ^job_2}}
+      refute_receive {:add_job, ^job_2, _}
+      assert_receive {:update_job, ^job_2, _}
     end
 
     @tag listen_storage: true
