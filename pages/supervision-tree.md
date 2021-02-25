@@ -12,4 +12,4 @@
 
 ## Error Handling
 
-The OTP Supervision Tree is initiated by the user of the library. Therefore the error handling can be implemented via normal OTP means. See `Supervisor.Spec` for more information.
+The OTP Supervision Tree is initiated by the user of the library. Therefore the error handling can be implemented via normal OTP means. See `Supervisor` module for more information.

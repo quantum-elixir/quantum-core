@@ -35,8 +35,6 @@ defmodule Acme.Application do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
     children = [
       # This is the new line
       Acme.Scheduler
