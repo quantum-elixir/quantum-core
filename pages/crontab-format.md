@@ -11,7 +11,7 @@
 | month        | 1-12 (or names)                             |
 | day of week  | 0-6 (0 is Sunday, or use abbreviated names) |
 
-The `second` field can only be used in extended cron expressions.
+The `second` field can only be used in extended Cron expressions.
 
 Names can also be used for the `month` and `day of week` fields.
 Use the first three letters of the particular day or month (case does not matter).
@@ -43,5 +43,5 @@ Instead of the first five fields, one of these special strings may be used:
 
 All Cron Expressions are parsed and evaluated by [crontab](https://hex.pm/packages/crontab).
 
-Issues with parsing a cron expression can be reported here:
+Issues with parsing a Cron expression can be reported here:
 [crontab GitHub issues](https://github.com/jshmrtn/crontab/issues)

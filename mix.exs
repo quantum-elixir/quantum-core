@@ -3,6 +3,7 @@ defmodule Quantum.Mixfile do
 
   use Mix.Project
 
+  @source_url "https://github.com/quantum-elixir/quantum-core"
   @version "3.3.0"
 
   def project do
@@ -54,10 +55,10 @@ defmodule Quantum.Mixfile do
         "Jonatan Männchen"
       ],
       exclude_patterns: [~r[priv/plts]],
-      licenses: ["Apache License 2.0"],
+      licenses: ["Apache-2.0"],
       links: %{
-        "Changelog" => "https://github.com/quantum-elixir/quantum-core/blob/master/CHANGELOG.md",
-        "GitHub" => "https://github.com/quantum-elixir/quantum-core"
+        "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md",
+        "GitHub" => @source_url
       }
     }
   end
@@ -66,13 +67,14 @@ defmodule Quantum.Mixfile do
     [
       main: "readme",
       source_ref: "v#{@version}",
-      source_url: "https://github.com/quantum-elixir/quantum-core",
+      source_url: @source_url,
+      logo: "assets/quantum-elixir-logo.svg",
       extras: [
-        "README.md",
         "CHANGELOG.md",
+        "README.md",
         "pages/supervision-tree.md",
         "pages/configuration.md",
-        "pages/runtime.md",
+        "pages/runtime-configuration.md",
         "pages/crontab-format.md",
         "pages/run-strategies.md",
         "pages/telemetry.md"
@@ -97,13 +99,12 @@ defmodule Quantum.Mixfile do
     [
       {:crontab, "~> 1.1"},
       {:gen_stage, "~> 0.14 or ~> 1.0"},
+      {:telemetry, "~> 0.4"},
       {:tzdata, "~> 1.0", only: [:dev, :test]},
-      {:earmark, "~> 1.0", only: [:dev, :docs], runtime: false},
-      {:ex_doc, "~> 0.19", only: [:dev, :docs], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:test], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev], runtime: false},
-      {:credo, "~> 1.0", only: [:dev], runtime: false},
-      {:telemetry, "~> 0.4"}
+      {:credo, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 end

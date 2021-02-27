@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="full" xwidth="800mm" hxeight="600mm" viewBox="0 0 100 100">
+  <title>quantum-elixir logo</title>
+  <desc>Logo of quantum-elixir, a cron-like job scheduler for elixir</desc>
+  <circle cx="50" cy="50" r="40" fill="white" stroke="black" stroke-width="8px" />
+  <ellipse transform="rotate(-45)" cx="0" cy="70" rx="30" ry="10" fill="none" stroke="black" stroke-width="1" />
+  <ellipse transform="rotate(45)" cx="70" cy="0" rx="30" ry="10" fill="none" stroke="black" stroke-width="1" />
+  <circle cx="50" cy="50" r="4" />
+  <line x1="50" y1="50" x2="66" y2="33" stroke="black" stroke-width="4px" />
+  <line x1="50" y1="50" x2="90" y2="90" stroke="black" stroke-width="8px" />
+</svg>
