@@ -1,6 +1,6 @@
 defmodule Quantum.Storage do
   @moduledoc """
-  Bahaviour to be implemented by all Storage Adapters.
+  Behaviour to be implemented by all Storage Adapters.
 
   The calls to the storage are blocking, make sure they're fast to not block the job execution.
   """

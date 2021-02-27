@@ -1,6 +1,6 @@
 defmodule Quantum.RunStrategy.All do
   @moduledoc """
-  Run job on all node of the node list
+  Run job on all node of the node list.
 
   If the node list is `:cluster`, all nodes of the cluster will be used.
 

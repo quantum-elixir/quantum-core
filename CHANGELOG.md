@@ -68,7 +68,7 @@ Diff for [3.0.0-rc.2]
 
 ## 3.0.0-rc.1 - 2020-02-26
 
-## Changed
+### Changed
 
 - A lot of function that were not for public use have been undocumented. Those are now considered internal and may break at any point in time.
 - `Quantum.Scheduler` has been renamed to `Quantum`
