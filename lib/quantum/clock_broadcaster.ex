@@ -107,18 +107,18 @@ defmodule Quantum.ClockBroadcaster do
     new_remaining_demand = remaining_demand - Enum.count(events)
 
     if remaining_demand > 0 and new_remaining_demand == 0 do
-      log_catched_up(state)
+      log_caught_up(state)
     end
 
     {:noreply, events, %State{state | time: new_time, remaining_demand: new_remaining_demand}}
   end
 
-  defp log_catched_up(%State{debug_logging: false}), do: :ok
+  defp log_caught_up(%State{debug_logging: false}), do: :ok
 
-  defp log_catched_up(%State{debug_logging: true}),
+  defp log_caught_up(%State{debug_logging: true}),
     do:
       Logger.debug(fn ->
-        {"Clock Producer catched up with past times and is now running in normal time",
+        {"Clock Producer caught up with past times and is now running in normal time",
          node: Node.self()}
       end)
 end
