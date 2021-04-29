@@ -1,24 +1,29 @@
 # Quantum
 
-[Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/).
-
-[![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum) [![Hex.pm Version](http://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
-[![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/quantum)
-![.github/workflows/elixir.yml](https://github.com/quantum-elixir/quantum-core/workflows/.github/workflows/elixir.yml/badge.svg)
+[![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum)
+[![CI](https://github.com/quantum-elixir/quantum-core/workflows/.github/workflows/elixir.yml/badge.svg)](https://github.com/quantum-elixir/quantum-core/actions/workflows/elixir.yml)
 [![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
-[![Hex.pm](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
+[![Module Version](https://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/quantum/)
+[![Total Download](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
+[![License](https://img.shields.io/hexpm/l/quantum.svg)](https://github.com/quantum-elixir/quantum-core/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/quantum-elixir/quantum-core.svg)](https://github.com/quantum-elixir/quantum-core/commits/master)
 
 > **This README follows master, which may not be the currently published version**. Here are the
 [docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
 
+[Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/).
+
 ## Setup
 
-To use Quantum in your project, edit the `mix.exs` file and add Quantum to
+To use Quantum in your project, edit the `mix.exs` file and add `Quantum` to
 
 **1. the list of dependencies:**
 ```elixir
 defp deps do
-  [{:quantum, "~> 3.0"}]
+  [
+    {:quantum, "~> 3.0"}
+  ]
 end
 ```
 
@@ -35,8 +40,6 @@ defmodule Acme.Application do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
     children = [
       # This is the new line
       Acme.Scheduler
@@ -92,10 +95,9 @@ More details on the usage can be found in the [Documentation](https://hexdocs.pm
 
 This project uses the [Collective Code Construction Contract (C4)](http://rfc.zeromq.org/spec:42/C4/) for all code changes.
 
-> "Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the
-terms of this contract."
+> "Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the terms of this contract."
 
-### tl;dr
+### TL;DR
 
 1. Check for [open issues](https://github.com/quantum-elixir/quantum-core/issues) or [open a new issue](https://github.com/quantum-elixir/quantum-core/issues/new) to start a discussion around [a problem](https://www.youtube.com/watch?v=_QF9sFJGJuc).
 2. Issues SHALL be named as "Problem: _description of the problem_".
@@ -108,7 +110,8 @@ terms of this contract."
 ### Code Contributors
 
 This project exists thanks to all the people who contribute.
-<a href="https://github.com/quantum-elixir/quantum-core/graphs/contributors"><img src="https://opencollective.com/quantum/contributors.svg?width=890&button=false" /></a>
+
+[![Contributors](https://opencollective.com/quantum/contributors.svg?width=890&button=false)](https://github.com/quantum-elixir/quantum-core/graphs/contributors)
 
 ### Financial Contributors
 
@@ -116,23 +119,33 @@ Become a financial contributor and help us sustain our community. [[Contribute](
 
 #### Individuals
 
-<a href="https://opencollective.com/quantum"><img src="https://opencollective.com/quantum/individuals.svg?width=890"></a>
+[![Individuals](https://opencollective.com/quantum/individuals.svg?width=890)](https://opencollective.com/quantum)
 
 #### Organizations
 
 Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/quantum/contribute)]
 
-<a href="https://opencollective.com/quantum/organization/0/website"><img src="https://opencollective.com/quantum/organization/0/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/1/website"><img src="https://opencollective.com/quantum/organization/1/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/2/website"><img src="https://opencollective.com/quantum/organization/2/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/3/website"><img src="https://opencollective.com/quantum/organization/3/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/4/website"><img src="https://opencollective.com/quantum/organization/4/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/5/website"><img src="https://opencollective.com/quantum/organization/5/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/6/website"><img src="https://opencollective.com/quantum/organization/6/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/7/website"><img src="https://opencollective.com/quantum/organization/7/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/8/website"><img src="https://opencollective.com/quantum/organization/8/avatar.svg"></a>
-<a href="https://opencollective.com/quantum/organization/9/website"><img src="https://opencollective.com/quantum/organization/9/avatar.svg"></a>
+[![Organization0](https://opencollective.com/quantum/organization/0/avatar.svg)](https://opencollective.com/quantum/organization/0/website)
+[![Organization1](https://opencollective.com/quantum/organization/1/avatar.svg)](https://opencollective.com/quantum/organization/1/website)
+[![Organization2](https://opencollective.com/quantum/organization/2/avatar.svg)](https://opencollective.com/quantum/organization/2/website)
+[![Organization3](https://opencollective.com/quantum/organization/3/avatar.svg)](https://opencollective.com/quantum/organization/3/website)
+[![Organization4](https://opencollective.com/quantum/organization/4/avatar.svg)](https://opencollective.com/quantum/organization/4/website)
+[![Organization5](https://opencollective.com/quantum/organization/5/avatar.svg)](https://opencollective.com/quantum/organization/5/website)
+[![Organization6](https://opencollective.com/quantum/organization/6/avatar.svg)](https://opencollective.com/quantum/organization/6/website)
+[![Organization7](https://opencollective.com/quantum/organization/7/avatar.svg)](https://opencollective.com/quantum/organization/7/website)
+[![Organization8](https://opencollective.com/quantum/organization/8/avatar.svg)](https://opencollective.com/quantum/organization/8/website)
+[![Organization9](https://opencollective.com/quantum/organization/9/avatar.svg)](https://opencollective.com/quantum/organization/9/website)
 
-## License
+## Copyright and License
 
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Copyright (c) 2015 Constantin Rack
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

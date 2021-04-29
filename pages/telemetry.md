@@ -1,6 +1,6 @@
 # Telemetry
 
-Sice version [`3.2.0`](https://github.com/quantum-elixir/quantum-core/releases/tag/v3.2.0) `quantum` supports [`:telemetry`](https://hexdocs.pm/telemetry) metrics.
+Since version [`3.2.0`](https://github.com/quantum-elixir/quantum-core/releases/tag/v3.2.0) `quantum` supports [`:telemetry`](https://hexdocs.pm/telemetry) metrics.
 
 <!--
   large parts of this docs are copied from https://raw.githubusercontent.com/phoenixframework/phoenix/master/guides/telemetry.md
@@ -59,13 +59,13 @@ took to execute the job:
 
 The following events are published by Quantum with the following measurements and metadata:
 
-* `[:quantum, :job, :start]` - dispatched on job executiuon start
+* `[:quantum, :job, :start]` - dispatched on job execution start
   * Measurement: `%{system_time: system_time}`
   * Metadata: `%{job: Quantum.Job.t(), node: Node.t(), scheduler: atom()}`
-* `[:quantum, :job, :exception]` - dispatched on job executiuon fail
+* `[:quantum, :job, :exception]` - dispatched on job execution fail
   * Measurement: `%{duration: native_time}`
   * Metadata: `%{job: Quantum.Job.t(), node: Node.t(), scheduler: atom(), reason: term(), stacktrace: __STACKTRACE__}`
-* `[:quantum, :job, :stop]` - dispatched on job executiuon end
+* `[:quantum, :job, :stop]` - dispatched on job execution end
   * Measurement: `%{duration: native_time}`
   * Metadata: `%{job: Quantum.Job.t(), node: Node.t(), scheduler: atom(), result: term()}`
 * `[:quantum, :job, :add]` - dispatched when a job is added
