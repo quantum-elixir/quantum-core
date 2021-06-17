@@ -42,7 +42,13 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :stop],
           %{duration: _duration} = _measurements,
-          %{result: _result, telemetry_span_context: telemetry_span_context} = _metadata,
+          %{
+            job: %Job{name: job_name},
+            node: _node,
+            scheduler: _scheduler,
+            result: _result,
+            telemetry_span_context: telemetry_span_context
+          } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{

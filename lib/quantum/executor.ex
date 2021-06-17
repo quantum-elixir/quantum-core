@@ -96,7 +96,7 @@ defmodule Quantum.Executor do
       try do
         :telemetry.span([:quantum, :job], %{job: job, node: node, scheduler: scheduler}, fn ->
           result = execute_task(task)
-          {result, %{result: result}}
+          {result, %{job: job, node: node, scheduler: scheduler, result: result}}
         end)
       catch
         type, value ->
