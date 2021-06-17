@@ -93,17 +93,11 @@ defmodule Quantum.Executor do
           {"Execute started for job", node: Node.self(), name: job_name}
         end)
 
-      # Note: we are intentionally mimicking the ":telemetry.span" here to keep current functionality
-      start_monotonic_time = :erlang.monotonic_time()
-
-      :telemetry.execute([:quantum, :job, :start], %{system_time: start_monotonic_time}, %{
-        job: job,
-        node: node,
-        scheduler: scheduler
-      })
-
       try do
-        execute_task(task)
+        :telemetry.span([:quantum, :job], %{job: job, node: node, scheduler: scheduler}, fn ->
+          result = execute_task(task)
+          {result, %{result: result}}
+        end)
       catch
         type, value ->
           debug_logging &&
@@ -115,31 +109,12 @@ defmodule Quantum.Executor do
             end)
 
           log_exception(type, value, __STACKTRACE__)
-
-          duration = :erlang.monotonic_time() - start_monotonic_time
-
-          :telemetry.execute([:quantum, :job, :exception], %{duration: duration}, %{
-            job: job,
-            node: node,
-            reason: value,
-            stacktrace: __STACKTRACE__,
-            scheduler: scheduler
-          })
       else
         result ->
           debug_logging &&
             Logger.debug(fn ->
               {"Execution ended for job", node: Node.self(), name: job_name, result: result}
             end)
-
-          duration = :erlang.monotonic_time() - start_monotonic_time
-
-          :telemetry.execute([:quantum, :job, :stop], %{duration: duration}, %{
-            job: job,
-            node: node,
-            scheduler: scheduler,
-            result: result
-          })
       end
 
       :ok
