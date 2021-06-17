@@ -53,6 +53,7 @@ defmodule Quantum.ExecutorTest do
         ) do
       send(parent_thread, %{
         test_id: test_id,
+        job_name: job_name,
         telemetry_span_context: telemetry_span_context,
         type: :stop
       })
@@ -62,6 +63,9 @@ defmodule Quantum.ExecutorTest do
           [:quantum, :job, :exception],
           %{duration: _duration} = _measurements,
           %{
+            job: %Job{name: job_name},
+            node: _node,
+            scheduler: _scheduler,
             kind: kind,
             reason: reason,
             stacktrace: stacktrace,
@@ -71,6 +75,7 @@ defmodule Quantum.ExecutorTest do
         ) do
       send(parent_thread, %{
         test_id: test_id,
+        job_name: job_name,
         telemetry_span_context: telemetry_span_context,
         type: :exception,
         kind: kind,
