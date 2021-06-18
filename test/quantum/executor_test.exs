@@ -23,20 +23,40 @@ defmodule Quantum.ExecutorTest do
     def handle_event(
           [:quantum, :job, :start],
           %{system_time: _system_time} = _measurements,
-          %{job: %Job{name: job_name}, node: _node, scheduler: _scheduler} = _metadata,
+          %{
+            job: %Job{name: job_name},
+            node: _node,
+            scheduler: _scheduler,
+            telemetry_span_context: telemetry_span_context
+          } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, %{test_id: test_id, job_name: job_name, type: :start})
+      send(parent_thread, %{
+        test_id: test_id,
+        job_name: job_name,
+        type: :start,
+        telemetry_span_context: telemetry_span_context
+      })
     end
 
     def handle_event(
           [:quantum, :job, :stop],
           %{duration: _duration} = _measurements,
-          %{job: %Job{name: job_name}, node: _node, scheduler: _scheduler, result: _result} =
-            _metadata,
+          %{
+            job: %Job{name: job_name},
+            node: _node,
+            scheduler: _scheduler,
+            result: _result,
+            telemetry_span_context: telemetry_span_context
+          } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
-      send(parent_thread, %{test_id: test_id, job_name: job_name, type: :stop})
+      send(parent_thread, %{
+        test_id: test_id,
+        job_name: job_name,
+        telemetry_span_context: telemetry_span_context,
+        type: :stop
+      })
     end
 
     def handle_event(
@@ -46,15 +66,19 @@ defmodule Quantum.ExecutorTest do
             job: %Job{name: job_name},
             node: _node,
             scheduler: _scheduler,
+            kind: kind,
             reason: reason,
-            stacktrace: stacktrace
+            stacktrace: stacktrace,
+            telemetry_span_context: telemetry_span_context
           } = _metadata,
           %{parent_thread: parent_thread, test_id: test_id}
         ) do
       send(parent_thread, %{
         test_id: test_id,
         job_name: job_name,
+        telemetry_span_context: telemetry_span_context,
         type: :exception,
+        kind: kind,
         reason: reason,
         stacktrace: stacktrace
       })
@@ -316,9 +340,12 @@ defmodule Quantum.ExecutorTest do
       assert_receive %{
                        test_id: ^test_id,
                        type: :exception,
+                       kind: :error,
                        reason: %RuntimeError{message: "failed"},
                        stacktrace: [
                          {Quantum.ExecutorTest, _, _, _},
+                         {Quantum.Executor, _, _, _},
+                         {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
                          {Task.Supervised, _, _, _},
@@ -366,9 +393,12 @@ defmodule Quantum.ExecutorTest do
       assert_receive %{
                        test_id: ^test_id,
                        type: :exception,
+                       kind: :error,
                        reason: %RuntimeError{message: "failed"},
                        stacktrace: [
                          {Quantum.ExecutorTest, _, _, _},
+                         {Quantum.Executor, _, _, _},
+                         {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
                          {Task.Supervised, _, _, _},
@@ -415,9 +445,12 @@ defmodule Quantum.ExecutorTest do
       assert_receive %{
                        test_id: ^test_id,
                        type: :exception,
+                       kind: :exit,
                        reason: :failure,
                        stacktrace: [
                          {Quantum.ExecutorTest, _, _, _},
+                         {Quantum.Executor, _, _, _},
+                         {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
                          {Task.Supervised, _, _, _},
@@ -468,9 +501,12 @@ defmodule Quantum.ExecutorTest do
       assert_receive %{
                        test_id: ^test_id,
                        type: :exception,
+                       kind: :throw,
                        reason: ^ref,
                        stacktrace: [
                          {Quantum.ExecutorTest, _, _, _},
+                         {Quantum.Executor, _, _, _},
+                         {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
                          {Task.Supervised, _, _, _},
