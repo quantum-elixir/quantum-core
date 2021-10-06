@@ -1,6 +1,15 @@
 on:
-  - push
-  - pull_request
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+
+# Secrets:
+# * CACHE_VERSION - Set to `date +%s`, set new when the cache should be busted
 
 env:
   BUILD_EMBEDDED: true
@@ -8,238 +17,20 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  deps:
-    name: Install Deps
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: deps
-          key: deps-${{ runner.os }}-${{ github.ref }}
-          restore-keys: |
-            deps-${{ runner.os }}-
-            deps-
-      - run: mix deps.get
-      - uses: actions/upload-artifact@v1
-        with:
-          name: deps
-          path: deps/
-      - uses: actions/upload-artifact@v1
-        with:
-          name: deps_lock
-          path: mix.lock
-
-  compile_dev:
-    name: Compile Dev Environment
-
-    runs-on: ubuntu-latest
-
-    needs: ['deps']
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: _build/dev
-          key: compile_dev-${{ runner.os }}-${{ github.ref }}
-          restore-keys: |
-            compile_dev-${{ runner.os }}-
-            compile_dev-
-      - run: mix deps.compile
-        env:
-          MIX_ENV: dev
-      - run: mix compile --warning-as-errors
-        env:
-          MIX_ENV: dev
-      - uses: actions/upload-artifact@v1
-        with:
-          name: compile_dev
-          path: _build/dev/
-
-  compile_docs:
-    name: Compile Docs Environment
-
-    runs-on: ubuntu-latest
-
-    needs: ['deps']
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: _build/docs
-          key: compile_docs${{ runner.os }}-${{ github.ref }}
-          restore-keys: |
-            compile_docs-${{ runner.os }}-
-            compile_docs-
-      - run: mix deps.compile
-        env:
-          MIX_ENV: docs
-      - run: mix compile --warning-as-errors
-        env:
-          MIX_ENV: docs
-      - uses: actions/upload-artifact@v1
-        with:
-          name: compile_docs
-          path: _build/docs/
-
-  compile_test:
-    name: Compile Test Environment (OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}})
-
-    runs-on: ubuntu-latest
-
-    needs: ['deps']
-
-    strategy:
-      fail-fast: false
-      matrix:
-        otp: [21.3, 22.3, 23.0]
-        elixir: [1.8.2, 1.9.4, 1.10.3]
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: _build/test
-          key: compile_test-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ github.ref }}
-          restore-keys: |
-            compile_test-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
-            compile_test-${{matrix.otp}}-${{matrix.elixir}}-
-      - run: mix deps.compile
-        env:
-          MIX_ENV: test
-      - run: mix compile --warning-as-errors
-        env:
-          MIX_ENV: test
-      - uses: actions/upload-artifact@v1
-        with:
-          name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
-          path: _build/test/
-
-  compile_prod:
-    name: Compile Prod Environment
-
-    runs-on: ubuntu-latest
-
-    needs: ['deps']
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - uses: actions/cache@v2
-        id: cache
-        with:
-          path: _build/prod
-          key: compile_prod-${{ runner.os }}-${{ github.ref }}
-          restore-keys: |
-            compile_prod-${{ runner.os }}-
-            compile_prod-
-      - run: mix deps.compile
-        env:
-          MIX_ENV: prod
-      - run: mix compile --warning-as-errors
-        env:
-          MIX_ENV: prod
-      - uses: actions/upload-artifact@v1
-        with:
-          name: compile_prod
-          path: _build/prod/
 
   format:
     name: Check Formatting
-
+    
     runs-on: ubuntu-latest
 
-    needs: ['deps']
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
-        with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - run: mix format --check-formatted
-        env:
-          MIX_ENV: dev
-
-  test:
-    name: Run Tests & Submit Coverage (OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}})
-
-    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: dev
 
     strategy:
       fail-fast: false
       matrix:
-        otp: [21.3, 22.3, 23.0]
-        elixir: [1.8.2, 1.9.4, 1.10.3]
-
-    needs: ['deps', 'compile_test']
+        otp: [24.1.1]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
@@ -247,90 +38,151 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - uses: actions/download-artifact@v1
+      - uses: actions/cache@v2
         with:
-          name: deps
           path: deps
-      - uses: actions/download-artifact@v1
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - run: mix format --check-formatted
+
+  test:
+    name: Run Tests & Submit Coverage
+
+    runs-on: ubuntu-latest
+
+    env:
+      MIX_ENV: test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [21.3, 22.3, 23.3, 24.1.1]
+        elixir: [1.8.2, 1.9.4, 1.10.4, 1.11.4, 1.12.3]
+        exclude:
+          - otp: 21.3
+            elixir: 1.12.3
+          - otp: 24.1.1
+            elixir: 1.8.2
+          - otp: 24.1.1
+            elixir: 1.9.4
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
         with:
-          name: deps_lock
-          path: .
-      - uses: actions/download-artifact@v1
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/cache@v2
         with:
-          name: compile_test-${{matrix.otp}}-${{matrix.elixir}}
+          path: deps
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - uses: actions/cache@v2
+        with:
           path: _build/test
-      - run: mix coveralls.github
+          key: compile_test-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile_test-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_test-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile --skip-umbrella-children
+      - run: mix compile --warning-as-errors
+      - run: mix coveralls.github --umbrella || mix test
         env:
-          MIX_ENV: test
+          DATABASE_PORT: ${{ job.services.postgres.ports[5432] }}
 
   credo:
     name: Check Credo
 
     runs-on: ubuntu-latest
 
-    needs: ['deps', 'compile_dev']
+    env:
+      MIX_ENV: dev
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [24.1.1]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/cache@v2
         with:
-          name: deps
           path: deps
-      - uses: actions/download-artifact@v1
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - uses: actions/cache@v2
         with:
-          name: deps_lock
-          path: .
-      - uses: actions/download-artifact@v1
-        with:
-          name: compile_dev
           path: _build/dev
+          key: compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile --skip-umbrella-children
+      - run: mix compile --warning-as-errors
       - run: mix credo --strict
-        env:
-          MIX_ENV: dev
 
   dialyzer_plt:
     name: Generate Dialyzer PLT
 
     runs-on: ubuntu-latest
 
-    needs: ['deps', 'compile_dev']
+    env:
+      MIX_ENV: dev
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [24.1.1]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps
-          path: deps
-      - uses: actions/download-artifact@v1
-        with:
-          name: deps_lock
-          path: .
-      - uses: actions/download-artifact@v1
-        with:
-          name: compile_dev
-          path: _build/dev
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
       - uses: actions/cache@v2
-        id: cache
+        with:
+          path: deps
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - uses: actions/cache@v2
+        with:
+          path: _build/dev
+          key: compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile --skip-umbrella-children
+      - run: mix compile --warning-as-errors
+      - uses: actions/cache@v2
         with:
           path: priv/plts/
-          key: dialyzer_plt_dev-${{ runner.os }}-${{ github.ref }}
+          key: dialyzer_plt_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            dialyzer_plt_dev-${{ runner.os }}-
-            dialyzer_plt_dev-
+            dialyzer_plt_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            dialyzer_plt_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
       - run: mix dialyzer --plt
-        env:
-          MIX_ENV: dev
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
-          name: dialyzer_plt_dev
+          name: dialyzer_plt_dev-${{matrix.otp}}-${{matrix.elixir}}
           path: priv/plts/
 
   dialyzer_test:
@@ -338,63 +190,85 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    needs: ['deps', 'compile_dev', 'dialyzer_plt']
+    needs: ['dialyzer_plt']
+
+    env:
+      MIX_ENV: dev
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [24.1.1]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/cache@v2
         with:
-          name: deps
           path: deps
-      - uses: actions/download-artifact@v1
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - uses: actions/cache@v2
         with:
-          name: deps_lock
-          path: .
-      - uses: actions/download-artifact@v1
-        with:
-          name: compile_dev
           path: _build/dev
-      - uses: actions/download-artifact@v1
+          key: compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile --skip-umbrella-children
+      - run: mix compile --warning-as-errors
+      - uses: actions/download-artifact@v2
         with:
-          name: dialyzer_plt_dev
+          name: dialyzer_plt_dev-${{matrix.otp}}-${{matrix.elixir}}
           path: priv/plts/
-      - run: mix dialyzer --halt-exit-status
-        env:
-          MIX_ENV: dev
+      - run: mix dialyzer
 
   docs:
     name: "Generate Docs"
 
     runs-on: ubuntu-latest
 
-    needs: ['deps', 'compile_docs']
+    env:
+      MIX_ENV: docs
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [24.1.1]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.3
-      - uses: actions/download-artifact@v1
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/cache@v2
         with:
-          name: deps
           path: deps
-      - uses: actions/download-artifact@v1
+          key: deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            deps-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.get
+      - uses: actions/cache@v2
         with:
-          name: deps_lock
-          path: .
-      - uses: actions/download-artifact@v1
-        with:
-          name: compile_docs
-          path: _build/docs
+          path: _build/dev
+          key: compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-${{ runner.os }}-
+            compile_dev-${{ secrets.CACHE_VERSION }}-${{matrix.otp}}-${{matrix.elixir}}-
+      - run: mix deps.compile --skip-umbrella-children
+      - run: mix compile --warning-as-errors
       - run: mix docs
-        env:
-          MIX_ENV: docs
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: docs
           path: doc
