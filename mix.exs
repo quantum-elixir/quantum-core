@@ -76,8 +76,7 @@ defmodule Quantum.Mixfile do
         "pages/configuration.md",
         "pages/runtime-configuration.md",
         "pages/crontab-format.md",
-        "pages/run-strategies.md",
-        "pages/telemetry.md"
+        "pages/run-strategies.md"
       ],
       groups_for_modules: [
         "Run Strategy": [
