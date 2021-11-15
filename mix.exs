@@ -76,8 +76,7 @@ defmodule Quantum.Mixfile do
         "pages/configuration.md",
         "pages/runtime-configuration.md",
         "pages/crontab-format.md",
-        "pages/run-strategies.md",
-        "pages/telemetry.md"
+        "pages/run-strategies.md"
       ],
       groups_for_modules: [
         "Run Strategy": [
@@ -104,7 +103,8 @@ defmodule Quantum.Mixfile do
       {:ex_doc, ">= 0.0.0", only: [:dev, :docs], runtime: false},
       {:excoveralls, "~> 0.5", only: [:test], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev], runtime: false},
-      {:credo, "~> 1.0", only: [:dev], runtime: false}
+      {:credo, "~> 1.0", only: [:dev], runtime: false},
+      {:telemetry_registry, "~> 0.2"}
     ]
   end
 end
