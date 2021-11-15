@@ -1,27 +1,4 @@
 defmodule Quantum.JobBroadcaster do
-  use TelemetryRegistry
-
-  telemetry_event(%{
-    event: [:quantum, :job, :add],
-    description: "dispatched when a job is added",
-    measurements: "%{}",
-    metadata: "%{job: Quantum.Job.t(), scheduler: atom()}"
-  })
-
-  telemetry_event(%{
-    event: [:quantum, :job, :update],
-    description: "dispatched when a job is updated",
-    measurements: "%{}",
-    metadata: "%{job: Quantum.Job.t(), scheduler: atom()}"
-  })
-
-  telemetry_event(%{
-    event: [:quantum, :job, :delete],
-    description: "dispatched when a job is deleted",
-    measurements: "%{}",
-    metadata: "%{job: Quantum.Job.t(), scheduler: atom()}"
-  })
-
   @moduledoc false
 
   # This Module is here to broadcast added / removed tabs into the execution pipeline.

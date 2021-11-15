@@ -1,30 +1,4 @@
 defmodule Quantum.Executor do
-  use TelemetryRegistry
-
-  telemetry_event(%{
-    event: [:quantum, :job, :start],
-    description: "dispatched on job execution start",
-    measurements: "%{system_time: integer()}",
-    metadata:
-      "%{telemetry_span_context: term(), job: Quantum.Job.t(), node: Node.t(), scheduler: atom()}"
-  })
-
-  telemetry_event(%{
-    event: [:quantum, :job, :stop],
-    description: "dispatched on job execution end",
-    measurements: "%{duration: integer()}",
-    metadata:
-      "%{telemetry_span_context: term(), job: Quantum.Job.t(), node: Node.t(), scheduler: atom(), result: term()}"
-  })
-
-  telemetry_event(%{
-    event: [:quantum, :job, :exception],
-    description: "dispatched on job execution fail",
-    measurements: "%{duration: integer()}",
-    metadata:
-      "%{telemetry_span_context: term(), job: Quantum.Job.t(), node: Node.t(), scheduler: atom(), kind: :throw | :error | :exit, reason: term(), stacktrace: list()}"
-  })
-
   @moduledoc false
 
   # Task to actually execute a Task
