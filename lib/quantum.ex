@@ -293,13 +293,13 @@ defmodule Quantum do
       Module.concat(scheduler, NodeSelectorBroadcaster)
     )
     |> Keyword.put_new(:executor_supervisor_name, Module.concat(scheduler, ExecutorSupervisor))
-    |> (fn config ->
-          Keyword.update(config, :jobs, [], fn jobs ->
-            jobs
-            |> Enum.map(&Normalizer.normalize(scheduler.new_job(config), &1))
-            |> remove_jobs_with_duplicate_names(scheduler)
-          end)
-        end).()
+    |> Kernel.then(fn config ->
+      Keyword.update(config, :jobs, [], fn jobs ->
+        jobs
+        |> Enum.map(&Normalizer.normalize(scheduler.new_job(config), &1))
+        |> remove_jobs_with_duplicate_names(scheduler)
+      end)
+    end)
     |> Keyword.put_new(:supervisor_module, Quantum.Supervisor)
     |> Keyword.put_new(:name, Quantum.Supervisor)
   end
