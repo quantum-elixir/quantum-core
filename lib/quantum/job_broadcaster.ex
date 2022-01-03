@@ -109,7 +109,7 @@ defmodule Quantum.JobBroadcaster do
 
         :ok = update_job(storage, storage_pid, job, state.scheduler)
 
-        {:noreply, [{:delete, old_job}, {:add, job}],
+        {:noreply, [{:remove, old_job}, {:add, job}],
          %{state | jobs: Map.put(jobs, job_name, job)}}
 
       %{^job_name => %Job{state: :inactive}} ->
@@ -158,7 +158,7 @@ defmodule Quantum.JobBroadcaster do
 
         :ok = update_job(storage, storage_pid, job, state.scheduler)
 
-        {:noreply, [{:delete, old_job}], %{state | jobs: Map.put(jobs, job_name, job)}}
+        {:noreply, [{:remove, old_job}], %{state | jobs: Map.put(jobs, job_name, job)}}
 
       %{^job_name => %Job{state: :inactive}} ->
         debug_logging &&

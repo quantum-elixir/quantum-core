@@ -271,7 +271,7 @@ defmodule Quantum.JobBroadcasterTest do
 
       TestScheduler.add_job(broadcaster, job_2)
 
-      assert_receive {:received, {:delete, ^job_1}}
+      assert_receive {:received, {:remove, ^job_1}}
       assert_receive {:delete_job, ^test_name, _}
       assert_receive {:received, {:add, ^job_2}}
       assert_receive {:add_job, ^job_2, _}
@@ -299,7 +299,7 @@ defmodule Quantum.JobBroadcasterTest do
 
       TestScheduler.add_job(broadcaster, job_2)
 
-      assert_receive {:received, {:delete, ^job_1}}
+      assert_receive {:received, {:remove, ^job_1}}
       refute_receive {:delete_job, ^test_name, _}
       assert_receive {:received, {:add, ^job_2}}
       refute_receive {:add_job, ^job_2, _}
@@ -325,7 +325,7 @@ defmodule Quantum.JobBroadcasterTest do
 
       TestScheduler.add_job(broadcaster, job_2)
 
-      assert_receive {:received, {:delete, ^job_1}}
+      assert_receive {:received, {:remove, ^job_1}}
       refute_receive {:received, {:add, _}}
     end
 
@@ -348,7 +348,7 @@ defmodule Quantum.JobBroadcasterTest do
 
       TestScheduler.add_job(broadcaster, job_2)
 
-      refute_receive {:received, {:delete, _}}
+      refute_receive {:received, {:remove, _}}
       assert_receive {:received, {:add, ^job_2}}
     end
 
@@ -372,7 +372,7 @@ defmodule Quantum.JobBroadcasterTest do
 
       TestScheduler.add_job(broadcaster, job_2)
 
-      refute_receive {:received, {:delete, _}}
+      refute_receive {:received, {:remove, _}}
       refute_receive {:received, {:add, _}}
     end
   end
