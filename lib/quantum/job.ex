@@ -42,30 +42,26 @@ defmodule Quantum.Job do
         }
 
   # Takes some config from a scheduler and returns a new job
+  # Do not use directly, use `Scheduler.new_job/1` instead.
+  @doc false
   @spec new(config :: Keyword.t()) :: t
   def new(config) do
-    {run_strategy_name, options} =
-      case Keyword.fetch!(config, :run_strategy) do
-        {module, option} -> {module, option}
-        module -> {module, nil}
+    Enum.reduce(
+      [
+        {&set_name/2, Keyword.get(config, :name, make_ref())},
+        {&set_overlap/2, Keyword.fetch!(config, :overlap)},
+        {&set_run_strategy/2, Keyword.fetch!(config, :run_strategy)},
+        {&set_schedule/2, Keyword.get(config, :schedule)},
+        {&set_state/2, Keyword.fetch!(config, :state)},
+        {&set_task/2, Keyword.get(config, :task)},
+        {&set_timezone/2, Keyword.fetch!(config, :timezone)}
+      ],
+      %__MODULE__{name: nil, run_strategy: nil, overlap: nil, timezone: nil},
+      fn
+        {_fun, nil}, acc -> acc
+        {fun, value}, acc -> fun.(acc, value)
       end
-
-    with run_strategy <- run_strategy_name.normalize_config!(options),
-         name <- make_ref(),
-         overlap when is_boolean(overlap) <- Keyword.fetch!(config, :overlap),
-         timezone when timezone == :utc or is_binary(timezone) <-
-           Keyword.fetch!(config, :timezone),
-         state when is_atom(state) <- Keyword.fetch!(config, :state),
-         schedule <- Keyword.get(config, :schedule) do
-      %__MODULE__{
-        name: name,
-        overlap: Keyword.fetch!(config, :overlap),
-        timezone: Keyword.fetch!(config, :timezone),
-        run_strategy: run_strategy,
-        schedule: schedule,
-        state: state
-      }
-    end
+    )
   end
 
   @doc """
@@ -86,6 +82,7 @@ defmodule Quantum.Job do
   """
   @spec set_name(t, atom) :: t
   def set_name(%__MODULE__{} = job, name) when is_atom(name), do: Map.put(job, :name, name)
+  def set_name(%__MODULE__{} = job, name) when is_reference(name), do: Map.put(job, :name, name)
 
   @doc """
   Sets a job's schedule.
