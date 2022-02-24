@@ -225,6 +225,16 @@ defmodule Quantum do
 
   @doc """
   Creates a new Job. The job can be added by calling `add_job/1`.
+
+  ## Supported options
+
+  * `name` - see `Quantum.Job.set_name/2`
+  * `overlap` - see `Quantum.Job.set_overlap/2`
+  * `run_strategy` - see `Quantum.Job.set_run_strategy/2`
+  * `schedule` - see `Quantum.Job.set_schedule/2`
+  * `state` - see `Quantum.Job.set_state/2`
+  * `task` - see `Quantum.Job.set_task/2`
+  * `timezone` - see `Quantum.Job.set_timezone/2`
   """
   @callback new_job(opts :: Keyword.t()) :: Quantum.Job.t()
 
@@ -296,7 +306,7 @@ defmodule Quantum do
     |> Kernel.then(fn config ->
       Keyword.update(config, :jobs, [], fn jobs ->
         jobs
-        |> Enum.map(&Normalizer.normalize(scheduler.new_job(config), &1))
+        |> Enum.map(&Normalizer.normalize(scheduler.__new_job__([], config), &1))
         |> remove_jobs_with_duplicate_names(scheduler)
       end)
     end)
@@ -376,7 +386,20 @@ defmodule Quantum do
       end
 
       @impl behaviour
-      def new_job(config \\ config()), do: Job.new(config)
+      def new_job(opts \\ []), do: __new_job__(opts, config())
+
+      @doc false
+      def __new_job__(opts, config) do
+        config
+        |> Keyword.take([:overlap, :schedule, :state, :timezone, :run_strategy])
+        |> Keyword.merge(opts)
+        |> Keyword.update!(:run_strategy, fn
+          {module, options} when is_atom(module) -> module.normalize_config!(options)
+          module when is_atom(module) -> module.normalize_config!(nil)
+          %_struct{} = run_strategy -> run_strategy
+        end)
+        |> Job.new()
+      end
 
       @impl behaviour
       def deactivate_job(server \\ __job_broadcaster__(), name)

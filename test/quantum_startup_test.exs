@@ -10,7 +10,7 @@ defmodule QuantumStartupTest do
   defmodule Scheduler do
     @moduledoc false
 
-    use Quantum, otp_app: :quantum_startup_test
+    use Quantum, otp_app: :quantum
   end
 
   @tag :startup
@@ -24,17 +24,15 @@ defmodule QuantumStartupTest do
         {"4 * * * *", fn -> :ok end}
       ]
 
-      Application.put_env(:quantum_startup_test, QuantumStartupTest.Scheduler, jobs: test_jobs)
+      Application.put_env(:quantum, QuantumStartupTest.Scheduler, jobs: test_jobs)
 
-      capture_log(fn ->
-        {:ok, _pid} = start_supervised(Scheduler)
+      start_supervised!(Scheduler)
 
-        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 4
-        assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
-        assert QuantumStartupTest.Scheduler.find_job(:inactive_job).state == :inactive
+      assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 4
+      assert QuantumStartupTest.Scheduler.find_job(:test_job).schedule == ~e[1 * * * *]
+      assert QuantumStartupTest.Scheduler.find_job(:inactive_job).state == :inactive
 
-        :ok = stop_supervised(Scheduler)
-      end)
+      :ok = stop_supervised(Scheduler)
     end)
   end
 end
