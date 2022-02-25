@@ -53,7 +53,7 @@ It is possible to specify jobs with second granularity.
 To do this the `schedule` parameter has to be provided with either a `%Crontab.CronExpression{extended: true, ...}` or
 with a set `e` flag on the `e` sigil. (The sigil must be imported from `Crontab.CronExpression`)
 
-The following example will put a tick into the `stdout` every second.
+The following example will put a tick into the `stdout` every first second of every minute.
 
 ```elixir
 import Crontab.CronExpression
