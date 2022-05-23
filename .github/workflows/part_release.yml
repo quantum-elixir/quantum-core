@@ -1,0 +1,57 @@
+on:
+  workflow_call:
+    inputs:
+      releaseName:
+        required: true
+        type: string
+      stable:
+        required: false
+        type: boolean
+        default: false
+
+name: "Release"
+
+jobs:
+  create_prerelease:
+    name: Create Prerelease
+
+    if: ${{ !inputs.stable }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create draft prerelease
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+            --repo ${{ github.repository }} \
+            --title ${{ inputs.releaseName }} \
+            --prerelease \
+            --notes '' \
+            ${{ inputs.releaseName }}
+
+  create_stable:
+    name: Create Stable
+
+    if: ${{ inputs.stable }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+            --repo ${{ github.repository }} \
+            --title ${{ inputs.releaseName }} \
+            --notes '' \
+            --draft \
+            ${{ inputs.releaseName }}

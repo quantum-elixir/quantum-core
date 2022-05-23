@@ -1,7 +1,7 @@
 # Quantum
 
 [![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum)
-[![CI](https://github.com/quantum-elixir/quantum-core/workflows/.github/workflows/elixir.yml/badge.svg)](https://github.com/quantum-elixir/quantum-core/actions/workflows/elixir.yml)
+[![.github/workflows/branch_main.yml](https://github.com/quantum-elixir/quantum-core/actions/workflows/branch_main.yml/badge.svg)](https://github.com/quantum-elixir/quantum-core/actions/workflows/branch_main.yml)
 [![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
 [![Module Version](https://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/quantum/)

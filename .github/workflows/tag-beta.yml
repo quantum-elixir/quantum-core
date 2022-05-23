@@ -1,0 +1,37 @@
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+"
+  workflow_dispatch: {}
+
+name: "Beta Tag"
+
+# Secrets:
+# * CACHE_VERSION - Set to `date +%s`, set new when the cache should be busted
+
+jobs:
+  detectToolVersions:
+    name: "Detect Tool Versions"
+
+    uses: ./.github/workflows/part_tool_versioning.yml
+
+  release:
+    name: "Release"
+
+    uses: ./.github/workflows/part_release.yml
+    with:
+      releaseName: "${{ github.ref_name }}"
+
+  docs:
+    name: "Docs"
+
+    needs: ['release', 'detectToolVersions']
+
+    uses: ./.github/workflows/part_docs.yml
+    with:
+      elixirVersion: "${{ needs.detectToolVersions.outputs.elixirVersion }}"
+      otpVersion: "${{ needs.detectToolVersions.outputs.otpVersion }}"
+      releaseName: "${{ github.ref_name }}"
+    secrets:
+      CACHE_VERSION: "${{ secrets.CACHE_VERSION }}"
+

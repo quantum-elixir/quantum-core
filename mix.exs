@@ -22,16 +22,20 @@ defmodule Quantum.Mixfile do
       version: @version,
       build_embedded: (System.get_env("BUILD_EMBEDDED") || "false") in ["1", "true"],
       dialyzer:
-        [
-          ignore_warnings: "dialyzer.ignore-warnings"
-        ] ++
+        [list_unused_filters: true, ignore_warnings: "dialyzer.ignore-warnings"] ++
           if (System.get_env("DIALYZER_PLT_PRIV") || "false") in ["1", "true"] do
-            [
-              plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-            ]
+            [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
           else
             []
-          end
+          end,
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "coveralls.json": :test,
+        "coveralls.post": :test,
+        "coveralls.xml": :test
+      ]
     ]
   end
 
@@ -100,7 +104,7 @@ defmodule Quantum.Mixfile do
       {:gen_stage, "~> 0.14 or ~> 1.0"},
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
       {:tzdata, "~> 1.0", only: [:dev, :test]},
-      {:ex_doc, ">= 0.0.0", only: [:dev, :docs], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.5", only: [:test], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev], runtime: false},
       {:credo, "~> 1.0", only: [:dev], runtime: false},
