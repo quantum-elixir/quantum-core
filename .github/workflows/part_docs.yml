@@ -1,0 +1,84 @@
+on:
+  workflow_call:
+    inputs:
+      elixirVersion:
+        required: true
+        type: string
+      otpVersion:
+        required: true
+        type: string
+      releaseName:
+        required: false
+        type: string
+    secrets:
+      CACHE_VERSION:
+        required: true
+
+name: "Documentation"
+
+env:
+  BUILD_EMBEDDED: true
+
+jobs:
+  generate:
+    name: "Generate"
+
+    runs-on: ubuntu-latest
+
+    env:
+      MIX_ENV: dev
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-elixir@v1
+        id: setupBEAM
+        with:
+          otp-version: ${{ inputs.otpVersion }}
+          elixir-version: ${{ inputs.elixirVersion }}
+      - uses: actions/cache@v3
+        with:
+          path: deps
+          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+      - run: mix deps.get
+      - uses: actions/cache@v3
+        with:
+          path: _build/dev
+          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+      - run: mix deps.compile
+      - run: mix compile --warning-as-errors
+      - run: mix docs
+      - uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: doc
+
+  upload:
+    name: "Upload"
+
+    runs-on: ubuntu-latest
+
+    if: ${{ inputs.releaseName }}
+
+    needs: ['generate']
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: docs
+      - run: |
+          tar -czvf docs.tar.gz docs
+      - name: Upload
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload --clobber "${{ inputs.releaseName }}" \
+            docs.tar.gz
