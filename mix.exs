@@ -61,7 +61,7 @@ defmodule Quantum.Mixfile do
       exclude_patterns: [~r[priv/plts]],
       licenses: ["Apache-2.0"],
       links: %{
-        "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md",
+        "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md",
         "GitHub" => @source_url
       }
     }

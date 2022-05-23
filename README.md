@@ -2,14 +2,14 @@
 
 [![Financial Contributors on Open Collective](https://opencollective.com/quantum/all/badge.svg?label=financial+contributors)](https://opencollective.com/quantum)
 [![.github/workflows/branch_main.yml](https://github.com/quantum-elixir/quantum-core/actions/workflows/branch_main.yml/badge.svg)](https://github.com/quantum-elixir/quantum-core/actions/workflows/branch_main.yml)
-[![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=master)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=master)
+[![Coverage Status](https://coveralls.io/repos/quantum-elixir/quantum-core/badge.svg?branch=main)](https://coveralls.io/r/quantum-elixir/quantum-core?branch=main)
 [![Module Version](https://img.shields.io/hexpm/v/quantum.svg)](https://hex.pm/packages/quantum)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/quantum/)
 [![Total Download](https://img.shields.io/hexpm/dt/quantum.svg)](https://hex.pm/packages/quantum)
-[![License](https://img.shields.io/hexpm/l/quantum.svg)](https://github.com/quantum-elixir/quantum-core/blob/master/LICENSE)
-[![Last Updated](https://img.shields.io/github/last-commit/quantum-elixir/quantum-core.svg)](https://github.com/quantum-elixir/quantum-core/commits/master)
+[![License](https://img.shields.io/hexpm/l/quantum.svg)](https://github.com/quantum-elixir/quantum-core/blob/main/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/quantum-elixir/quantum-core.svg)](https://github.com/quantum-elixir/quantum-core/commits/main)
 
-> **This README follows master, which may not be the currently published version**. Here are the
+> **This README follows main, which may not be the currently published version**. Here are the
 [docs for the latest published version of Quantum](https://hexdocs.pm/quantum/readme.html).
 
 [Cron](https://en.wikipedia.org/wiki/Cron)-like job scheduler for [Elixir](http://elixir-lang.org/).
