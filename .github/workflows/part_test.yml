@@ -62,6 +62,8 @@ jobs:
           - otp: '25.0'
             elixir: '1.13'
           - otp: '25.0'
+            elixir: '1.14'
+          - otp: '25.0'
             elixir: 'main'
           - otp: '${{ inputs.otpVersion }}'
             elixir: '${{ inputs.elixirVersion }}'
