@@ -320,7 +320,7 @@ defmodule Quantum do
       cond do
         duplicate_job?(Map.keys(acc), job) ->
           Logger.warn(
-            "Job with name '#{name}' of scheduler '#{scheduler}' not started due to duplicate job name"
+            "Job with name '#{name}' of scheduler '#{scheduler}' not started: duplicate job name"
           )
 
           acc
