@@ -307,28 +307,45 @@ defmodule Quantum do
       Keyword.update(config, :jobs, [], fn jobs ->
         jobs
         |> Enum.map(&Normalizer.normalize(scheduler.__new_job__([], config), &1))
-        |> remove_jobs_with_duplicate_names(scheduler)
+        |> remove_invalid_jobs(scheduler)
       end)
     end)
     |> Keyword.put_new(:supervisor_module, Quantum.Supervisor)
     |> Keyword.put_new(:name, Quantum.Supervisor)
   end
 
-  defp remove_jobs_with_duplicate_names(job_list, scheduler) do
+  defp remove_invalid_jobs(job_list, scheduler) do
     job_list
     |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
-      if Enum.member?(Map.keys(acc), name) do
-        Logger.warn(
-          "Job with name '#{name}' of scheduler '#{scheduler}' not started due to duplicate job name"
-        )
+      cond do
+        duplicate_job?(Map.keys(acc), job) ->
+          Logger.warn(
+            "Job with name '#{name}' of scheduler '#{scheduler}' not started due to duplicate job name"
+          )
 
-        acc
-      else
-        Map.put_new(acc, name, job)
+          acc
+
+        invalid_job_task?(job) ->
+          Logger.warn(
+            "Job with name '#{name}' of scheduler '#{scheduler}' not started: invalid task function"
+          )
+
+          acc
+
+        :else ->
+          Map.put_new(acc, name, job)
       end
     end)
     |> Map.values()
   end
+
+  defp duplicate_job?(existent_jobs, %Job{name: name}), do: Enum.member?(existent_jobs, name)
+
+  defp invalid_job_task?(%Job{task: {m, f, args}})
+       when is_atom(m) and is_atom(f) and is_list(args),
+       do: not function_exported?(m, f, length(args))
+
+  defp invalid_job_task?(_), do: false
 
   defmacro __using__(opts) do
     quote bind_quoted: [behaviour: __MODULE__, opts: opts, moduledoc: @moduledoc],
