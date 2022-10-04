@@ -35,4 +35,27 @@ defmodule QuantumStartupTest do
       :ok = stop_supervised(Scheduler)
     end)
   end
+
+  @tag :startup
+  test "prevent unexported functions on startup" do
+    log =
+      capture_log(fn ->
+        test_jobs = [
+          {:existing_function, [schedule: ~e[2 * * * *], task: {IO, :puts, ["hey"]}]},
+          {:another_existing_function, [schedule: ~e[2 * * * *], task: {Kernel, :floor, [5.4]}]},
+          {:inexistent_function,
+           [schedule: ~e[2 * * * *], task: {UndefinedModule, :undefined_function, ["argument"]}]}
+        ]
+
+        Application.put_env(:quantum, QuantumStartupTest.Scheduler, jobs: test_jobs)
+
+        start_supervised!(Scheduler)
+
+        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 2
+        :ok = stop_supervised(Scheduler)
+      end)
+
+    assert log =~
+             "Job with name 'inexistent_function' of scheduler 'Elixir.QuantumStartupTest.Scheduler' not started: invalid task function"
+  end
 end
