@@ -43,7 +43,6 @@ defmodule QuantumStartupTest do
         test_jobs = [
           {:existing_function, [schedule: ~e[2 * * * *], task: {IO, :puts, ["hey"]}]},
           {:another_existing_function, [schedule: ~e[2 * * * *], task: {Kernel, :floor, [5.4]}]},
-          {:existing_function, [schedule: ~e[2 * * * *], task: {IO, :puts, ["hey"]}]},
           {:inexistent_function,
            [schedule: ~e[2 * * * *], task: {UndefinedModule, :undefined_function, ["argument"]}]}
         ]
