@@ -1,15 +1,5 @@
 on:
-  workflow_call:
-    inputs:
-      elixirVersion:
-        required: true
-        type: string
-      otpVersion:
-        required: true
-        type: string
-    secrets:
-      CACHE_VERSION:
-        required: true
+  workflow_call: {}
 
 name: "Test"
 
@@ -30,21 +20,21 @@ jobs:
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
-          otp-version: ${{ inputs.otpVersion }}
-          elixir-version: ${{ inputs.elixirVersion }}
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/test
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix format --check-formatted
 
@@ -59,14 +49,13 @@ jobs:
         include:
           - otp: '24.3'
             elixir: '1.12'
-          - otp: '25.0'
+          - otp: '25.2'
             elixir: '1.13'
-          - otp: '25.0'
+          - otp: '25.2'
             elixir: '1.14'
-          - otp: '25.0'
+          - otp: '25.2'
             elixir: 'main'
-          - otp: '${{ inputs.otpVersion }}'
-            elixir: '${{ inputs.elixirVersion }}'
+          - currentMainVersion: true
             enable_coverage_export: 'true'
 
     env:
@@ -75,23 +64,30 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-elixir@v1
-        id: setupBEAM
+        if: ${{ !matrix.currentMainVersion }}
+        id: setupBEAMDynamic
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
+      - uses: erlef/setup-elixir@v1
+        if: ${{ matrix.currentMainVersion }}
+        id: setupBEAMCurrent
+        with:
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/test
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - run: mix coveralls.github
@@ -116,21 +112,21 @@ jobs:
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
-          otp-version: ${{ inputs.otpVersion }}
-          elixir-version: ${{ inputs.elixirVersion }}
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/dev
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - run: mix credo --strict
@@ -149,29 +145,29 @@ jobs:
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
-          otp-version: ${{ inputs.otpVersion }}
-          elixir-version: ${{ inputs.elixirVersion }}
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/dev
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - uses: actions/cache@v3
         with:
           path: priv/plts/
-          key: dialyzer_plt_dev-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: dialyzer_plt_dev-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            dialyzer_plt_dev-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            dialyzer_plt_dev-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix dialyzer --plt
       - uses: actions/upload-artifact@v3
         with:
@@ -194,21 +190,21 @@ jobs:
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
-          otp-version: ${{ inputs.otpVersion }}
-          elixir-version: ${{ inputs.elixirVersion }}
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/dev
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - uses: actions/download-artifact@v3

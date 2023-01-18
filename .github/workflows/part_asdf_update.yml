@@ -12,7 +12,7 @@ on:
 name: "ASDF Update"
 
 jobs:
-  compile_assets:
+  asdf_update:
     name: "${{ inputs.plugin }}"
 
     runs-on: ubuntu-latest
