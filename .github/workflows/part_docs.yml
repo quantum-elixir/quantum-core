@@ -1,18 +1,9 @@
 on:
   workflow_call:
     inputs:
-      elixirVersion:
-        required: true
-        type: string
-      otpVersion:
-        required: true
-        type: string
       releaseName:
         required: false
         type: string
-    secrets:
-      CACHE_VERSION:
-        required: true
 
 name: "Documentation"
 
@@ -33,21 +24,21 @@ jobs:
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
-          otp-version: ${{ inputs.otpVersion }}
-          elixir-version: ${{ inputs.elixirVersion }}
+          version-file: '.tool-versions'
+          version-type: strict
       - uses: actions/cache@v3
         with:
           path: deps
-          key: deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
       - uses: actions/cache@v3
         with:
           path: _build/dev
-          key: compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
+          key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            compile-${{ env.MIX_ENV }}-${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
+            compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - run: mix docs

@@ -17,5 +17,6 @@ jobs:
       - uses: fastify/github-action-merge-dependabot@v3.5.4
         with:
           github-token: ${{ github.token }}
+          use-github-auto-merge: true
           # Major Updates need to be merged manually
           target: minor
