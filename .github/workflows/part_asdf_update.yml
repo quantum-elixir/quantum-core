@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: ASDF Install
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v2
       - name: "Get Newest Version"
         id: newestVersion
         run: |
