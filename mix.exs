@@ -105,6 +105,10 @@ defmodule Quantum.Mixfile do
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
       {:tzdata, "~> 1.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
+      # TODO: Remove when the following PR is merged & released:
+      # https://github.com/deadtrickster/ssl_verify_fun.erl/pull/27
+      {:ssl_verify_fun, "~> 1.1",
+       manager: :rebar3, only: [:test], runtime: false, override: true},
       {:excoveralls, "~> 0.5", only: [:test], runtime: false},
       {:dialyxir, "~> 1.0-rc", only: [:dev], runtime: false},
       {:credo, "~> 1.0", only: [:dev], runtime: false},
