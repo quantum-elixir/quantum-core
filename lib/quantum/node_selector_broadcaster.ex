@@ -81,7 +81,7 @@ defmodule Quantum.NodeSelectorBroadcaster do
     if running_node?(node, task_supervisor) do
       true
     else
-      Logger.warn(
+      Logger.error(
         "Node #{inspect(node)} is not running. Job #{inspect(job_name)} could not be executed."
       )
 
