@@ -16,7 +16,7 @@ defmodule Quantum.Normalizer do
 
   @type config_schedule ::
           CronExpression.t() | String.t() | {:cron, String.t()} | {:extended, String.t()}
-  @type config_task :: {module, fun, [any]} | (() -> any)
+  @type config_task :: {module, fun, [any]} | (-> any)
   @type config_name :: String.t() | atom
 
   # Normalize Config Input into `Quantum.Job`.

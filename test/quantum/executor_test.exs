@@ -348,8 +348,7 @@ defmodule Quantum.ExecutorTest do
                          {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
-                         {Task.Supervised, _, _, _},
-                         {:proc_lib, _, _, _}
+                         {Task.Supervised, _, _, _} | _rest
                        ]
                      },
                      2000
@@ -401,8 +400,7 @@ defmodule Quantum.ExecutorTest do
                          {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
-                         {Task.Supervised, _, _, _},
-                         {:proc_lib, _, _, _}
+                         {Task.Supervised, _, _, _} | _rest
                        ]
                      },
                      2000
@@ -453,8 +451,7 @@ defmodule Quantum.ExecutorTest do
                          {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
-                         {Task.Supervised, _, _, _},
-                         {:proc_lib, _, _, _}
+                         {Task.Supervised, _, _, _} | _rest
                        ]
                      },
                      2000
@@ -493,7 +490,7 @@ defmodule Quantum.ExecutorTest do
           assert :ok == wait_for_termination(task)
         end)
 
-      '#Ref' ++ rest = :erlang.ref_to_list(ref)
+      ~c"#Ref" ++ rest = :erlang.ref_to_list(ref)
       assert logs =~ "[error] ** (throw)"
       assert logs =~ "#{rest}"
       assert_receive %{test_id: ^test_id, type: :start}
@@ -509,8 +506,7 @@ defmodule Quantum.ExecutorTest do
                          {:telemetry, _, _, _},
                          {Quantum.Executor, _, _, _},
                          {Task.Supervised, _, _, _},
-                         {Task.Supervised, _, _, _},
-                         {:proc_lib, _, _, _}
+                         {Task.Supervised, _, _, _} | _rest
                        ]
                      },
                      2000
