@@ -319,14 +319,14 @@ defmodule Quantum do
     |> Enum.reduce(%{}, fn %Job{name: name} = job, acc ->
       cond do
         duplicate_job?(Map.keys(acc), job) ->
-          Logger.warn(
+          Logger.warning(
             "Job with name '#{name}' of scheduler '#{scheduler}' not started: duplicate job name"
           )
 
           acc
 
         invalid_job_task?(job) ->
-          Logger.warn(
+          Logger.warning(
             "Job with name '#{name}' of scheduler '#{scheduler}' not started: invalid task function"
           )
 
