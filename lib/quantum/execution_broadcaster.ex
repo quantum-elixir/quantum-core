@@ -247,7 +247,7 @@ defmodule Quantum.ExecutionBroadcaster do
         add_to_state(state, time, date, job)
 
       {:error, _} ->
-        Logger.warn(fn ->
+        Logger.warning(fn ->
           """
           Invalid Schedule #{inspect(schedule)} provided for job #{inspect(name)}.
           No matching dates found. The job was removed.
@@ -284,7 +284,7 @@ defmodule Quantum.ExecutionBroadcaster do
     _ in InvalidDateTimeForTimezoneError ->
       next_time = NaiveDateTime.add(time, 60, :second)
 
-      Logger.warn(fn ->
+      Logger.warning(fn ->
         """
         Next execution time for job #{inspect(name)} is not a valid time.
         Retrying with #{inspect(next_time)}

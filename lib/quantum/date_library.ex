@@ -29,7 +29,7 @@ defmodule Quantum.DateLibrary do
           raise InvalidTimezoneError
 
         {:error, :utc_only_time_zone_database} ->
-          Logger.warn("Timezone database not set up")
+          Logger.warning("Timezone database not set up")
           raise InvalidTimezoneError
       end
 
@@ -38,7 +38,7 @@ defmodule Quantum.DateLibrary do
         DateTime.to_naive(dt)
 
       {:error, :utc_only_time_zone_database} ->
-        Logger.warn("Timezone database not set up")
+        Logger.warning("Timezone database not set up")
         raise InvalidTimezoneError
     end
   end
@@ -61,7 +61,7 @@ defmodule Quantum.DateLibrary do
         raise InvalidTimezoneError
 
       {:error, :utc_only_time_zone_database} ->
-        Logger.warn("Timezone database not set up")
+        Logger.warning("Timezone database not set up")
         raise InvalidTimezoneError
     end
   end
