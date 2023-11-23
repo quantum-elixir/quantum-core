@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: ASDF Install
         uses: asdf-vm/actions/install@v2
       - name: "Get Newest Version"

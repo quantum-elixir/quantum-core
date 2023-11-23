@@ -16,7 +16,7 @@ jobs:
       MIX_ENV: dev
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -62,7 +62,7 @@ jobs:
       MIX_ENV: test
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-elixir@v1
         if: ${{ !matrix.currentMainVersion }}
         id: setupBEAMDynamic
@@ -108,7 +108,7 @@ jobs:
       MIX_ENV: dev
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -141,7 +141,7 @@ jobs:
       DIALYZER_PLT_PRIV: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -186,7 +186,7 @@ jobs:
       DIALYZER_PLT_PRIV: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
