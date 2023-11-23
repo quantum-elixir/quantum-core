@@ -53,7 +53,9 @@ jobs:
             elixir: '1.13'
           - otp: '25.2'
             elixir: '1.14'
-          - otp: '25.2'
+          - otp: '26.1'
+            elixir: '1.15'
+          - otp: '26.1'
             elixir: 'main'
           - currentMainVersion: true
             enable_coverage_export: 'true'
