@@ -22,14 +22,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: _build/test
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -77,14 +77,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: _build/test
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAMCurrent.outputs.otp-version }}${{ steps.setupBEAMDynamic.outputs.otp-version }}-${{ steps.setupBEAMCurrent.outputs.elixir-version }}${{ steps.setupBEAMDynamic.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -116,14 +116,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -149,14 +149,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -164,7 +164,7 @@ jobs:
             compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: priv/plts/
           key: dialyzer_plt_dev-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -194,14 +194,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
