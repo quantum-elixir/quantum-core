@@ -37,7 +37,7 @@ jobs:
       - name: "Apply latest version to .tool-versions"
         run: |
           asdf local "${{ inputs.plugin }}" "${{ steps.newestVersion.outputs.LATEST_VERSION }}"
-      - uses: peter-evans/create-pull-request@v5
+      - uses: peter-evans/create-pull-request@v6
         with:
           add-paths: '.tool-versions'
           commit-message: 'Update ${{ inputs.plugin }} to ${{ steps.newestVersion.outputs.LATEST_VERSION }}'
