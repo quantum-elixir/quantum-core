@@ -115,7 +115,7 @@ defmodule Quantum.SchedulerTest do
     end
 
     @tag schedulers: [Scheduler]
-    test "adding a named {m, f, a} jpb at run time" do
+    test "adding a named {m, f, a} job at run time" do
       spec = ~e[1 * * * *]
       task = {IO, :puts, ["Tick"]}
 
