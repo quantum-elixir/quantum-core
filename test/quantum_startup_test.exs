@@ -56,6 +56,6 @@ defmodule QuantumStartupTest do
       end)
 
     assert log =~
-             "Job with name 'inexistent_function' of scheduler 'Elixir.QuantumStartupTest.Scheduler' not started: invalid task function"
+             "Job with name :inexistent_function of scheduler QuantumStartupTest.Scheduler not started: invalid task function"
   end
 end
