@@ -342,8 +342,11 @@ defmodule Quantum do
   defp duplicate_job?(existent_jobs, %Job{name: name}), do: Enum.member?(existent_jobs, name)
 
   defp invalid_job_task?(%Job{task: {m, f, args}})
-       when is_atom(m) and is_atom(f) and is_list(args),
-       do: not (Code.ensure_loaded?(m) && function_exported?(m, f, length(args)))
+       when is_atom(m) and is_atom(f) and is_list(args) do
+    if Code.ensure_loaded?(m),
+      do: not function_exported?(m, f, length(args)),
+      else: true
+  end
 
   defp invalid_job_task?(_), do: false
 
