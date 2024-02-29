@@ -343,7 +343,7 @@ defmodule Quantum do
 
   defp invalid_job_task?(%Job{task: {m, f, args}})
        when is_atom(m) and is_atom(f) and is_list(args),
-       do: not function_exported?(m, f, length(args))
+       do: not (Code.ensure_loaded?(m) && function_exported?(m, f, length(args)))
 
   defp invalid_job_task?(_), do: false
 
