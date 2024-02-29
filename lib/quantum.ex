@@ -320,14 +320,14 @@ defmodule Quantum do
       cond do
         duplicate_job?(Map.keys(acc), job) ->
           Logger.warning(
-            "Job with name '#{name}' of scheduler '#{scheduler}' not started: duplicate job name"
+            "Job #{job_name_to_string(name)} of scheduler '#{scheduler}' not started: duplicate job name"
           )
 
           acc
 
         invalid_job_task?(job) ->
           Logger.warning(
-            "Job with name '#{name}' of scheduler '#{scheduler}' not started: invalid task function"
+            "Job #{job_name_to_string(name)} of scheduler '#{scheduler}' not started: invalid task function"
           )
 
           acc
@@ -346,6 +346,9 @@ defmodule Quantum do
        do: not function_exported?(m, f, length(args))
 
   defp invalid_job_task?(_), do: false
+
+  defp job_name_to_string(name) when is_reference(name), do: "with reference #{inspect(name)}"
+  defp job_name_to_string(name), do: "with name '#{name}'"
 
   defmacro __using__(opts) do
     quote bind_quoted: [behaviour: __MODULE__, opts: opts, moduledoc: @moduledoc],

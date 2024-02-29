@@ -58,4 +58,25 @@ defmodule QuantumStartupTest do
     assert log =~
              "Job with name 'inexistent_function' of scheduler 'Elixir.QuantumStartupTest.Scheduler' not started: invalid task function"
   end
+
+  @tag :startup
+  test "logging doesn't crash on jobs without name" do
+    log =
+      capture_log(fn ->
+        test_jobs = [
+          # inexistent function
+          {~e[2 * * * *], {UndefinedModule, :undefined_function, ["argument"]}}
+        ]
+
+        Application.put_env(:quantum, QuantumStartupTest.Scheduler, jobs: test_jobs)
+
+        start_supervised!(Scheduler)
+
+        assert Enum.count(QuantumStartupTest.Scheduler.jobs()) == 0
+        :ok = stop_supervised(Scheduler)
+      end)
+
+    assert log =~
+             ~r/Job with reference #Reference<[\d\.]+> of scheduler 'Elixir\.QuantumStartupTest\.Scheduler' not started: invalid task function/
+  end
 end
