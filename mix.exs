@@ -4,7 +4,7 @@ defmodule Quantum.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/quantum-elixir/quantum-core"
-  @version "3.5.2"
+  @version "3.5.3"
 
   def project do
     [
