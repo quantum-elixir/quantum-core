@@ -43,11 +43,52 @@ defmodule Quantum.RunStrategy.Random do
   defimpl Quantum.RunStrategy.NodeList do
     @spec nodes(Quantum.RunStrategy.Random.t(), Job.t()) :: [Node.t()]
     def nodes(%Quantum.RunStrategy.Random{nodes: :cluster}, _job) do
-      [Enum.random([node() | Node.list()])]
+      [Enum.random([node() | nodes()])]
     end
 
     def nodes(%Quantum.RunStrategy.Random{nodes: nodes}, _job) do
       [Enum.random(nodes)]
+    end
+
+    @spec nodes() :: [Node.t()]
+    defp nodes do
+      node_application = config()[:node_application]
+      nodes = Node.list()
+
+      if node_application do
+        application_nodes(nodes, node_application)
+      else
+        nodes
+      end
+    end
+
+    @spec application_nodes([Node.t()], Application.app()) :: [Node.t()]
+    defp application_nodes(nodes, app) do
+      Enum.reduce(nodes, [], fn node, app_nodes ->
+        matched_app =
+          :erpc.call(node, fn ->
+            applications = Application.started_applications()
+            Enum.filter(applications, &application_node?(&1, app))
+          end)
+
+        if Enum.empty?(matched_app) do
+          app_nodes
+        else
+          [node | app_nodes]
+        end
+      end)
+    end
+
+    @spec application_node?(
+            {Application.app(), description :: charlist(), vsn :: charlist()},
+            Application.app()
+          ) :: boolean()
+    defp application_node?({app, _, _}, app), do: true
+    defp application_node?({_, _, _}, _app), do: false
+
+    @spec config() :: Keyword.t()
+    defp config do
+      Application.get_env(:quantum, Quantum.RunStrategy.Random) || []
     end
   end
 end

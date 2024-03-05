@@ -40,6 +40,14 @@ If you want to run a task on all nodes of either a list or in the whole cluster,
 
 If you want to run a task on any node of either a list or in the whole cluster, use this strategy.
 
+In case you have variable applications in cluster nodes, and you want include only specific app nodes, add to config.exs
+```
+config :quantum, Quantum.RunStrategy.Random,
+  node_application: :your_otp_app
+
+Only nodes that contains `:your_otp_app` will be selected to nodes list to execute
+```
+
 ### Local Node
 
 `Quantum.RunStrategy.Local`
