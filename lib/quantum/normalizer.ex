@@ -51,6 +51,14 @@ defmodule Quantum.Normalizer do
     normalize_options(base, %{schedule: schedule, task: task})
   end
 
+  def normalize(%Job{} = base, {schedule, task, opts}) when is_list(opts) do
+    opts =
+      Enum.into(opts, %{})
+      |> Map.merge(%{schedule: schedule, task: task})
+
+    normalize_options(base, opts)
+  end
+
   def normalize(%Job{} = _base, %Job{} = job) do
     job
   end

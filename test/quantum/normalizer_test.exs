@@ -143,10 +143,13 @@ defmodule Quantum.NormalizerTest do
   test "unnamed job as tuple with arguments" do
     schedule = ~e[* * * * *]
     task = {MyModule, :my_method, [1, 2, 3]}
+    opts = [state: :inactive]
 
-    job = {"* * * * *", task}
+    job = {"* * * * *", task, opts}
 
-    assert %{schedule: ^schedule, task: ^task, name: name} = normalize(Scheduler.new_job(), job)
+    assert %{schedule: ^schedule, task: ^task, name: name, state: :inactive} =
+             normalize(Scheduler.new_job(), job)
+
     assert is_reference(name)
   end
 
