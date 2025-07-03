@@ -25,7 +25,7 @@ defmodule Quantum.Job do
     state: :active
   ]
 
-  @type name :: atom | reference()
+  @type name :: atom | reference() | String.t()
   @type state :: :active | :inactive
   @type task :: {atom, atom, [any]} | (-> any)
   @type timezone :: :utc | String.t()
@@ -81,6 +81,7 @@ defmodule Quantum.Job do
 
   """
   @spec set_name(t, atom) :: t
+  def set_name(%__MODULE__{} = job, name) when is_binary(name), do: Map.put(job, :name, name)
   def set_name(%__MODULE__{} = job, name) when is_atom(name), do: Map.put(job, :name, name)
   def set_name(%__MODULE__{} = job, name) when is_reference(name), do: Map.put(job, :name, name)
 

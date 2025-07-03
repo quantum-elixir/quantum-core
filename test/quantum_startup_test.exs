@@ -17,6 +17,7 @@ defmodule QuantumStartupTest do
   test "prevent duplicate job names on startup" do
     capture_log(fn ->
       test_jobs = [
+        {"test_job", [schedule: ~e[1 * * * *], task: fn -> :ok end]},
         {:test_job, [schedule: ~e[1 * * * *], task: fn -> :ok end]},
         {:test_job, [schedule: ~e[2 * * * *], task: fn -> :ok end]},
         {:inactive_job, [schedule: ~e[* * * * *], task: fn -> :ok end, state: :inactive]},

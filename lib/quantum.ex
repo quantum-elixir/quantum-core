@@ -423,31 +423,31 @@ defmodule Quantum do
 
       @impl behaviour
       def deactivate_job(server \\ __job_broadcaster__(), name)
-          when is_atom(name) or is_reference(name) do
+          when is_atom(name) or is_reference(name) or is_binary(name) do
         GenStage.cast(server, {:change_state, name, :inactive})
       end
 
       @impl behaviour
       def activate_job(server \\ __job_broadcaster__(), name)
-          when is_atom(name) or is_reference(name) do
+          when is_atom(name) or is_reference(name) or is_binary(name) do
         GenStage.cast(server, {:change_state, name, :active})
       end
 
       @impl behaviour
       def run_job(server \\ __job_broadcaster__(), name)
-          when is_atom(name) or is_reference(name) do
+          when is_atom(name) or is_reference(name) or is_binary(name) do
         GenStage.cast(server, {:run_job, name})
       end
 
       @impl behaviour
       def find_job(server \\ __job_broadcaster__(), name)
-          when is_atom(name) or is_reference(name) do
+          when is_atom(name) or is_reference(name) or is_binary(name) do
         GenStage.call(server, {:find_job, name}, __timeout__())
       end
 
       @impl behaviour
       def delete_job(server \\ __job_broadcaster__(), name)
-          when is_atom(name) or is_reference(name) do
+          when is_atom(name) or is_reference(name) or is_binary(name) do
         GenStage.cast(server, {:delete, name})
       end
 
