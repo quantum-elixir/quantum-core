@@ -78,8 +78,8 @@ defmodule Quantum.SchedulerTest do
     end
   end
 
-  @tag schedulers: [Scheduler]
   describe "add_job/2" do
+    @tag schedulers: [Scheduler]
     test "adding a job at run time" do
       spec = ~e[1 * * * *]
       fun = fn -> :ok end

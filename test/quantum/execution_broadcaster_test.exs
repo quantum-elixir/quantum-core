@@ -66,7 +66,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
       # Some schedule that is valid but will not trigger the next 10 years
       non_reboot_job =
         TestScheduler.new_job()
-        |> Job.set_schedule(~e[* * * * * #{NaiveDateTime.utc_now().year + 1}])
+        |> Job.set_schedule(~e[* * * * * #{DateTime.utc_now().year + 1}])
 
       capture_log(fn ->
         TestProducer.send(producer, {:add, reboot_job})
@@ -94,13 +94,13 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:add, job})
 
         spawn(fn ->
-          now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+          now = DateTime.truncate(DateTime.utc_now(), :second)
           TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
           Process.sleep(1_000)
 
           TestProducer.send(producer, %ClockEvent{
-            time: NaiveDateTime.add(now, 1, :second),
+            time: DateTime.add(now, 1, :second),
             catch_up: false
           })
         end)
@@ -118,10 +118,10 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
       capture_log(fn ->
         TestProducer.send(producer, {:add, job})
-        now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+        now = DateTime.truncate(DateTime.utc_now(), :second)
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
-        assert_receive {:update_last_execution_date, %NaiveDateTime{}, _}, @max_timeout
+        assert_receive {:update_last_execution_date, %DateTime{}, _}, @max_timeout
 
         assert_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
       end)
@@ -137,8 +137,8 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:add, job})
 
         spawn(fn ->
-          now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
-          add1 = NaiveDateTime.add(now, 1, :second)
+          now = DateTime.truncate(DateTime.utc_now(), :second)
+          add1 = DateTime.add(now, 1, :second)
           TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
           Process.sleep(1_000)
           TestProducer.send(producer, %ClockEvent{time: add1, catch_up: false})
@@ -158,7 +158,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
       assert capture_log(fn ->
                TestProducer.send(producer, {:add, job})
 
-               now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+               now = DateTime.truncate(DateTime.utc_now(), :second)
                TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
                refute_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
@@ -177,7 +177,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
       assert capture_log(fn ->
                TestProducer.send(producer, {:add, job})
 
-               now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+               now = DateTime.truncate(DateTime.utc_now(), :second)
                TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
                refute_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
@@ -197,7 +197,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
       capture_log(fn ->
         TestProducer.send(producer, {:add, job})
 
-        now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+        now = DateTime.truncate(DateTime.utc_now(), :second)
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
         assert_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
@@ -205,7 +205,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:add, job_new})
 
         TestProducer.send(producer, %ClockEvent{
-          time: NaiveDateTime.add(now, 1, :second),
+          time: DateTime.add(now, 1, :second),
           catch_up: false
         })
 
@@ -226,7 +226,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:add, job})
         TestProducer.send(producer, {:add, job_new})
 
-        now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+        now = DateTime.truncate(DateTime.utc_now(), :second)
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
         assert_receive {:received, %ExecuteEvent{job: ^job_new}}, @max_timeout
@@ -242,7 +242,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
 
       capture_log(fn ->
         TestProducer.send(producer, {:add, job})
-        now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+        now = DateTime.truncate(DateTime.utc_now(), :second)
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
         assert_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
@@ -250,7 +250,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:remove, job.name})
 
         TestProducer.send(producer, %ClockEvent{
-          time: NaiveDateTime.add(now, 1, :second),
+          time: DateTime.add(now, 1, :second),
           catch_up: false
         })
 
@@ -266,7 +266,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
       capture_log(fn ->
         TestProducer.send(producer, {:add, job})
 
-        now = %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+        now = DateTime.truncate(DateTime.utc_now(), :second)
         TestProducer.send(producer, %ClockEvent{time: now, catch_up: false})
 
         assert_receive {:received, %ExecuteEvent{job: ^job}}, @max_timeout
@@ -274,7 +274,7 @@ defmodule Quantum.ExecutionBroadcasterTest do
         TestProducer.send(producer, {:remove, make_ref()})
 
         TestProducer.send(producer, %ClockEvent{
-          time: NaiveDateTime.add(now, 1, :second),
+          time: DateTime.add(now, 1, :second),
           catch_up: false
         })
 

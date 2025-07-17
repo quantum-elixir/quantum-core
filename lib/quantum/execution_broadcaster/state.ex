@@ -8,7 +8,7 @@ defmodule Quantum.ExecutionBroadcaster.State do
 
   @type t :: %__MODULE__{
           uninitialized_jobs: [Job.t()],
-          execution_timeline: [{NaiveDateTime.t(), [Job.t()]}],
+          execution_timeline: [{DateTime.t(), [Job.t()]}],
           storage: StorageAdapter,
           storage_pid: StorageAdapter.storage_pid(),
           scheduler: Quantum,

@@ -5,7 +5,7 @@ defmodule Quantum.ClockBroadcaster.State do
 
   @type t :: %__MODULE__{
           debug_logging: boolean(),
-          time: NaiveDateTime.t(),
+          time: DateTime.t(),
           remaining_demand: non_neg_integer
         }
 
