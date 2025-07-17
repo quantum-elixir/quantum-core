@@ -7,7 +7,7 @@ defmodule Quantum.ClockBroadcaster.StartOpts do
 
   @type t :: %__MODULE__{
           name: GenServer.server(),
-          start_time: NaiveDateTime.t(),
+          start_time: DateTime.t(),
           storage: Storage,
           scheduler: Scheduler,
           debug_logging: boolean()

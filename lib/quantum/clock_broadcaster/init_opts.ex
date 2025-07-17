@@ -6,7 +6,7 @@ defmodule Quantum.ClockBroadcaster.InitOpts do
   alias Quantum.{Scheduler, Storage}
 
   @type t :: %__MODULE__{
-          start_time: NaiveDateTime.t(),
+          start_time: DateTime.t(),
           storage: Storage,
           scheduler: Scheduler,
           debug_logging: boolean()

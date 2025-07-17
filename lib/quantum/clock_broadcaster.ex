@@ -44,11 +44,11 @@ defmodule Quantum.ClockBroadcaster do
       |> storage.last_execution_date()
       |> case do
         :unknown -> start_time
-        date -> date
+        date -> DateTime.from_naive!(date, "Etc/UTC")
       end
-      |> NaiveDateTime.truncate(:second)
+      |> DateTime.truncate(:second)
       # Roll back one second since handle_tick will start at `now + 1`.
-      |> NaiveDateTime.add(-1, :second)
+      |> DateTime.add(-1, :second)
 
     :timer.send_interval(1000, :tick)
 
@@ -80,16 +80,16 @@ defmodule Quantum.ClockBroadcaster do
 
   defp handle_tick(%State{remaining_demand: remaining_demand, time: time} = state)
        when remaining_demand > 0 do
-    now = NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
 
     {events, new_time} =
       Enum.reduce_while(
         1..remaining_demand,
         {[], time},
         fn _, {list, time} = acc ->
-          new_time = NaiveDateTime.add(time, 1, :second)
+          new_time = DateTime.add(time, 1, :second)
 
-          case NaiveDateTime.compare(new_time, now) do
+          case DateTime.compare(new_time, now) do
             :lt ->
               {:cont, {[%Event{time: new_time, catch_up: true} | list], new_time}}
 

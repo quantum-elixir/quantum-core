@@ -46,7 +46,7 @@ defmodule Quantum.Supervisor do
         opts
         |> Map.take([:debug_logging, :storage, :scheduler])
         |> Map.put(:name, clock_broadcaster_name)
-        |> Map.put(:start_time, NaiveDateTime.utc_now())
+        |> Map.put(:start_time, DateTime.utc_now())
       )
 
     job_broadcaster_opts =

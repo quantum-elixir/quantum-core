@@ -4,7 +4,7 @@ defmodule Quantum.ClockBroadcaster.Event do
   # Clock Event
 
   @type t :: %__MODULE__{
-          time: NaiveDateTime.t(),
+          time: DateTime.t(),
           catch_up: boolean()
         }
 

@@ -62,14 +62,14 @@ defmodule Quantum.Storage do
   Returns `:unknown` if the storage does not know the last execution time.
   In this case all jobs will be run at the next applicable date.
   """
-  @callback last_execution_date(storage_pid :: storage_pid) :: :unknown | NaiveDateTime.t()
+  @callback last_execution_date(storage_pid :: storage_pid) :: :unknown | DateTime.t()
 
   @doc """
   Update last execution time to given date.
   """
   @callback update_last_execution_date(
               storage_pid :: storage_pid,
-              last_execution_date :: NaiveDateTime.t()
+              last_execution_date :: DateTime.t()
             ) :: :ok
 
   @doc """

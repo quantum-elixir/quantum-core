@@ -32,7 +32,7 @@ defmodule Quantum.ClockBroadcasterTest do
     |> stream_broadcaster!()
     |> Stream.take(@listen_events)
     |> Stream.each(fn event ->
-      send(self, {:event, event, NaiveDateTime.utc_now()})
+      send(self, {:event, event, DateTime.utc_now()})
     end)
     |> Enum.to_list()
 
@@ -46,7 +46,7 @@ defmodule Quantum.ClockBroadcasterTest do
   test "catches up fast and then one every second", %{test: test} do
     self = self()
 
-    start_time = NaiveDateTime.add(NaiveDateTime.utc_now(), -@listen_events, :second)
+    start_time = DateTime.add(DateTime.utc_now(), -@listen_events, :second)
 
     test
     |> stream_broadcaster!(start_time: start_time)
@@ -68,7 +68,7 @@ defmodule Quantum.ClockBroadcasterTest do
   test "should wait for future date until", %{test: test} do
     self = self()
 
-    start_time = NaiveDateTime.add(NaiveDateTime.utc_now(), 2, :second)
+    start_time = DateTime.add(DateTime.utc_now(), 2, :second)
 
     test
     |> stream_broadcaster!(start_time: start_time)
@@ -84,14 +84,14 @@ defmodule Quantum.ClockBroadcasterTest do
   end
 
   defp receive_send(pid, event) do
-    send(pid, {:event, event, NaiveDateTime.utc_now()})
+    send(pid, {:event, event, DateTime.utc_now()})
   end
 
   defp assert_live_event(message) do
     assert {:event,
             %Event{
               time:
-                %NaiveDateTime{
+                %DateTime{
                   year: year,
                   month: month,
                   day: day,
@@ -101,7 +101,7 @@ defmodule Quantum.ClockBroadcasterTest do
                 } = event_time,
               catch_up: false
             },
-            %NaiveDateTime{
+            %DateTime{
               year: year,
               month: month,
               day: day,
@@ -110,7 +110,7 @@ defmodule Quantum.ClockBroadcasterTest do
               second: second
             } = receive_time} = message
 
-    assert NaiveDateTime.diff(event_time, receive_time, :millisecond) < 100
+    assert DateTime.diff(event_time, receive_time, :millisecond) < 100
   end
 
   defp assert_catch_up_event(message) do
@@ -129,7 +129,7 @@ defmodule Quantum.ClockBroadcasterTest do
            [
              name: Module.concat(__MODULE__, test),
              debug_logging: false,
-             start_time: NaiveDateTime.utc_now(),
+             start_time: DateTime.utc_now(),
              storage: Quantum.Storage.Test,
              scheduler: NotNeeded
            ],

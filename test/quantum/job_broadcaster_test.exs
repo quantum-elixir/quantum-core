@@ -581,8 +581,8 @@ defmodule Quantum.JobBroadcasterTest do
     end
   end
 
-  @tag jobs: :active
   describe "find_job" do
+    @tag jobs: :active
     test "finds correct one", %{broadcaster: broadcaster, active_job: active_job} do
       active_job_name = active_job.name
 

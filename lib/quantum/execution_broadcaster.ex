@@ -12,12 +12,6 @@ defmodule Quantum.ExecutionBroadcaster do
 
   alias Quantum.ClockBroadcaster.Event, as: ClockEvent
 
-  alias Quantum.{
-    DateLibrary,
-    DateLibrary.InvalidDateTimeForTimezoneError,
-    DateLibrary.InvalidTimezoneError
-  }
-
   alias Quantum.ExecutionBroadcaster.Event, as: ExecuteEvent
   alias Quantum.ExecutionBroadcaster.InitOpts
   alias Quantum.ExecutionBroadcaster.State
@@ -202,7 +196,7 @@ defmodule Quantum.ExecutionBroadcaster do
          } = state,
          time
        ) do
-    case NaiveDateTime.compare(time, time_to_execute) do
+    case DateTime.compare(time, time_to_execute) do
       :gt ->
         raise "Jobs were skipped"
 
@@ -226,7 +220,7 @@ defmodule Quantum.ExecutionBroadcaster do
           jobs
           |> Enum.reduce(
             %{state | execution_timeline: tail},
-            &add_job_to_state(&1, &2, NaiveDateTime.add(time, 1, :second))
+            &add_job_to_state(&1, &2, DateTime.add(time, 1, :second))
           )
           |> sort_state
           |> execute_events_to_fire(time)
@@ -240,11 +234,17 @@ defmodule Quantum.ExecutionBroadcaster do
          state,
          time
        ) do
-    job
-    |> get_next_execution_time(time)
-    |> case do
-      {:ok, date} ->
-        add_to_state(state, time, date, job)
+    with {:ok, execution_date} <- get_next_execution_time(job, time) do
+      add_to_state(state, time, execution_date, job)
+    else
+      {:error, :time_zone_not_found} ->
+        Logger.error(
+          "Invalid Timezone #{inspect(timezone)} provided for job #{inspect(name)}.",
+          job: job,
+          error: :time_zone_not_found
+        )
+
+        state
 
       {:error, _} ->
         Logger.warning(fn ->
@@ -256,54 +256,32 @@ defmodule Quantum.ExecutionBroadcaster do
 
         state
     end
-  rescue
-    e in InvalidTimezoneError ->
-      Logger.error(
-        "Invalid Timezone #{inspect(timezone)} provided for job #{inspect(name)}.",
-        job: job,
-        error: e
-      )
-
-      state
   end
 
   defp get_next_execution_time(
-         %Job{schedule: schedule, timezone: timezone, name: name} = job,
+         %Job{schedule: schedule, timezone: :utc},
          time
        ) do
-    schedule
-    |> CrontabScheduler.get_next_run_date(DateLibrary.to_tz!(time, timezone))
-    |> case do
-      {:ok, date} ->
-        {:ok, DateLibrary.to_utc!(date, timezone)}
+    CrontabScheduler.get_next_run_date(schedule, time)
+  end
 
-      {:error, _} = error ->
-        error
+  defp get_next_execution_time(
+         %Job{schedule: schedule, timezone: timezone},
+         time
+       ) do
+    with {:ok, localized_time} <- DateTime.shift_zone(time, timezone),
+         {:ok, localized_execution_time} <-
+           CrontabScheduler.get_next_run_date(schedule, localized_time) do
+      DateTime.shift_zone(localized_execution_time, "Etc/UTC")
     end
-  rescue
-    _ in InvalidDateTimeForTimezoneError ->
-      next_time = NaiveDateTime.add(time, 60, :second)
-
-      Logger.warning(fn ->
-        """
-        Next execution time for job #{inspect(name)} is not a valid time.
-        Retrying with #{inspect(next_time)}
-        """
-      end)
-
-      get_next_execution_time(job, next_time)
   end
 
   defp sort_state(%State{execution_timeline: execution_timeline} = state) do
-    %{
-      state
-      | execution_timeline:
-          Enum.sort_by(execution_timeline, fn {date, _} -> NaiveDateTime.to_erl(date) end)
-    }
+    %{state | execution_timeline: Enum.sort_by(execution_timeline, &elem(&1, 0), DateTime)}
   end
 
   defp add_to_state(%State{execution_timeline: execution_timeline} = state, time, date, job) do
-    unless NaiveDateTime.compare(time, date) in [:lt, :eq] do
+    unless DateTime.compare(time, date) in [:lt, :eq] do
       raise Quantum.ExecutionBroadcaster.JobInPastError
     end
 
