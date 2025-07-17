@@ -73,6 +73,10 @@ defmodule Quantum.Executor do
     end
   end
 
+  # TODO: Remove once the following issue is solved:
+  # https://github.com/elixir-lang/elixir/issues/14655
+  @dialyzer {:nowarn_function, run: 5}
+
   # Ececute the given function on a given node via the task supervisor
   @spec run(Node.t(), Job.t(), GenServer.server(), boolean(), atom()) :: Task.t()
   defp run(
