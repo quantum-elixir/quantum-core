@@ -290,6 +290,7 @@ defmodule Quantum do
     |> Keyword.put_new(:name, scheduler)
     |> update_in([:schedule], &Normalizer.normalize_schedule/1)
     |> Keyword.put_new(:task_supervisor_name, Module.concat(scheduler, TaskSupervisor))
+    |> Keyword.put_new(:include_task_supervisor, true)
     |> Keyword.put_new(:storage_name, Module.concat(scheduler, Storage))
     |> Keyword.put_new(:task_registry_name, Module.concat(scheduler, TaskRegistry))
     |> Keyword.put_new(:clock_broadcaster_name, Module.concat(scheduler, ClockBroadcaster))
