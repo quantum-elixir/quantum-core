@@ -111,6 +111,9 @@ defmodule Quantum do
     * `:task_supervisor_name` - GenServer name of task supervisor \\
       *(unstable, may break without major release until declared stable)*
 
+    * `:include_task_supervisor` - Include task supervisor in supervisor tree \\
+      *(unstable, may break without major release until declared stable)*
+
     * `:timeout` - Sometimes, you may come across GenServer timeout errors
       esp. when you have too many jobs or high load. The default `GenServer.call/3`
       timeout is `5_000`.
