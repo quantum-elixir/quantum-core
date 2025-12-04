@@ -16,6 +16,7 @@ defmodule Quantum.Supervisor do
       storage: storage,
       scheduler: ^scheduler,
       task_supervisor_name: task_supervisor_name,
+      include_task_supervisor: include_task_supervisor,
       storage_name: storage_name,
       task_registry_name: task_registry_name,
       clock_broadcaster_name: clock_broadcaster_name,
@@ -91,7 +92,7 @@ defmodule Quantum.Supervisor do
 
     Supervisor.init(
       [
-        {Task.Supervisor, task_supervisor_opts},
+        include_task_supervisor && {Task.Supervisor, task_supervisor_opts},
         {storage, storage_opts},
         {Quantum.ClockBroadcaster, clock_broadcaster_opts},
         {Quantum.TaskRegistry, task_registry_opts},
@@ -99,7 +100,7 @@ defmodule Quantum.Supervisor do
         {Quantum.ExecutionBroadcaster, execution_broadcaster_opts},
         {Quantum.NodeSelectorBroadcaster, node_selector_broadcaster_opts},
         {Quantum.ExecutorSupervisor, executor_supervisor_opts}
-      ],
+      ] |> Enum.filter(&(&1),
       strategy: :rest_for_one
     )
   end
