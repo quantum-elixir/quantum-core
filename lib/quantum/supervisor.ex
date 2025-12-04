@@ -100,7 +100,7 @@ defmodule Quantum.Supervisor do
         {Quantum.ExecutionBroadcaster, execution_broadcaster_opts},
         {Quantum.NodeSelectorBroadcaster, node_selector_broadcaster_opts},
         {Quantum.ExecutorSupervisor, executor_supervisor_opts}
-      ] |> Enum.filter(&(&1),
+      ] |> Enum.filter(&(&1)),
       strategy: :rest_for_one
     )
   end
