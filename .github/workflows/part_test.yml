@@ -49,14 +49,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: _build/test
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -103,14 +103,14 @@ jobs:
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: _build/test
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -142,14 +142,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -175,14 +175,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -190,7 +190,7 @@ jobs:
             compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: priv/plts/
           key: dialyzer_plt_dev-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
@@ -220,14 +220,14 @@ jobs:
         with:
           version-file: '.tool-versions'
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: deps
           key: deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-
       - run: mix deps.get
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: _build/dev
           key: compile-${{ env.MIX_ENV }}-${{ runner.os }}-${{ steps.setupBEAM.outputs.otp-version }}-${{ steps.setupBEAM.outputs.elixir-version }}-${{ hashFiles('mix.lock') }}
