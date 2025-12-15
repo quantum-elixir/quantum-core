@@ -42,7 +42,7 @@ jobs:
       - run: mix deps.compile
       - run: mix compile --warning-as-errors
       - run: mix docs
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: docs
           path: doc
