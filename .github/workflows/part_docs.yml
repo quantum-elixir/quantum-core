@@ -20,7 +20,7 @@ jobs:
       MIX_ENV: dev
 
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@v7.0.0
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -60,7 +60,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@v7.0.0
       - uses: actions/download-artifact@v8
         with:
           name: docs
