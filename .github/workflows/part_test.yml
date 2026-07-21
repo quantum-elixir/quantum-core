@@ -22,7 +22,7 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.1
       - name: "Read .tool-versions"
         id: toolVersions
         run: |
@@ -43,7 +43,7 @@ jobs:
       MIX_ENV: dev
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -97,7 +97,7 @@ jobs:
       MIX_ENV: test
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -136,7 +136,7 @@ jobs:
       MIX_ENV: dev
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -169,7 +169,7 @@ jobs:
       DIALYZER_PLT_PRIV: true
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
@@ -214,7 +214,7 @@ jobs:
       DIALYZER_PLT_PRIV: true
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-elixir@v1
         id: setupBEAM
         with:
