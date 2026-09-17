@@ -62,7 +62,7 @@ defmodule Quantum.Storage.Test do
 
       @impl Quantum.Storage
       def update_job_state(_storage_pid, job_name, state),
-        do: send_and_wait(:update_job_state, job_name, state)
+        do: send_and_wait(:update_job_state, {job_name, state})
 
       @impl Quantum.Storage
       def last_execution_date(_storage_pid),

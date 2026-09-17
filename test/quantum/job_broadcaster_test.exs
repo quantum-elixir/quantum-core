@@ -456,6 +456,21 @@ defmodule Quantum.JobBroadcasterTest do
       assert_receive %{test_id: ^test_id}
     end
 
+    @tag jobs: :active, listen_storage: true, storage: :with_update
+    test "active => inactive with updating storage", %{
+      broadcaster: broadcaster,
+      active_job: active_job
+    } do
+      active_job_name = active_job.name
+
+      capture_log(fn ->
+        TestScheduler.deactivate_job(broadcaster, active_job_name)
+
+        assert_receive {:received, {:remove, ^active_job_name}}
+        assert_receive {:update_job_state, {^active_job_name, :inactive}, _}
+      end)
+    end
+
     @tag jobs: :inactive, listen_storage: true
     test "inactive => active", %{broadcaster: broadcaster, inactive_job: inactive_job} do
       test_id = "update-inactive-to-active-job-handler"
