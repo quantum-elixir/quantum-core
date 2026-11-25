@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+- Skip the last executed second when restarting with a stored execution date.
+
 Diff for [unreleased]
 
 ## 3.4.0 - 2021-08-10

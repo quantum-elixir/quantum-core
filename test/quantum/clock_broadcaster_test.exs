@@ -15,6 +15,29 @@ defmodule Quantum.ClockBroadcasterTest do
     use Quantum, otp_app: :quantum
   end
 
+  defmodule StoredClock do
+    use Quantum.Storage.Test
+
+    @impl Quantum.Storage
+    def last_execution_date(pid), do: Agent.get(pid, & &1)
+  end
+
+  for {shape, offset} <- [{:datetime, -30}, {:naive, -30}, {:datetime, 0}] do
+    test "resumes after stored #{shape} at offset #{offset}", %{test: test} do
+      time = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.add(unquote(offset))
+      stored = if unquote(shape) == :naive, do: DateTime.to_naive(time), else: time
+      start_supervised!(%{
+        id: StoredClock,
+        start: {Agent, :start_link, [fn -> stored end, [name: TestScheduler.Storage]]}
+      })
+
+      stream = stream_broadcaster!(test, storage: StoredClock, scheduler: TestScheduler)
+      next = DateTime.add(time, 1, :second)
+      assert [%Event{time: ^next} = event] = Enum.take(stream, 1)
+      if unquote(offset) < 0, do: assert(event.catch_up)
+    end
+  end
+
   test "should only generate event from event struct", %{test: test} do
     events =
       test
